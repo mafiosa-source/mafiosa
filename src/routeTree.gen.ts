@@ -9,8 +9,68 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VouchersRouteImport } from './routes/vouchers'
+import { Route as TransfersRouteImport } from './routes/transfers'
+import { Route as SponsorsRouteImport } from './routes/sponsors'
+import { Route as SalariesRouteImport } from './routes/salaries'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ReconciliationRouteImport } from './routes/reconciliation'
+import { Route as PettyCashRouteImport } from './routes/petty-cash'
+import { Route as DuMondeRouteImport } from './routes/du-monde'
+import { Route as CardsRouteImport } from './routes/cards'
+import { Route as CandidatesRouteImport } from './routes/candidates'
 import { Route as IndexRouteImport } from './routes/index'
 
+const VouchersRoute = VouchersRouteImport.update({
+  id: '/vouchers',
+  path: '/vouchers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransfersRoute = TransfersRouteImport.update({
+  id: '/transfers',
+  path: '/transfers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SponsorsRoute = SponsorsRouteImport.update({
+  id: '/sponsors',
+  path: '/sponsors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalariesRoute = SalariesRouteImport.update({
+  id: '/salaries',
+  path: '/salaries',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReconciliationRoute = ReconciliationRouteImport.update({
+  id: '/reconciliation',
+  path: '/reconciliation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PettyCashRoute = PettyCashRouteImport.update({
+  id: '/petty-cash',
+  path: '/petty-cash',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DuMondeRoute = DuMondeRouteImport.update({
+  id: '/du-monde',
+  path: '/du-monde',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CardsRoute = CardsRouteImport.update({
+  id: '/cards',
+  path: '/cards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidatesRoute = CandidatesRouteImport.update({
+  id: '/candidates',
+  path: '/candidates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +79,172 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/candidates': typeof CandidatesRoute
+  '/cards': typeof CardsRoute
+  '/du-monde': typeof DuMondeRoute
+  '/petty-cash': typeof PettyCashRoute
+  '/reconciliation': typeof ReconciliationRoute
+  '/reports': typeof ReportsRoute
+  '/salaries': typeof SalariesRoute
+  '/sponsors': typeof SponsorsRoute
+  '/transfers': typeof TransfersRoute
+  '/vouchers': typeof VouchersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/candidates': typeof CandidatesRoute
+  '/cards': typeof CardsRoute
+  '/du-monde': typeof DuMondeRoute
+  '/petty-cash': typeof PettyCashRoute
+  '/reconciliation': typeof ReconciliationRoute
+  '/reports': typeof ReportsRoute
+  '/salaries': typeof SalariesRoute
+  '/sponsors': typeof SponsorsRoute
+  '/transfers': typeof TransfersRoute
+  '/vouchers': typeof VouchersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/candidates': typeof CandidatesRoute
+  '/cards': typeof CardsRoute
+  '/du-monde': typeof DuMondeRoute
+  '/petty-cash': typeof PettyCashRoute
+  '/reconciliation': typeof ReconciliationRoute
+  '/reports': typeof ReportsRoute
+  '/salaries': typeof SalariesRoute
+  '/sponsors': typeof SponsorsRoute
+  '/transfers': typeof TransfersRoute
+  '/vouchers': typeof VouchersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/candidates'
+    | '/cards'
+    | '/du-monde'
+    | '/petty-cash'
+    | '/reconciliation'
+    | '/reports'
+    | '/salaries'
+    | '/sponsors'
+    | '/transfers'
+    | '/vouchers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/candidates'
+    | '/cards'
+    | '/du-monde'
+    | '/petty-cash'
+    | '/reconciliation'
+    | '/reports'
+    | '/salaries'
+    | '/sponsors'
+    | '/transfers'
+    | '/vouchers'
+  id:
+    | '__root__'
+    | '/'
+    | '/candidates'
+    | '/cards'
+    | '/du-monde'
+    | '/petty-cash'
+    | '/reconciliation'
+    | '/reports'
+    | '/salaries'
+    | '/sponsors'
+    | '/transfers'
+    | '/vouchers'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CandidatesRoute: typeof CandidatesRoute
+  CardsRoute: typeof CardsRoute
+  DuMondeRoute: typeof DuMondeRoute
+  PettyCashRoute: typeof PettyCashRoute
+  ReconciliationRoute: typeof ReconciliationRoute
+  ReportsRoute: typeof ReportsRoute
+  SalariesRoute: typeof SalariesRoute
+  SponsorsRoute: typeof SponsorsRoute
+  TransfersRoute: typeof TransfersRoute
+  VouchersRoute: typeof VouchersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vouchers': {
+      id: '/vouchers'
+      path: '/vouchers'
+      fullPath: '/vouchers'
+      preLoaderRoute: typeof VouchersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transfers': {
+      id: '/transfers'
+      path: '/transfers'
+      fullPath: '/transfers'
+      preLoaderRoute: typeof TransfersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sponsors': {
+      id: '/sponsors'
+      path: '/sponsors'
+      fullPath: '/sponsors'
+      preLoaderRoute: typeof SponsorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/salaries': {
+      id: '/salaries'
+      path: '/salaries'
+      fullPath: '/salaries'
+      preLoaderRoute: typeof SalariesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reconciliation': {
+      id: '/reconciliation'
+      path: '/reconciliation'
+      fullPath: '/reconciliation'
+      preLoaderRoute: typeof ReconciliationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/petty-cash': {
+      id: '/petty-cash'
+      path: '/petty-cash'
+      fullPath: '/petty-cash'
+      preLoaderRoute: typeof PettyCashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/du-monde': {
+      id: '/du-monde'
+      path: '/du-monde'
+      fullPath: '/du-monde'
+      preLoaderRoute: typeof DuMondeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cards': {
+      id: '/cards'
+      path: '/cards'
+      fullPath: '/cards'
+      preLoaderRoute: typeof CardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidates': {
+      id: '/candidates'
+      path: '/candidates'
+      fullPath: '/candidates'
+      preLoaderRoute: typeof CandidatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,17 +257,17 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CandidatesRoute: CandidatesRoute,
+  CardsRoute: CardsRoute,
+  DuMondeRoute: DuMondeRoute,
+  PettyCashRoute: PettyCashRoute,
+  ReconciliationRoute: ReconciliationRoute,
+  ReportsRoute: ReportsRoute,
+  SalariesRoute: SalariesRoute,
+  SponsorsRoute: SponsorsRoute,
+  TransfersRoute: TransfersRoute,
+  VouchersRoute: VouchersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
