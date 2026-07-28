@@ -1,21 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
 import { StatCard } from "@/components/StatCard";
-import { DataTable } from "@/components/DataTable";
-import { FormDialog, Field, SelectField } from "@/components/FormDialog";
+import { TransactionsTable } from "@/components/TransactionsTable";
+import { TransactionDialog } from "@/components/TransactionDialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { addTransfer, deleteTransfer, useFinance, pendingTransferToCBQ } from "@/lib/finance-store";
-import { COMPANIES } from "@/lib/finance-types";
-import { qar, today, exportCsv } from "@/lib/format";
-import { Plus, Trash2, Download } from "lucide-react";
-import { toast } from "sonner";
+import { Plus } from "lucide-react";
+import { useFinance, walletBalance, pendingCompanyTransfer } from "@/lib/finance-store";
+import type { Company } from "@/lib/finance-types";
+import { COMPANY_ACCOUNT_BY_COMPANY, COMPANY_ACCOUNT_WALLETS } from "@/lib/finance-types";
 
 export const Route = createFileRoute("/transfers")({
   head: () => ({
     meta: [
-      { title: "CBQ Transfer Control · Finance Control" },
-      { name: "description", content: "Track transfers from company accounts to CBQ." },
+      { title: "CBQ Transfers · AHG Finance Core" },
+      { name: "description", content: "Transfers between company accounts and CBQ." },
     ],
   }),
   component: TransfersPage,
@@ -23,69 +21,52 @@ export const Route = createFileRoute("/transfers")({
 
 function TransfersPage() {
   const s = useFinance();
-  const pending = pendingTransferToCBQ(s);
-  const received = s.transfers.reduce((a, t) => a + t.amountReceived, 0);
-  const transferred = s.transfers.reduce((a, t) => a + t.amountTransferred, 0);
+  const rows = s.transactions.filter(
+    (t) =>
+      t.type === "Transfer" &&
+      (t.fromWallet === "cbq" ||
+        t.toWallet === "cbq" ||
+        COMPANY_ACCOUNT_WALLETS.includes(t.fromWallet) ||
+        COMPANY_ACCOUNT_WALLETS.includes(t.toWallet)),
+  );
+  const companies: Exclude<Company, "AHG">[] = ["FAST", "BROKER", "SKILL", "DANET"];
+  const cbq = walletBalance(s, "cbq");
 
   return (
     <AppLayout>
       <PageHeader
-        title="Company → CBQ Transfer Control"
-        description="Track money received into company accounts and pending transfers to CBQ."
+        title="CBQ Transfers"
+        description="Money flowing between company accounts and CBQ."
         action={
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => exportCsv("cbq-transfers.csv", s.transfers)}>
-              <Download className="h-4 w-4" /> Export
-            </Button>
-            <FormDialog
-              title="New transfer record"
-              trigger={<Button size="sm"><Plus className="h-4 w-4" /> New record</Button>}
-              onSubmit={(fd) => {
-                addTransfer({
-                  date: String(fd.get("date") || today()),
-                  company: fd.get("company") as never,
-                  amountReceived: Number(fd.get("amountReceived") || 0),
-                  purpose: String(fd.get("purpose") || ""),
-                  amountTransferred: Number(fd.get("amountTransferred") || 0),
-                  transferDate: String(fd.get("transferDate") || "") || undefined,
-                });
-                toast.success("Transfer record added");
-              }}
-            >
-              <Field label="Date received" name="date" type="date" required defaultValue={today()} />
-              <SelectField label="Company" name="company" options={COMPANIES} required />
-              <Field label="Amount received (QAR)" name="amountReceived" type="number" step="0.01" required />
-              <Field label="Purpose" name="purpose" required />
-              <Field label="Amount transferred to CBQ" name="amountTransferred" type="number" step="0.01" defaultValue={0} />
-              <Field label="Transfer date" name="transferDate" type="date" />
-            </FormDialog>
-          </div>
+          <TransactionDialog
+            trigger={<Button size="sm"><Plus className="h-4 w-4" /> New transfer</Button>}
+            defaults={{ type: "Transfer", fromWallet: "fast-acct", toWallet: "cbq", paymentMethod: "Company Account" }}
+          />
         }
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Received (all companies)" value={received} />
-        <StatCard label="Transferred to CBQ" value={transferred} tone="success" />
-        <StatCard label="Required to Transfer" value={pending} tone="danger" />
-        <StatCard label="Records" value={s.transfers.length} format="raw" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <StatCard label="CBQ balance" value={cbq.balance} tone="info" />
+        <StatCard label="Transfers logged" value={rows.length} format="raw" />
+        <StatCard label="Received (CBQ in)" value={rows.filter((r) => r.toWallet === "cbq").reduce((a, r) => a + r.amount, 0)} tone="success" />
+        <StatCard label="Sent from CBQ" value={rows.filter((r) => r.fromWallet === "cbq").reduce((a, r) => a + r.amount, 0)} />
       </div>
 
-      <DataTable
-        rows={s.transfers}
-        columns={[
-          { key: "date", header: "Date", render: (r) => r.date },
-          { key: "co", header: "Company", render: (r) => <Badge variant="outline">{r.company}</Badge> },
-          { key: "purpose", header: "Purpose", render: (r) => r.purpose },
-          { key: "rec", header: "Received", className: "text-right", render: (r) => <span className="tabular">{qar(r.amountReceived)}</span> },
-          { key: "tra", header: "Transferred", className: "text-right", render: (r) => <span className="tabular text-[color:var(--success)]">{qar(r.amountTransferred)}</span> },
-          { key: "pen", header: "Pending", className: "text-right", render: (r) => {
-            const p = Math.max(0, r.amountReceived - r.amountTransferred);
-            return <span className={"tabular font-semibold " + (p > 0 ? "text-[color:var(--destructive)]" : "")}>{qar(p)}</span>;
-          } },
-          { key: "tdate", header: "Transfer date", render: (r) => r.transferDate || "—" },
-          { key: "act", header: "", render: (r) => <Button size="icon" variant="ghost" onClick={() => deleteTransfer(r.id)}><Trash2 className="h-4 w-4" /></Button> },
-        ]}
-      />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {companies.map((c) => {
+          const bal = walletBalance(s, COMPANY_ACCOUNT_BY_COMPANY[c]).balance;
+          const pending = pendingCompanyTransfer(s, c);
+          return (
+            <div key={c} className="rounded-lg border bg-card p-3">
+              <div className="text-xs text-muted-foreground">{c} account</div>
+              <div className="text-lg font-semibold tabular">{bal.toFixed(2)}</div>
+              <div className="text-xs text-rose-600 mt-1">Pending → CBQ: {pending.toFixed(2)}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <TransactionsTable rows={rows} exportName="cbq-transfers.csv" />
     </AppLayout>
   );
 }
