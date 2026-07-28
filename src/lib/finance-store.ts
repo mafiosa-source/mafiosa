@@ -11,6 +11,7 @@ import {
   COMPANY_ACCOUNT_BY_COMPANY,
   COMPANY_ACCOUNT_WALLETS,
   PETTY_WALLETS,
+  WALLETS,
   WALLET_BY_KEY,
 } from "./finance-types";
 
