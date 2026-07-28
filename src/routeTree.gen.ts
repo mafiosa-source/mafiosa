@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as TransfersRouteImport } from './routes/transfers'
+import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as SponsorsRouteImport } from './routes/sponsors'
 import { Route as SalariesRouteImport } from './routes/salaries'
 import { Route as ReportsRouteImport } from './routes/reports'
@@ -29,6 +30,11 @@ const VouchersRoute = VouchersRouteImport.update({
 const TransfersRoute = TransfersRouteImport.update({
   id: '/transfers',
   path: '/transfers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SponsorsRoute = SponsorsRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof ReportsRoute
   '/salaries': typeof SalariesRoute
   '/sponsors': typeof SponsorsRoute
+  '/transactions': typeof TransactionsRoute
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/reports': typeof ReportsRoute
   '/salaries': typeof SalariesRoute
   '/sponsors': typeof SponsorsRoute
+  '/transactions': typeof TransactionsRoute
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/reports': typeof ReportsRoute
   '/salaries': typeof SalariesRoute
   '/sponsors': typeof SponsorsRoute
+  '/transactions': typeof TransactionsRoute
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/salaries'
     | '/sponsors'
+    | '/transactions'
     | '/transfers'
     | '/vouchers'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/salaries'
     | '/sponsors'
+    | '/transactions'
     | '/transfers'
     | '/vouchers'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/salaries'
     | '/sponsors'
+    | '/transactions'
     | '/transfers'
     | '/vouchers'
   fileRoutesById: FileRoutesById
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   ReportsRoute: typeof ReportsRoute
   SalariesRoute: typeof SalariesRoute
   SponsorsRoute: typeof SponsorsRoute
+  TransactionsRoute: typeof TransactionsRoute
   TransfersRoute: typeof TransfersRoute
   VouchersRoute: typeof VouchersRoute
 }
@@ -187,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/transfers'
       fullPath: '/transfers'
       preLoaderRoute: typeof TransfersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sponsors': {
@@ -265,19 +285,10 @@ const rootRouteChildren: RootRouteChildren = {
   ReportsRoute: ReportsRoute,
   SalariesRoute: SalariesRoute,
   SponsorsRoute: SponsorsRoute,
+  TransactionsRoute: TransactionsRoute,
   TransfersRoute: TransfersRoute,
   VouchersRoute: VouchersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
