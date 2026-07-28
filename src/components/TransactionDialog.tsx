@@ -153,7 +153,7 @@ export function TransactionDialog({
             )}
             {!isVoucher && (
               <F label="Company (optional)">
-                <Sel value={draft.company ?? ""} onChange={(v) => patch({ company: v as Company })} options={COMPANIES} allowEmpty />
+                <Sel value={draft.company ?? ""} onChange={(v) => patch({ company: v === "__none" ? undefined : (v as Company) })} options={COMPANIES} allowEmpty />
               </F>
             )}
 
