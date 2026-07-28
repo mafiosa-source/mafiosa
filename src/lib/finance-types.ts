@@ -1,152 +1,160 @@
-export type Company = "FAST" | "Broker" | "Skill" | "Danet";
-export const COMPANIES: Company[] = ["FAST", "Broker", "Skill", "Danet"];
+// ============================================================
+// AHG Finance Core – Phase 1
+// Single source of truth: one Master Transactions table.
+// Every screen is a filtered view over `transactions`.
+// ============================================================
 
-export type MoneyLocation =
-  | "Cash in hand"
-  | "Office Petty Cash"
-  | "Du Monde Petty Cash"
-  | "CBQ"
-  | "FAST account"
-  | "Broker account"
-  | "Skill account"
-  | "Danet account"
-  | "Maryam Card"
-  | "Yousef Card"
-  | "Maha Petrol Card"
-  | "Limit Card";
+export type Company = "FAST" | "BROKER" | "SKILL" | "DANET" | "AHG";
+export const COMPANIES: Company[] = ["FAST", "BROKER", "SKILL", "DANET", "AHG"];
+// AHG is used for office expenses, cards and petty cash only.
+// It does NOT use Receipt Vouchers or Payment Vouchers.
+export const VOUCHER_COMPANIES: Company[] = ["FAST", "BROKER", "SKILL", "DANET"];
 
-export const MONEY_LOCATIONS: MoneyLocation[] = [
-  "Cash in hand",
-  "Office Petty Cash",
-  "Du Monde Petty Cash",
-  "CBQ",
-  "FAST account",
-  "Broker account",
-  "Skill account",
-  "Danet account",
-  "Maryam Card",
-  "Yousef Card",
-  "Maha Petrol Card",
-  "Limit Card",
+// ---------- Wallets ----------
+export type WalletKey =
+  | "office-petty"
+  | "dumonde-petty"
+  | "cbq"
+  | "fast-acct"
+  | "broker-acct"
+  | "skill-acct"
+  | "danet-acct"
+  | "maryam-card"
+  | "yousef-card"
+  | "maha-card"
+  | "limit-card"
+  | "external"; // outside the business (sponsors, POLO, vendors, drivers, staff, etc.)
+
+export type WalletKind = "cash" | "bank" | "company-account" | "card" | "external";
+
+export const WALLETS: { key: WalletKey; name: string; kind: WalletKind; last4?: string; limit?: number; purpose?: string }[] = [
+  { key: "office-petty", name: "Office Petty Cash", kind: "cash" },
+  { key: "dumonde-petty", name: "Du Monde Petty Cash", kind: "cash" },
+  { key: "cbq", name: "CBQ", kind: "bank" },
+  { key: "fast-acct", name: "FAST Account", kind: "company-account" },
+  { key: "broker-acct", name: "BROKER Account", kind: "company-account" },
+  { key: "skill-acct", name: "SKILL Account", kind: "company-account" },
+  { key: "danet-acct", name: "DANET Account", kind: "company-account" },
+  { key: "maryam-card", name: "Maryam Card", kind: "card", last4: "5515", limit: 5000, purpose: "General Company Expenses" },
+  { key: "yousef-card", name: "Yousef Card", kind: "card", last4: "6921", limit: 5000, purpose: "Immigration Expenses" },
+  { key: "maha-card", name: "Maha Petrol Card", kind: "card", last4: "0552", limit: 5000, purpose: "Fuel" },
+  { key: "limit-card", name: "Limit Card", kind: "card", last4: "3852", limit: 1000, purpose: "Mixed Expenses" },
+  { key: "external", name: "External / Third Party", kind: "external" },
 ];
 
-export type PettyCashTxn = {
-  id: string;
-  date: string;
-  description: string;
-  category: string;
-  amount: number;
-  type: "received" | "paid";
-  company?: Company;
-  candidate?: string;
-  receipt?: string;
-  scope: "office" | "dumonde";
+export const WALLET_BY_KEY: Record<WalletKey, (typeof WALLETS)[number]> = WALLETS.reduce(
+  (acc, w) => ({ ...acc, [w.key]: w }),
+  {} as Record<WalletKey, (typeof WALLETS)[number]>,
+);
+
+export const COMPANY_ACCOUNT_BY_COMPANY: Record<Exclude<Company, "AHG">, WalletKey> = {
+  FAST: "fast-acct",
+  BROKER: "broker-acct",
+  SKILL: "skill-acct",
+  DANET: "danet-acct",
 };
 
-export type CardKey = "maryam" | "yousef" | "maha" | "limit";
+export const CARD_WALLETS: WalletKey[] = ["maryam-card", "yousef-card", "maha-card", "limit-card"];
+export const PETTY_WALLETS: WalletKey[] = ["office-petty", "dumonde-petty"];
+export const COMPANY_ACCOUNT_WALLETS: WalletKey[] = ["fast-acct", "broker-acct", "skill-acct", "danet-acct"];
 
-export type CardTxn = {
+// ---------- Transaction ----------
+export type TxnType =
+  | "Receipt Voucher"
+  | "Payment Voucher"
+  | "Transfer"
+  | "Card Expense"
+  | "Petty Cash"
+  | "Salary Holding"
+  | "Salary Release"
+  | "Fuel Expense"
+  | "Adjustment";
+
+export const TXN_TYPES: TxnType[] = [
+  "Receipt Voucher",
+  "Payment Voucher",
+  "Transfer",
+  "Card Expense",
+  "Petty Cash",
+  "Salary Holding",
+  "Salary Release",
+  "Fuel Expense",
+  "Adjustment",
+];
+
+export type Classification = "Sponsor Expense" | "Company Expense";
+export const CLASSIFICATIONS: Classification[] = ["Sponsor Expense", "Company Expense"];
+
+export type PurposeCategory =
+  | "POLO"
+  | "Visa"
+  | "Medical"
+  | "QVC"
+  | "Penalty"
+  | "Transportation"
+  | "Service Charge"
+  | "Salary"
+  | "Fuel"
+  | "Office Expense"
+  | "Factory Catering"
+  | "Other";
+
+export const PURPOSE_CATEGORIES: PurposeCategory[] = [
+  "POLO",
+  "Visa",
+  "Medical",
+  "QVC",
+  "Penalty",
+  "Transportation",
+  "Service Charge",
+  "Salary",
+  "Fuel",
+  "Office Expense",
+  "Factory Catering",
+  "Other",
+];
+
+export type PaymentMethod = "Cash" | "CBQ" | "Company Account" | "Card";
+export const PAYMENT_METHODS: PaymentMethod[] = ["Cash", "CBQ", "Company Account", "Card"];
+
+export type Status = "Pending" | "Completed" | "Refunded" | "Cancelled";
+export const STATUSES: Status[] = ["Pending", "Completed", "Refunded", "Cancelled"];
+
+export type CardCategory = "Personal" | "Company Expense" | "Factory Catering";
+
+export type Transaction = {
   id: string;
-  card: CardKey;
-  date: string;
-  description: string;
-  category: string;
-  amount: number;
+  date: string; // ISO date (YYYY-MM-DD)
+  type: TxnType;
+  voucherNumber?: string; // e.g. "FAST RV-0001"
   company?: Company;
+  classification?: Classification;
   candidate?: string;
-  receipt?: string;
-  // Yousef specific
-  expenseType?: "Visa" | "Visa cancellation" | "QVC" | "Medical" | "Government payments" | "Other";
-  // Maha specific
+  sponsor?: string;
+  passport?: string;
+  purpose?: string;
+  purposeCategory?: PurposeCategory;
+  amount: number;
+  paymentMethod?: PaymentMethod;
+  fromWallet: WalletKey;
+  toWallet: WalletKey;
+  currentLocation?: WalletKey; // auto = toWallet for the latest position
+  status: Status;
+  description?: string;
+  referenceNumber?: string;
+  attachment?: string;
+  // Card-specific
+  cardCategory?: CardCategory; // Limit card branching
+  // Fuel-specific
   driver?: string;
   vehicle?: string;
-  vehicleOwner?: Company;
   plateNumber?: string;
   station?: string;
   kmBefore?: number;
   kmAfter?: number;
-  odo?: number;
-  // Limit card branching
-  limitBranch?: "personal" | "company" | "factory";
-  person?: string;
-  factoryCategory?: "Coffee beans" | "Milk" | "Cups" | "Syrups" | "Transport" | "Equipment" | "Other";
-};
-
-export type CandidateHolding = {
-  id: string;
-  date: string;
-  candidateName: string;
-  passport: string;
-  nationality: string;
-  sponsor: string;
-  company: Company;
-  purpose: "QVC" | "Visa" | "Medical" | "POLO Contract" | "Transportation" | "Penalty" | "Service Charge" | "Other";
-  amount: number;
-  paymentMethod: "Cash" | "CBQ" | "Company account" | "Card";
-  currentLocation: MoneyLocation;
-  status: "Pending payment" | "Paid" | "Completed";
-  notes?: string;
-};
-
-export type SalaryHolding = {
-  id: string;
-  date: string;
-  housemaidName: string;
-  passport: string;
-  previousSponsor: string;
-  newSponsor?: string;
-  amount: number;
-  receivedFrom: string;
-  currentLocation: "Cash" | "CBQ";
-  status: "Holding" | "Partially released" | "Fully released";
-  releases: {
-    id: string;
-    date: string;
-    amount: number;
-    receivedBy: string;
-    newSponsorDetails?: string;
-    proof?: string;
-  }[];
-};
-
-export type SponsorReceivable = {
-  id: string;
-  sponsor: string;
-  candidate: string;
-  totalAmount: number;
-  deposit: number;
-  depositDate?: string;
-  paymentMethod?: string;
-  notes?: string;
-};
-
-export type CompanyTransfer = {
-  id: string;
-  date: string;
-  company: Company;
-  amountReceived: number;
-  purpose: string;
-  amountTransferred: number;
-  transferDate?: string;
-};
-
-export type Voucher = {
-  id: string;
-  type: "RV" | "PV";
-  number: string;
-  date: string;
-  company: Company;
-  party: string; // received from / paid to
-  candidate?: string;
-  amount: number;
-  paymentMethod: string;
-  purpose: string;
-  attachment?: string;
-};
-
-export const CARD_META: Record<CardKey, { name: string; last4: string; limit: number; purpose: string }> = {
-  maryam: { name: "Maryam Card", last4: "5515", limit: 5000, purpose: "General company expenses" },
-  yousef: { name: "Yousef Card", last4: "6921", limit: 5000, purpose: "Immigration payments" },
-  maha: { name: "Maha Petrol Card", last4: "0552", limit: 5000, purpose: "Vehicle fuel" },
-  limit: { name: "Limit Card", last4: "3852", limit: 1000, purpose: "Mixed - personal/company/factory" },
+  // Salary linkage
+  parentTxnId?: string; // Salary Release → Salary Holding
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
 };
