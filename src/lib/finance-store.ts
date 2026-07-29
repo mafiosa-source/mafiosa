@@ -172,30 +172,9 @@ export function pettyCashSummary(s: FinanceState, wallet: WalletKey) {
   return { opening: b.opening, received: b.inflow, paid: b.outflow, balance: b.balance };
 }
 
-// Candidate money held: active Sponsor Expense txns that landed in a company-controlled wallet
-// and haven't yet been paid out to external — i.e. running total per candidate of
-// (money received on their behalf) - (money paid out on their behalf).
+// Candidate money currently held = sum of positive remaining balances across candidates
 export function candidateHoldingTotal(s: FinanceState): number {
-  const byCandidate = new Map<string, number>();
-  for (const t of s.transactions) {
-    if (!isActive(t)) continue;
-    if (t.classification !== "Sponsor Expense") continue;
-    if (!t.candidate) continue;
-    const cur = byCandidate.get(t.candidate) ?? 0;
-    // Money in for candidate: from external → any internal wallet
-    if (t.fromWallet === "external" && t.toWallet !== "external") {
-      byCandidate.set(t.candidate, cur + t.amount);
-    }
-    // Money out for candidate: from internal → external
-    else if (t.toWallet === "external" && t.fromWallet !== "external") {
-      byCandidate.set(t.candidate, cur - t.amount);
-    }
-  }
-  let total = 0;
-  byCandidate.forEach((v) => {
-    if (v > 0) total += v;
-  });
-  return total;
+  return candidateLedger(s).reduce((a, c) => a + Math.max(0, c.balance), 0);
 }
 
 export function salariesHeldTotal(s: FinanceState): number {
@@ -231,6 +210,125 @@ export function filterByType(s: FinanceState, types: TxnType[]): Transaction[] {
 }
 
 // Aggregate per candidate for the Candidate Holdings ledger
+export type CandidateLedgerEntry = {
+  candidate: string;
+  sponsor?: string;
+  company?: Company;
+  received: number;
+  utilized: number;
+  refunded: number;
+  adjustments: number;
+  balance: number;
+  lastDate: string;
+  currentLocation: string;
+  status: "Available" | "Partially Utilized" | "Closed" | "Refunded";
+  holdings: Transaction[];
+  payments: Transaction[];
+  refunds: Transaction[];
+  timeline: Transaction[];
+};
+
+function normalize(s?: string) {
+  return (s ?? "").trim().toLowerCase();
+}
+
+export function candidateLedger(s: FinanceState): CandidateLedgerEntry[] {
+  const map = new Map<string, CandidateLedgerEntry>();
+
+  const isIncomingSponsor = (t: Transaction) =>
+    isActive(t) &&
+    t.classification === "Sponsor Expense" &&
+    t.fromWallet === "external" &&
+    t.toWallet !== "external" &&
+    !!t.candidate;
+
+  const isOutgoingForCandidate = (t: Transaction) =>
+    isActive(t) &&
+    !!t.candidate &&
+    t.toWallet === "external" &&
+    t.fromWallet !== "external";
+
+  const ensure = (key: string, seed: Transaction): CandidateLedgerEntry => {
+    let cur = map.get(key);
+    if (!cur) {
+      cur = {
+        candidate: seed.candidate!,
+        sponsor: seed.sponsor,
+        company: seed.company,
+        received: 0,
+        utilized: 0,
+        refunded: 0,
+        adjustments: 0,
+        balance: 0,
+        lastDate: seed.date,
+        currentLocation: "—",
+        status: "Available",
+        holdings: [],
+        payments: [],
+        refunds: [],
+        timeline: [],
+      };
+      map.set(key, cur);
+    }
+    return cur;
+  };
+
+  for (const t of s.transactions) {
+    if (!t.candidate) continue;
+    const key = normalize(t.candidate);
+    if (isIncomingSponsor(t)) {
+      const cur = ensure(key, t);
+      cur.received += t.amount;
+      cur.holdings.push(t);
+      cur.timeline.push(t);
+      if (!cur.sponsor && t.sponsor) cur.sponsor = t.sponsor;
+      if (!cur.company && t.company) cur.company = t.company;
+      if (t.date > cur.lastDate) cur.lastDate = t.date;
+    } else if (isOutgoingForCandidate(t)) {
+      const cur = ensure(key, t);
+      if (t.type === "Adjustment") {
+        cur.adjustments -= t.amount;
+      } else if (t.status === "Refunded") {
+        cur.refunded += t.amount;
+        cur.refunds.push(t);
+      } else {
+        cur.utilized += t.amount;
+        cur.payments.push(t);
+      }
+      cur.timeline.push(t);
+      if (t.date > cur.lastDate) cur.lastDate = t.date;
+    }
+  }
+
+  for (const cur of map.values()) {
+    cur.balance = cur.received - cur.utilized - cur.refunded + cur.adjustments;
+    cur.timeline.sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1));
+
+    if (cur.received > 0 && cur.refunded >= cur.received - 0.001 && cur.utilized === 0) {
+      cur.status = "Refunded";
+    } else if (cur.balance <= 0.001) {
+      cur.status = "Closed";
+    } else if (cur.balance < cur.received - 0.001) {
+      cur.status = "Partially Utilized";
+    } else {
+      cur.status = "Available";
+    }
+
+    if (cur.status === "Refunded") {
+      cur.currentLocation = "Refunded";
+    } else if (cur.status === "Closed" && cur.payments.length > 0) {
+      const last = [...cur.payments].sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+      cur.currentLocation = `Paid to ${last.purposeCategory ?? last.purpose ?? "External"}`;
+    } else if (cur.holdings.length > 0) {
+      const last = [...cur.holdings].sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+      cur.currentLocation = WALLET_BY_KEY[last.toWallet]?.name ?? "—";
+    }
+  }
+
+  return Array.from(map.values()).sort((a, b) => (a.lastDate < b.lastDate ? 1 : -1));
+}
+
+// Backwards-compat summary shape
 export type CandidateSummary = {
   candidate: string;
   sponsor?: string;
@@ -242,30 +340,33 @@ export type CandidateSummary = {
   transactions: Transaction[];
 };
 export function candidateSummaries(s: FinanceState): CandidateSummary[] {
-  const map = new Map<string, CandidateSummary>();
-  const sponsorTxns = s.transactions.filter((t) => isActive(t) && t.classification === "Sponsor Expense" && t.candidate);
-  for (const t of sponsorTxns) {
-    const key = t.candidate!;
-    const cur = map.get(key) ?? {
-      candidate: key,
-      sponsor: t.sponsor,
-      company: t.company,
-      received: 0,
-      paid: 0,
-      balance: 0,
-      lastDate: t.date,
-      transactions: [],
-    };
-    if (t.fromWallet === "external" && t.toWallet !== "external") cur.received += t.amount;
-    else if (t.toWallet === "external" && t.fromWallet !== "external") cur.paid += t.amount;
-    cur.balance = cur.received - cur.paid;
-    if (t.date > cur.lastDate) cur.lastDate = t.date;
-    if (!cur.sponsor && t.sponsor) cur.sponsor = t.sponsor;
-    if (!cur.company && t.company) cur.company = t.company;
-    cur.transactions.push(t);
-    map.set(key, cur);
-  }
-  return Array.from(map.values()).sort((a, b) => (a.lastDate < b.lastDate ? 1 : -1));
+  return candidateLedger(s).map((c) => ({
+    candidate: c.candidate,
+    sponsor: c.sponsor,
+    company: c.company,
+    received: c.received,
+    paid: c.utilized + c.refunded,
+    balance: c.balance,
+    lastDate: c.lastDate,
+    transactions: c.timeline,
+  }));
+}
+
+export type HoldingMatchCriteria = {
+  candidate?: string;
+  sponsor?: string;
+  company?: Company;
+  purposeCategory?: string;
+};
+export function findMatchingHoldings(s: FinanceState, c: HoldingMatchCriteria): CandidateLedgerEntry[] {
+  if (!c.candidate) return [];
+  return candidateLedger(s).filter((h) => {
+    if (normalize(h.candidate) !== normalize(c.candidate)) return false;
+    if (h.balance <= 0.001) return false;
+    if (c.company && h.company && h.company !== c.company) return false;
+    if (c.sponsor && h.sponsor && normalize(h.sponsor) !== normalize(c.sponsor)) return false;
+    return true;
+  });
 }
 
 // ---------- Legacy migration (v1 → v2) ----------

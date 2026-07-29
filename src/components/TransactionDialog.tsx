@@ -16,7 +16,7 @@ import type {
   Transaction, TxnType, Company, Classification, PurposeCategory,
   PaymentMethod, Status, WalletKey, CardCategory,
 } from "@/lib/finance-types";
-import { addTransaction, updateTransaction, isVoucherNumberTaken, nextVoucherNumber } from "@/lib/finance-store";
+import { addTransaction, updateTransaction, isVoucherNumberTaken, nextVoucherNumber, findMatchingHoldings, getState } from "@/lib/finance-store";
 import { today } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -101,6 +101,31 @@ export function TransactionDialog({
       parentTxnId: draft.parentTxnId,
       currentLocation: draft.toWallet as WalletKey,
     };
+    // Rule 2: on outgoing sponsor-expense-style payments referencing a candidate,
+    // check for a matching Candidate Holding and inform the operator.
+    const isOutgoingForCandidate =
+      payload.toWallet === "external" &&
+      payload.fromWallet !== "external" &&
+      !!payload.candidate &&
+      payload.type !== "Adjustment";
+    if (isOutgoingForCandidate) {
+      const matches = findMatchingHoldings(getState(), {
+        candidate: payload.candidate,
+        sponsor: payload.sponsor,
+        company: payload.company,
+        purposeCategory: payload.purposeCategory,
+      });
+      if (matches.length === 0) {
+        toast.warning("No matching Candidate Holding found.", {
+          description: `${payload.candidate} has no open holding with a remaining balance. Recording payment anyway.`,
+        });
+      } else if (matches.length > 1) {
+        toast.info(`${matches.length} matching holdings for ${payload.candidate}`, {
+          description: "Payment recorded; balances will apply to open holdings by FIFO on the ledger.",
+        });
+      }
+    }
+
     if (editing) {
       updateTransaction(editing.id, payload);
       toast.success("Transaction updated");
