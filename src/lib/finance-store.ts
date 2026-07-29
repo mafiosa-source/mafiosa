@@ -172,30 +172,9 @@ export function pettyCashSummary(s: FinanceState, wallet: WalletKey) {
   return { opening: b.opening, received: b.inflow, paid: b.outflow, balance: b.balance };
 }
 
-// Candidate money held: active Sponsor Expense txns that landed in a company-controlled wallet
-// and haven't yet been paid out to external — i.e. running total per candidate of
-// (money received on their behalf) - (money paid out on their behalf).
+// Candidate money currently held = sum of positive remaining balances across candidates
 export function candidateHoldingTotal(s: FinanceState): number {
-  const byCandidate = new Map<string, number>();
-  for (const t of s.transactions) {
-    if (!isActive(t)) continue;
-    if (t.classification !== "Sponsor Expense") continue;
-    if (!t.candidate) continue;
-    const cur = byCandidate.get(t.candidate) ?? 0;
-    // Money in for candidate: from external → any internal wallet
-    if (t.fromWallet === "external" && t.toWallet !== "external") {
-      byCandidate.set(t.candidate, cur + t.amount);
-    }
-    // Money out for candidate: from internal → external
-    else if (t.toWallet === "external" && t.fromWallet !== "external") {
-      byCandidate.set(t.candidate, cur - t.amount);
-    }
-  }
-  let total = 0;
-  byCandidate.forEach((v) => {
-    if (v > 0) total += v;
-  });
-  return total;
+  return candidateLedger(s).reduce((a, c) => a + Math.max(0, c.balance), 0);
 }
 
 export function salariesHeldTotal(s: FinanceState): number {
