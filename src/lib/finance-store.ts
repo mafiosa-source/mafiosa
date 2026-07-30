@@ -29,35 +29,27 @@ const initial: FinanceState = {
   openingBalances: {},
 };
 
-// ---------- Persistence ----------
-function load(): FinanceState {
-  if (typeof window === "undefined") return initial;
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return { ...initial, ...JSON.parse(raw) };
-    // Migrate from v1
-    const legacy = localStorage.getItem(LEGACY_KEY);
-    if (legacy) return migrateFromV1(JSON.parse(legacy));
-    return initial;
-  } catch {
-    return initial;
-  }
-}
-
-let state: FinanceState = load();
+// ---------- State (mirror of the cloud database) ----------
+let state: FinanceState = initial;
+let currentUserId: string | null = null;
 const listeners = new Set<() => void>();
 
-function persist() {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(KEY, JSON.stringify(state));
-  }
+function notify() {
   listeners.forEach((l) => l());
+}
+
+export function setCloudUser(userId: string | null) {
+  currentUserId = userId;
+  if (!userId) {
+    state = initial;
+    notify();
+  }
 }
 
 export function setState(update: Partial<FinanceState> | ((s: FinanceState) => Partial<FinanceState>)) {
   const patch = typeof update === "function" ? update(state) : update;
   state = { ...state, ...patch };
-  persist();
+  notify();
 }
 export function getState() {
   return state;
@@ -70,7 +62,58 @@ export function useFinance(): FinanceState {
   return useSyncExternalStore(subscribe, () => state, () => initial);
 }
 
-export const uid = () => Math.random().toString(36).slice(2, 10);
+/** Load everything from the backend into the in-memory mirror. */
+export async function hydrateFromCloud() {
+  const cloud = await fetchCloudState();
+  state = cloud;
+  notify();
+}
+
+function reportCloudError(action: string, error: unknown) {
+  console.error(`[finance] cloud ${action} failed`, error);
+  const message = error instanceof Error ? error.message : String(error);
+  toast.error(`Could not save to the database (${action})`, { description: message });
+}
+
+/** Reads any records still sitting in this browser's local storage. */
+export function readLocalBackup(): Transaction[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<FinanceState>;
+      return parsed.transactions ?? [];
+    }
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) return migrateFromV1(JSON.parse(legacy)).transactions;
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+/** One-time upload of local-storage records. Nothing local is deleted. */
+export async function importLocalBackupToCloud(): Promise<number> {
+  if (!currentUserId) throw new Error("Not signed in");
+  const local = readLocalBackup();
+  if (!local.length) return 0;
+  const idMap = new Map<string, string>();
+  for (const t of local) idMap.set(t.id, crypto.randomUUID());
+  const prepared: Transaction[] = local.map((t) => ({
+    ...t,
+    id: idMap.get(t.id)!,
+    parentTxnId: t.parentTxnId ? (idMap.get(t.parentTxnId) ?? undefined) : undefined,
+  }));
+  await insertCloudTransactions(prepared, currentUserId);
+  await hydrateFromCloud();
+  return prepared.length;
+}
+
+export const uid = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2, 10);
+
 const nowIso = () => new Date().toISOString();
 
 // ---------- Voucher numbering ----------
