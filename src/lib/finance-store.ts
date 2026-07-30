@@ -158,6 +158,9 @@ export function addTransaction(t: Omit<Transaction, "id" | "createdAt" | "update
     txn.voucherNumber = nextVoucherNumber(txn.company, txn.type);
   }
   setState((s) => ({ transactions: [txn, ...s.transactions] }));
+  if (currentUserId) {
+    insertCloudTransaction(txn, currentUserId).catch((e) => reportCloudError("save", e));
+  }
   return txn;
 }
 
@@ -167,15 +170,23 @@ export function updateTransaction(id: string, patch: Partial<Transaction>) {
       t.id === id ? { ...t, ...patch, updatedAt: nowIso() } : t,
     ),
   }));
+  updateCloudTransaction(id, patch).catch((e) => reportCloudError("update", e));
 }
 
 export function deleteTransaction(id: string) {
   setState((s) => ({ transactions: s.transactions.filter((t) => t.id !== id) }));
+  deleteCloudTransaction(id).catch((e) => reportCloudError("delete", e));
 }
 
 export function setOpeningBalance(wallet: WalletKey, value: number) {
   setState((s) => ({ openingBalances: { ...s.openingBalances, [wallet]: value } }));
+  if (currentUserId) {
+    upsertCloudOpeningBalance(wallet, value, currentUserId).catch((e) =>
+      reportCloudError("opening balance", e),
+    );
+  }
 }
+
 
 // ---------- Derived selectors ----------
 export function sortByDateDesc<T extends { date: string; createdAt: string }>(rows: T[]): T[] {
