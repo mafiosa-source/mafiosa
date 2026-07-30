@@ -14,7 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      opening_balances: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          wallet: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          wallet: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          wallet?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          attachment: string | null
+          candidate: string | null
+          card_category: string | null
+          classification: string | null
+          company: string | null
+          created_at: string
+          created_by: string | null
+          current_location: string | null
+          date: string
+          description: string | null
+          driver: string | null
+          from_wallet: string
+          id: string
+          km_after: number | null
+          km_before: number | null
+          parent_txn_id: string | null
+          passport: string | null
+          payment_method: string | null
+          plate_number: string | null
+          purpose: string | null
+          purpose_category: string | null
+          reference_number: string | null
+          sponsor: string | null
+          station: string | null
+          status: string
+          to_wallet: string
+          type: string
+          updated_at: string
+          user_id: string
+          vehicle: string | null
+          voucher_number: string | null
+        }
+        Insert: {
+          amount?: number
+          attachment?: string | null
+          candidate?: string | null
+          card_category?: string | null
+          classification?: string | null
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_location?: string | null
+          date: string
+          description?: string | null
+          driver?: string | null
+          from_wallet: string
+          id?: string
+          km_after?: number | null
+          km_before?: number | null
+          parent_txn_id?: string | null
+          passport?: string | null
+          payment_method?: string | null
+          plate_number?: string | null
+          purpose?: string | null
+          purpose_category?: string | null
+          reference_number?: string | null
+          sponsor?: string | null
+          station?: string | null
+          status?: string
+          to_wallet: string
+          type: string
+          updated_at?: string
+          user_id?: string
+          vehicle?: string | null
+          voucher_number?: string | null
+        }
+        Update: {
+          amount?: number
+          attachment?: string | null
+          candidate?: string | null
+          card_category?: string | null
+          classification?: string | null
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_location?: string | null
+          date?: string
+          description?: string | null
+          driver?: string | null
+          from_wallet?: string
+          id?: string
+          km_after?: number | null
+          km_before?: number | null
+          parent_txn_id?: string | null
+          passport?: string | null
+          payment_method?: string | null
+          plate_number?: string | null
+          purpose?: string | null
+          purpose_category?: string | null
+          reference_number?: string | null
+          sponsor?: string | null
+          station?: string | null
+          status?: string
+          to_wallet?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          vehicle?: string | null
+          voucher_number?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
