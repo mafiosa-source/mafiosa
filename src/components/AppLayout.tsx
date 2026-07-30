@@ -12,9 +12,11 @@ import {
   ClipboardCheck,
   FileBarChart2,
   ListOrdered,
+  LogOut,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -62,8 +64,18 @@ export function AppLayout({ children }: { children?: ReactNode }) {
           })}
         </nav>
         <div className="px-5 py-4 border-t border-sidebar-border text-xs text-sidebar-foreground/50">
-          Phase 1 · Master ledger · Local
+          <div>Phase 1 · Master ledger · Cloud database</div>
+          <button
+            type="button"
+            onClick={async () => {
+              await supabase.auth.signOut();
+            }}
+            className="mt-2 flex items-center gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground"
+          >
+            <LogOut className="h-3.5 w-3.5" /> Sign out
+          </button>
         </div>
+
       </aside>
       <main className="flex-1 min-w-0">
         <div className="mx-auto max-w-[1400px] px-6 py-6">{children ?? <Outlet />}</div>
