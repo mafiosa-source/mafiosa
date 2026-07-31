@@ -89,6 +89,28 @@ function Dashboard() {
         <StatCard label="Pending Actions" value={pendingActions.length} icon={ArrowLeftRight} tone="danger" format="raw" />
       </div>
 
+      {alerts.length > 0 && (
+        <Card className="mb-6 border-amber-500/30 bg-amber-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600" /> Needs attention
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5 text-sm">
+              {alerts.map((a) => (
+                <li key={a} className="flex gap-2">
+                  <span className="text-amber-600">•</span>
+                  <span>{a}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+
+
       <div className="mb-6">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">Pending Transfers to CBQ</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
