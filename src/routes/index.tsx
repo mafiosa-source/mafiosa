@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Wallet, Coffee, Landmark, CreditCard, UsersRound, HandCoins, ArrowLeftRight, ListOrdered } from "lucide-react";
+import { Wallet, Coffee, Landmark, CreditCard, UsersRound, HandCoins, ArrowLeftRight, ListOrdered, AlertTriangle } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
 import { StatCard } from "@/components/StatCard";
 import {
@@ -50,6 +50,24 @@ function Dashboard() {
   const recent = sortByDateDesc(s.transactions).slice(0, 8);
   const pendingActions = s.transactions.filter((t) => t.status === "Pending");
 
+  const alerts: string[] = [];
+  for (const c of cards) {
+    if (c.limit > 0 && c.used >= c.limit) alerts.push(`${c.meta.name} has reached its limit (${qar(c.used)} of ${qar(c.limit)}).`);
+    else if (c.limit > 0 && c.used / c.limit >= 0.8) alerts.push(`${c.meta.name} is at ${Math.round((c.used / c.limit) * 100)}% of its limit.`);
+  }
+  for (const w of [
+    { name: "Office Petty Cash", b: office.balance },
+    { name: "Du Monde Petty Cash", b: dumonde.balance },
+    { name: "CBQ", b: cbq.balance },
+  ]) {
+    if (w.b < 0) alerts.push(`${w.name} is negative (${qar(w.b)}) — check for a missing receipt.`);
+  }
+  for (const p of pending) {
+    if (p.amount > 0) alerts.push(`${p.company} account holds ${qar(p.amount)} not yet transferred to CBQ.`);
+  }
+  if (pendingActions.length > 0) alerts.push(`${pendingActions.length} transaction(s) still marked Pending.`);
+
+
   return (
     <AppLayout>
       <PageHeader
@@ -70,6 +88,28 @@ function Dashboard() {
         <StatCard label="Transactions Logged" value={s.transactions.length} icon={ListOrdered} format="raw" />
         <StatCard label="Pending Actions" value={pendingActions.length} icon={ArrowLeftRight} tone="danger" format="raw" />
       </div>
+
+      {alerts.length > 0 && (
+        <Card className="mb-6 border-amber-500/30 bg-amber-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600" /> Needs attention
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5 text-sm">
+              {alerts.map((a) => (
+                <li key={a} className="flex gap-2">
+                  <span className="text-amber-600">•</span>
+                  <span>{a}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+
 
       <div className="mb-6">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">Pending Transfers to CBQ</h2>
