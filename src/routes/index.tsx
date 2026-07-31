@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Wallet, Coffee, Landmark, CreditCard, UsersRound, HandCoins, ArrowLeftRight, ListOrdered } from "lucide-react";
+import { Wallet, Coffee, Landmark, CreditCard, UsersRound, HandCoins, ArrowLeftRight, ListOrdered, AlertTriangle } from "lucide-react";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
 import { StatCard } from "@/components/StatCard";
 import {
