@@ -50,6 +50,24 @@ function Dashboard() {
   const recent = sortByDateDesc(s.transactions).slice(0, 8);
   const pendingActions = s.transactions.filter((t) => t.status === "Pending");
 
+  const alerts: string[] = [];
+  for (const c of cards) {
+    if (c.limit > 0 && c.used >= c.limit) alerts.push(`${c.meta.name} has reached its limit (${qar(c.used)} of ${qar(c.limit)}).`);
+    else if (c.limit > 0 && c.used / c.limit >= 0.8) alerts.push(`${c.meta.name} is at ${Math.round((c.used / c.limit) * 100)}% of its limit.`);
+  }
+  for (const w of [
+    { name: "Office Petty Cash", b: office.balance },
+    { name: "Du Monde Petty Cash", b: dumonde.balance },
+    { name: "CBQ", b: cbq.balance },
+  ]) {
+    if (w.b < 0) alerts.push(`${w.name} is negative (${qar(w.b)}) — check for a missing receipt.`);
+  }
+  for (const p of pending) {
+    if (p.amount > 0) alerts.push(`${p.company} account holds ${qar(p.amount)} not yet transferred to CBQ.`);
+  }
+  if (pendingActions.length > 0) alerts.push(`${pendingActions.length} transaction(s) still marked Pending.`);
+
+
   return (
     <AppLayout>
       <PageHeader
