@@ -3,7 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Pencil, Trash2, Download } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Pencil, Trash2, Download, X } from "lucide-react";
 import type { Transaction } from "@/lib/finance-types";
 import { WALLET_BY_KEY } from "@/lib/finance-types";
 import { deleteTransaction, sortByDateDesc } from "@/lib/finance-store";
@@ -18,6 +19,8 @@ const STATUS_TONE: Record<string, string> = {
   Cancelled: "bg-rose-500/10 text-rose-600 border-rose-500/20",
 };
 
+const ALL = "__all__";
+
 export function TransactionsTable({
   rows,
   showColumns = { voucher: true, company: true, candidate: true, wallets: true, status: true, type: true },
@@ -30,12 +33,43 @@ export function TransactionsTable({
   exportName?: string;
 }) {
   const [q, setQ] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [type, setType] = useState(ALL);
+  const [company, setCompany] = useState(ALL);
+  const [status, setStatus] = useState(ALL);
+
   const sorted = useMemo(() => sortByDateDesc(rows), [rows]);
+
+  const options = useMemo(() => {
+    const uniq = (vals: (string | undefined)[]) =>
+      Array.from(new Set(vals.filter((v): v is string => !!v))).sort();
+    return {
+      types: uniq(rows.map((t) => t.type)),
+      companies: uniq(rows.map((t) => t.company)),
+      statuses: uniq(rows.map((t) => t.status)),
+    };
+  }, [rows]);
+
   const filtered = useMemo(() => {
-    if (!q) return sorted;
-    const n = q.toLowerCase();
-    return sorted.filter((t) => JSON.stringify(t).toLowerCase().includes(n));
-  }, [sorted, q]);
+    const n = q.trim().toLowerCase();
+    return sorted.filter((t) => {
+      if (n && !JSON.stringify(t).toLowerCase().includes(n)) return false;
+      if (from && t.date < from) return false;
+      if (to && t.date > to) return false;
+      if (type !== ALL && t.type !== type) return false;
+      if (company !== ALL && t.company !== company) return false;
+      if (status !== ALL && t.status !== status) return false;
+      return true;
+    });
+  }, [sorted, q, from, to, type, company, status]);
+
+  const total = useMemo(() => filtered.reduce((a, t) => a + (t.amount ?? 0), 0), [filtered]);
+  const hasFilters = !!(q || from || to || type !== ALL || company !== ALL || status !== ALL);
+
+  function reset() {
+    setQ(""); setFrom(""); setTo(""); setType(ALL); setCompany(ALL); setStatus(ALL);
+  }
 
   return (
     <div className="rounded-lg border bg-card">
@@ -54,6 +88,49 @@ export function TransactionsTable({
           </Button>
         ) : null}
       </div>
+      <div className="px-3 py-2 border-b flex flex-wrap items-center gap-2 bg-muted/30">
+        <span className="text-xs text-muted-foreground">From</span>
+        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 w-[150px]" />
+        <span className="text-xs text-muted-foreground">To</span>
+        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 w-[150px]" />
+        {showColumns.type !== false && options.types.length > 1 && (
+          <Select value={type} onValueChange={setType}>
+            <SelectTrigger className="h-8 w-[160px]"><SelectValue placeholder="Type" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>All types</SelectItem>
+              {options.types.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
+        {showColumns.company && options.companies.length > 1 && (
+          <Select value={company} onValueChange={setCompany}>
+            <SelectTrigger className="h-8 w-[140px]"><SelectValue placeholder="Company" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>All companies</SelectItem>
+              {options.companies.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
+        {showColumns.status && options.statuses.length > 1 && (
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger className="h-8 w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>All statuses</SelectItem>
+              {options.statuses.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
+        {hasFilters && (
+          <Button variant="ghost" size="sm" className="h-8" onClick={reset}>
+            <X className="h-3.5 w-3.5" /> Clear
+          </Button>
+        )}
+        <span className="ml-auto text-xs">
+          <span className="text-muted-foreground">Filtered total </span>
+          <span className="font-semibold tabular">{qar(total)}</span>
+        </span>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
