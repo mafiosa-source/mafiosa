@@ -109,12 +109,25 @@ export function TransactionsTable({
             </SelectContent>
           </Select>
         )}
-        {showColumns.company && options.companies.length > 1 && (
+        {showColumns.company && (
           <Select value={company} onValueChange={setCompany}>
-            <SelectTrigger className="h-8 w-[140px]"><SelectValue placeholder="Company" /></SelectTrigger>
+            <SelectTrigger className="h-8 w-[150px]"><SelectValue placeholder="Company" /></SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>All companies</SelectItem>
-              {options.companies.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+              {options.companies.map((v) => (
+                <SelectItem key={v} value={v}>{COMPANY_LABEL[v as keyof typeof COMPANY_LABEL] ?? v}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {options.cards.length > 0 && (
+          <Select value={card} onValueChange={setCard}>
+            <SelectTrigger className="h-8 w-[160px]"><SelectValue placeholder="Card" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>All cards</SelectItem>
+              {options.cards.map((k) => (
+                <SelectItem key={k} value={k}>{WALLET_BY_KEY[k]?.name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         )}
@@ -127,6 +140,7 @@ export function TransactionsTable({
             </SelectContent>
           </Select>
         )}
+
         {hasFilters && (
           <Button variant="ghost" size="sm" className="h-8" onClick={reset}>
             <X className="h-3.5 w-3.5" /> Clear
