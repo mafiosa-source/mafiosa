@@ -59,7 +59,7 @@ export const WALLET_BY_KEY: Record<WalletKey, (typeof WALLETS)[number]> = WALLET
   {} as Record<WalletKey, (typeof WALLETS)[number]>,
 );
 
-export const COMPANY_ACCOUNT_BY_COMPANY: Record<Exclude<Company, "AHG">, WalletKey> = {
+export const COMPANY_ACCOUNT_BY_COMPANY: Partial<Record<Company, WalletKey>> = {
   FAST: "fast-acct",
   BROKER: "broker-acct",
   SKILL: "skill-acct",
