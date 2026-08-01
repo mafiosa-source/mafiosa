@@ -4,11 +4,23 @@
 // Every screen is a filtered view over `transactions`.
 // ============================================================
 
-export type Company = "FAST" | "BROKER" | "SKILL" | "DANET" | "AHG";
-export const COMPANIES: Company[] = ["FAST", "BROKER", "SKILL", "DANET", "AHG"];
+export type Company = "FAST" | "BROKER" | "SKILL" | "DANET" | "AHG" | "FACTORY" | "QUALITY" | "ALSABH";
+export const COMPANIES: Company[] = ["AHG", "FAST", "BROKER", "DANET", "SKILL", "FACTORY", "QUALITY", "ALSABH"];
+// Human-facing labels (DANET is stored as-is to protect existing records).
+export const COMPANY_LABEL: Record<Company, string> = {
+  AHG: "AHG",
+  FAST: "Fast",
+  BROKER: "Broker",
+  DANET: "Danat",
+  SKILL: "Skill",
+  FACTORY: "Factory",
+  QUALITY: "Quality",
+  ALSABH: "Alsabh",
+};
 // AHG is used for office expenses, cards and petty cash only.
 // It does NOT use Receipt Vouchers or Payment Vouchers.
-export const VOUCHER_COMPANIES: Company[] = ["FAST", "BROKER", "SKILL", "DANET"];
+export const VOUCHER_COMPANIES: Company[] = ["FAST", "BROKER", "SKILL", "DANET", "FACTORY", "QUALITY", "ALSABH"];
+
 
 // ---------- Wallets ----------
 export type WalletKey =
@@ -47,7 +59,7 @@ export const WALLET_BY_KEY: Record<WalletKey, (typeof WALLETS)[number]> = WALLET
   {} as Record<WalletKey, (typeof WALLETS)[number]>,
 );
 
-export const COMPANY_ACCOUNT_BY_COMPANY: Record<Exclude<Company, "AHG">, WalletKey> = {
+export const COMPANY_ACCOUNT_BY_COMPANY: Partial<Record<Company, WalletKey>> = {
   FAST: "fast-acct",
   BROKER: "broker-acct",
   SKILL: "skill-acct",

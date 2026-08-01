@@ -241,20 +241,61 @@ export function candidateHoldingTotal(s: FinanceState): number {
   return candidateLedger(s).reduce((a, c) => a + Math.max(0, c.balance), 0);
 }
 
-export function salariesHeldTotal(s: FinanceState): number {
-  const holdings = s.transactions.filter((t) => isActive(t) && t.type === "Salary Holding");
-  let total = 0;
-  for (const h of holdings) {
-    const released = s.transactions
-      .filter((t) => isActive(t) && t.type === "Salary Release" && t.parentTxnId === h.id)
-      .reduce((a, r) => a + r.amount, 0);
-    total += Math.max(0, h.amount - released);
+// ---------- Housemaid salary ledger (derived from master transactions) ----------
+export type SalaryLedgerEntry = {
+  name: string;
+  company?: Company;
+  received: number;
+  released: number;
+  balance: number; // may be negative (advance paid before sponsor reimbursement)
+  lastDate: string;
+  timeline: Transaction[];
+};
+
+export function salaryLedger(s: FinanceState): SalaryLedgerEntry[] {
+  const map = new Map<string, SalaryLedgerEntry>();
+  for (const t of s.transactions) {
+    if (!isActive(t)) continue;
+    if (t.type !== "Salary Holding" && t.type !== "Salary Release") continue;
+    const name = (t.candidate ?? "").trim();
+    if (!name) continue;
+    const key = normalize(name);
+    let cur = map.get(key);
+    if (!cur) {
+      cur = { name, company: t.company, received: 0, released: 0, balance: 0, lastDate: t.date, timeline: [] };
+      map.set(key, cur);
+    }
+    if (!cur.company && t.company) cur.company = t.company;
+    if (t.type === "Salary Holding") cur.received += t.amount;
+    else cur.released += t.amount;
+    cur.timeline.push(t);
+    if (t.date > cur.lastDate) cur.lastDate = t.date;
   }
-  return total;
+  for (const cur of map.values()) {
+    cur.balance = cur.received - cur.released;
+    cur.timeline.sort((a, b) =>
+      a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1,
+    );
+  }
+  return Array.from(map.values()).sort((a, b) => (a.lastDate < b.lastDate ? 1 : -1));
 }
 
-export function pendingCompanyTransfer(s: FinanceState, company: Exclude<Company, "AHG">): number {
+export function salaryLedgerFor(s: FinanceState, name: string): SalaryLedgerEntry | undefined {
+  return salaryLedger(s).find((e) => normalize(e.name) === normalize(name));
+}
+
+export function salaryBalanceFor(s: FinanceState, name: string): number {
+  return salaryLedgerFor(s, name)?.balance ?? 0;
+}
+
+/** Net salary money still held on behalf of housemaids (negative advances included). */
+export function salariesHeldTotal(s: FinanceState): number {
+  return salaryLedger(s).reduce((a, e) => a + e.balance, 0);
+}
+
+export function pendingCompanyTransfer(s: FinanceState, company: Company): number {
   const account = COMPANY_ACCOUNT_BY_COMPANY[company];
+  if (!account) return 0;
   const balance = walletBalance(s, account).balance;
   return Math.max(0, balance);
 }
@@ -588,7 +629,8 @@ function migrateFromV1(v1: V1): FinanceState {
 
   for (const tr of v1.transfers ?? []) {
     const company = normalizeCompany(tr.company);
-    const acct = company && company !== "AHG" ? COMPANY_ACCOUNT_BY_COMPANY[company] : "fast-acct";
+    const acct: WalletKey =
+      (company && company !== "AHG" ? COMPANY_ACCOUNT_BY_COMPANY[company] : undefined) ?? "fast-acct";
     if (tr.amountReceived > 0) {
       txns.push({
         id: mkId(), date: tr.date, type: "Receipt Voucher",
