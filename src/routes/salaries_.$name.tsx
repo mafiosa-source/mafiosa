@@ -97,10 +97,10 @@ function SalaryHistoryPage() {
                 return (
                   <TableRow key={t.id} className="cursor-pointer hover:bg-muted/50">
                     <TableCell className="whitespace-nowrap">
-                      <Link to="/transactions_/$id" params={{ id: t.id }} className="hover:underline">{t.date}</Link>
+                      <Link to="/transactions/$id" params={{ id: t.id }} className="hover:underline">{t.date}</Link>
                     </TableCell>
                     <TableCell className="text-xs">
-                      <Link to="/transactions_/$id" params={{ id: t.id }} className="hover:underline">
+                      <Link to="/transactions/$id" params={{ id: t.id }} className="hover:underline">
                         {isIn ? "Salary received" : "Salary released"}
                       </Link>
                     </TableCell>
