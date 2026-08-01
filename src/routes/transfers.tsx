@@ -54,7 +54,7 @@ function TransfersPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {companies.map((c) => {
-          const bal = walletBalance(s, COMPANY_ACCOUNT_BY_COMPANY[c]).balance;
+          const bal = walletBalance(s, COMPANY_ACCOUNT_BY_COMPANY[c] ?? "fast-acct").balance;
           const pending = pendingCompanyTransfer(s, c);
           return (
             <div key={c} className="rounded-lg border bg-card p-3">

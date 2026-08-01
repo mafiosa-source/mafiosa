@@ -253,8 +253,9 @@ export function salariesHeldTotal(s: FinanceState): number {
   return total;
 }
 
-export function pendingCompanyTransfer(s: FinanceState, company: Exclude<Company, "AHG">): number {
+export function pendingCompanyTransfer(s: FinanceState, company: Company): number {
   const account = COMPANY_ACCOUNT_BY_COMPANY[company];
+  if (!account) return 0;
   const balance = walletBalance(s, account).balance;
   return Math.max(0, balance);
 }
@@ -588,7 +589,8 @@ function migrateFromV1(v1: V1): FinanceState {
 
   for (const tr of v1.transfers ?? []) {
     const company = normalizeCompany(tr.company);
-    const acct = company && company !== "AHG" ? COMPANY_ACCOUNT_BY_COMPANY[company] : "fast-acct";
+    const acct: WalletKey =
+      (company && company !== "AHG" ? COMPANY_ACCOUNT_BY_COMPANY[company] : undefined) ?? "fast-acct";
     if (tr.amountReceived > 0) {
       txns.push({
         id: mkId(), date: tr.date, type: "Receipt Voucher",
