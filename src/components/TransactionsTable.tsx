@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Pencil, Trash2, Download, X } from "lucide-react";
-import type { Transaction } from "@/lib/finance-types";
-import { WALLET_BY_KEY } from "@/lib/finance-types";
+import type { Transaction, WalletKey } from "@/lib/finance-types";
+import { WALLET_BY_KEY, COMPANIES, COMPANY_LABEL, CARD_WALLETS } from "@/lib/finance-types";
 import { deleteTransaction, sortByDateDesc } from "@/lib/finance-store";
 import { qar, exportCsv } from "@/lib/format";
 import { TransactionDialog } from "./TransactionDialog";
@@ -38,16 +38,21 @@ export function TransactionsTable({
   const [type, setType] = useState(ALL);
   const [company, setCompany] = useState(ALL);
   const [status, setStatus] = useState(ALL);
+  const [card, setCard] = useState<string>(ALL);
 
   const sorted = useMemo(() => sortByDateDesc(rows), [rows]);
 
   const options = useMemo(() => {
     const uniq = (vals: (string | undefined)[]) =>
       Array.from(new Set(vals.filter((v): v is string => !!v))).sort();
+    const present = new Set(rows.map((t) => t.company).filter(Boolean) as string[]);
     return {
       types: uniq(rows.map((t) => t.type)),
-      companies: uniq(rows.map((t) => t.company)),
+      companies: Array.from(new Set([...COMPANIES, ...present])) as string[],
       statuses: uniq(rows.map((t) => t.status)),
+      cards: CARD_WALLETS.filter((k) =>
+        rows.some((t) => t.fromWallet === k || t.toWallet === k),
+      ) as WalletKey[],
     };
   }, [rows]);
 
@@ -60,16 +65,18 @@ export function TransactionsTable({
       if (type !== ALL && t.type !== type) return false;
       if (company !== ALL && t.company !== company) return false;
       if (status !== ALL && t.status !== status) return false;
+      if (card !== ALL && t.fromWallet !== card && t.toWallet !== card) return false;
       return true;
     });
-  }, [sorted, q, from, to, type, company, status]);
+  }, [sorted, q, from, to, type, company, status, card]);
 
   const total = useMemo(() => filtered.reduce((a, t) => a + (t.amount ?? 0), 0), [filtered]);
-  const hasFilters = !!(q || from || to || type !== ALL || company !== ALL || status !== ALL);
+  const hasFilters = !!(q || from || to || type !== ALL || company !== ALL || status !== ALL || card !== ALL);
 
   function reset() {
-    setQ(""); setFrom(""); setTo(""); setType(ALL); setCompany(ALL); setStatus(ALL);
+    setQ(""); setFrom(""); setTo(""); setType(ALL); setCompany(ALL); setStatus(ALL); setCard(ALL);
   }
+
 
   return (
     <div className="rounded-lg border bg-card">
