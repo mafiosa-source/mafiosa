@@ -178,7 +178,7 @@ export function TransactionsTable({
                 <TableCell className="whitespace-nowrap">{t.date}</TableCell>
                 {showColumns.type !== false && <TableCell className="text-xs">{t.type}</TableCell>}
                 {showColumns.voucher && <TableCell className="font-mono text-xs">{t.voucherNumber ?? "—"}</TableCell>}
-                {showColumns.company && <TableCell>{t.company ?? "—"}</TableCell>}
+                {showColumns.company && <TableCell>{t.company ? (COMPANY_LABEL[t.company] ?? t.company) : "—"}</TableCell>}
                 {showColumns.candidate && (
                   <TableCell>
                     <div className="text-sm">{t.candidate ?? "—"}</div>
