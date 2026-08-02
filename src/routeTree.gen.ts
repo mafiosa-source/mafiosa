@@ -17,12 +17,14 @@ import { Route as SalariesRouteImport } from './routes/salaries'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ReconciliationRouteImport } from './routes/reconciliation'
 import { Route as PettyCashRouteImport } from './routes/petty-cash'
+import { Route as MonthsRouteImport } from './routes/months'
 import { Route as DuMondeRouteImport } from './routes/du-monde'
 import { Route as CardsRouteImport } from './routes/cards'
 import { Route as CandidatesRouteImport } from './routes/candidates'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
 import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
+import { Route as MonthsYearMonthRouteImport } from './routes/months_.$year.$month'
 
 const VouchersRoute = VouchersRouteImport.update({
   id: '/vouchers',
@@ -64,6 +66,11 @@ const PettyCashRoute = PettyCashRouteImport.update({
   path: '/petty-cash',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MonthsRoute = MonthsRouteImport.update({
+  id: '/months',
+  path: '/months',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DuMondeRoute = DuMondeRouteImport.update({
   id: '/du-monde',
   path: '/du-monde',
@@ -94,12 +101,18 @@ const SalariesNameRoute = SalariesNameRouteImport.update({
   path: '/salaries/$name',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MonthsYearMonthRoute = MonthsYearMonthRouteImport.update({
+  id: '/months_/$year/$month',
+  path: '/months/$year/$month',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/candidates': typeof CandidatesRoute
   '/cards': typeof CardsRoute
   '/du-monde': typeof DuMondeRoute
+  '/months': typeof MonthsRoute
   '/petty-cash': typeof PettyCashRoute
   '/reconciliation': typeof ReconciliationRoute
   '/reports': typeof ReportsRoute
@@ -110,12 +123,14 @@ export interface FileRoutesByFullPath {
   '/vouchers': typeof VouchersRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
+  '/months/$year/$month': typeof MonthsYearMonthRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/candidates': typeof CandidatesRoute
   '/cards': typeof CardsRoute
   '/du-monde': typeof DuMondeRoute
+  '/months': typeof MonthsRoute
   '/petty-cash': typeof PettyCashRoute
   '/reconciliation': typeof ReconciliationRoute
   '/reports': typeof ReportsRoute
@@ -126,6 +141,7 @@ export interface FileRoutesByTo {
   '/vouchers': typeof VouchersRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
+  '/months/$year/$month': typeof MonthsYearMonthRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,6 +149,7 @@ export interface FileRoutesById {
   '/candidates': typeof CandidatesRoute
   '/cards': typeof CardsRoute
   '/du-monde': typeof DuMondeRoute
+  '/months': typeof MonthsRoute
   '/petty-cash': typeof PettyCashRoute
   '/reconciliation': typeof ReconciliationRoute
   '/reports': typeof ReportsRoute
@@ -143,6 +160,7 @@ export interface FileRoutesById {
   '/vouchers': typeof VouchersRoute
   '/salaries_/$name': typeof SalariesNameRoute
   '/transactions_/$id': typeof TransactionsIdRoute
+  '/months_/$year/$month': typeof MonthsYearMonthRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +169,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/cards'
     | '/du-monde'
+    | '/months'
     | '/petty-cash'
     | '/reconciliation'
     | '/reports'
@@ -161,12 +180,14 @@ export interface FileRouteTypes {
     | '/vouchers'
     | '/salaries/$name'
     | '/transactions/$id'
+    | '/months/$year/$month'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/candidates'
     | '/cards'
     | '/du-monde'
+    | '/months'
     | '/petty-cash'
     | '/reconciliation'
     | '/reports'
@@ -177,12 +198,14 @@ export interface FileRouteTypes {
     | '/vouchers'
     | '/salaries/$name'
     | '/transactions/$id'
+    | '/months/$year/$month'
   id:
     | '__root__'
     | '/'
     | '/candidates'
     | '/cards'
     | '/du-monde'
+    | '/months'
     | '/petty-cash'
     | '/reconciliation'
     | '/reports'
@@ -193,6 +216,7 @@ export interface FileRouteTypes {
     | '/vouchers'
     | '/salaries_/$name'
     | '/transactions_/$id'
+    | '/months_/$year/$month'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -200,6 +224,7 @@ export interface RootRouteChildren {
   CandidatesRoute: typeof CandidatesRoute
   CardsRoute: typeof CardsRoute
   DuMondeRoute: typeof DuMondeRoute
+  MonthsRoute: typeof MonthsRoute
   PettyCashRoute: typeof PettyCashRoute
   ReconciliationRoute: typeof ReconciliationRoute
   ReportsRoute: typeof ReportsRoute
@@ -210,6 +235,7 @@ export interface RootRouteChildren {
   VouchersRoute: typeof VouchersRoute
   SalariesNameRoute: typeof SalariesNameRoute
   TransactionsIdRoute: typeof TransactionsIdRoute
+  MonthsYearMonthRoute: typeof MonthsYearMonthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -270,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PettyCashRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/months': {
+      id: '/months'
+      path: '/months'
+      fullPath: '/months'
+      preLoaderRoute: typeof MonthsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/du-monde': {
       id: '/du-monde'
       path: '/du-monde'
@@ -312,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalariesNameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/months_/$year/$month': {
+      id: '/months_/$year/$month'
+      path: '/months/$year/$month'
+      fullPath: '/months/$year/$month'
+      preLoaderRoute: typeof MonthsYearMonthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -320,6 +360,7 @@ const rootRouteChildren: RootRouteChildren = {
   CandidatesRoute: CandidatesRoute,
   CardsRoute: CardsRoute,
   DuMondeRoute: DuMondeRoute,
+  MonthsRoute: MonthsRoute,
   PettyCashRoute: PettyCashRoute,
   ReconciliationRoute: ReconciliationRoute,
   ReportsRoute: ReportsRoute,
@@ -330,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   VouchersRoute: VouchersRoute,
   SalariesNameRoute: SalariesNameRoute,
   TransactionsIdRoute: TransactionsIdRoute,
+  MonthsYearMonthRoute: MonthsYearMonthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
