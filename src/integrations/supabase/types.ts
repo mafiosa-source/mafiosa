@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      month_closings: {
+        Row: {
+          closed_at: string
+          closed_with_exceptions: boolean
+          created_at: string
+          exceptions: Json
+          id: string
+          month: number
+          notes: string | null
+          snapshot: Json
+          status: string
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          closed_at?: string
+          closed_with_exceptions?: boolean
+          created_at?: string
+          exceptions?: Json
+          id?: string
+          month: number
+          notes?: string | null
+          snapshot?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+          year: number
+        }
+        Update: {
+          closed_at?: string
+          closed_with_exceptions?: boolean
+          created_at?: string
+          exceptions?: Json
+          id?: string
+          month?: number
+          notes?: string | null
+          snapshot?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       opening_balances: {
         Row: {
           amount: number
@@ -41,6 +86,110 @@ export type Database = {
         }
         Relationships: []
       }
+      payable_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          payable_id: string
+          txn_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          payable_id: string
+          txn_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          payable_id?: string
+          txn_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payable_payments_payable_id_fkey"
+            columns: ["payable_id"]
+            isOneToOne: false
+            referencedRelation: "payables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payables: {
+        Row: {
+          amount: number
+          candidate: string | null
+          card_wallet: string
+          company: string | null
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          paid: number
+          particulars: string | null
+          payer_name: string | null
+          responsible_party: string
+          sponsor: string | null
+          status: string
+          txn_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          candidate?: string | null
+          card_wallet: string
+          company?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          paid?: number
+          particulars?: string | null
+          payer_name?: string | null
+          responsible_party: string
+          sponsor?: string | null
+          status?: string
+          txn_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          candidate?: string | null
+          card_wallet?: string
+          company?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          paid?: number
+          particulars?: string | null
+          payer_name?: string | null
+          responsible_party?: string
+          sponsor?: string | null
+          status?: string
+          txn_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -61,6 +210,8 @@ export type Database = {
           km_before: number | null
           parent_txn_id: string | null
           passport: string | null
+          payable_by: string | null
+          payer_name: string | null
           payment_method: string | null
           plate_number: string | null
           purpose: string | null
@@ -95,6 +246,8 @@ export type Database = {
           km_before?: number | null
           parent_txn_id?: string | null
           passport?: string | null
+          payable_by?: string | null
+          payer_name?: string | null
           payment_method?: string | null
           plate_number?: string | null
           purpose?: string | null
@@ -129,6 +282,8 @@ export type Database = {
           km_before?: number | null
           parent_txn_id?: string | null
           passport?: string | null
+          payable_by?: string | null
+          payer_name?: string | null
           payment_method?: string | null
           plate_number?: string | null
           purpose?: string | null

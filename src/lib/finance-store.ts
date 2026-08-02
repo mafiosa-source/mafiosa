@@ -6,7 +6,12 @@ import type {
   Company,
   Classification,
   TxnType,
+  Payable,
+  PayablePayment,
+  PayableBy,
+  MonthClosing,
 } from "./finance-types";
+
 import {
   CARD_WALLETS,
   COMPANY_ACCOUNT_BY_COMPANY,
@@ -22,13 +27,21 @@ import {
   insertCloudTransactions,
   updateCloudTransaction,
   upsertCloudOpeningBalance,
+  insertCloudPayable,
+  updateCloudPayable,
+  insertCloudPayablePayment,
+  upsertCloudClosing,
 } from "./finance-cloud";
+
 
 
 // ---------- State ----------
 export type FinanceState = {
   transactions: Transaction[];
   openingBalances: Partial<Record<WalletKey, number>>;
+  payables: Payable[];
+  payablePayments: PayablePayment[];
+  closings: MonthClosing[];
 };
 
 const KEY = "ahg-finance-v2";
@@ -37,7 +50,11 @@ const LEGACY_KEY = "finance-control-v1";
 const initial: FinanceState = {
   transactions: [],
   openingBalances: {},
+  payables: [],
+  payablePayments: [],
+  closings: [],
 };
+
 
 // ---------- State (mirror of the cloud database) ----------
 let state: FinanceState = initial;
@@ -186,6 +203,114 @@ export function setOpeningBalance(wallet: WalletKey, value: number) {
     );
   }
 }
+
+// ---------- Payables (payment responsibility ledger) ----------
+export function addPayable(input: {
+  txnId?: string;
+  date: string;
+  responsibleParty: PayableBy;
+  payerName?: string;
+  cardWallet: WalletKey;
+  company?: Company;
+  candidate?: string;
+  sponsor?: string;
+  particulars?: string;
+  amount: number;
+  notes?: string;
+}): Payable {
+  const now = nowIso();
+  const payable: Payable = {
+    id: uid(),
+    paid: 0,
+    status: "Outstanding",
+    ...input,
+    createdAt: now,
+    updatedAt: now,
+  };
+  setState((s) => ({ payables: [payable, ...s.payables] }));
+  if (currentUserId) {
+    insertCloudPayable(payable, currentUserId).catch((e) => reportCloudError("payable", e));
+  }
+  return payable;
+}
+
+function statusFor(amount: number, paid: number): Payable["status"] {
+  if (paid <= 0.001) return "Outstanding";
+  if (paid >= amount - 0.001) return "Fully Paid";
+  return "Partially Paid";
+}
+
+/** Applies a reimbursement to a payable. Payables are never deleted, only marked. */
+export function applyPayablePayment(payableId: string, amount: number, opts?: { txnId?: string; date?: string; notes?: string }) {
+  const payable = state.payables.find((p) => p.id === payableId);
+  if (!payable) return;
+  const paid = Math.min(payable.amount, payable.paid + amount);
+  const status = statusFor(payable.amount, paid);
+  const payment: PayablePayment = {
+    id: uid(),
+    payableId,
+    txnId: opts?.txnId,
+    date: opts?.date ?? nowIso().slice(0, 10),
+    amount,
+    notes: opts?.notes,
+    createdAt: nowIso(),
+  };
+  setState((s) => ({
+    payables: s.payables.map((p) => (p.id === payableId ? { ...p, paid, status, updatedAt: nowIso() } : p)),
+    payablePayments: [payment, ...s.payablePayments],
+  }));
+  updateCloudPayable(payableId, { paid, status }).catch((e) => reportCloudError("payable update", e));
+  if (currentUserId) {
+    insertCloudPayablePayment(payment, currentUserId).catch((e) => reportCloudError("payable payment", e));
+  }
+}
+
+// ---------- Month closing (manual only) ----------
+export function closingFor(s: FinanceState, year: number, month: number): MonthClosing | undefined {
+  return s.closings.find((c) => c.year === year && c.month === month);
+}
+
+/** Marks reconciliation for a month as complete. Never touches transactions. */
+export function closeMonth(input: {
+  year: number;
+  month: number;
+  exceptions: string[];
+  snapshot: Record<string, unknown>;
+  notes?: string;
+}): MonthClosing {
+  const closing: MonthClosing = {
+    id: closingFor(state, input.year, input.month)?.id ?? uid(),
+    year: input.year,
+    month: input.month,
+    status: "Closed",
+    closedWithExceptions: input.exceptions.length > 0,
+    exceptions: input.exceptions,
+    snapshot: input.snapshot,
+    notes: input.notes,
+    closedAt: nowIso(),
+  };
+  setState((s) => ({
+    closings: [...s.closings.filter((c) => !(c.year === closing.year && c.month === closing.month)), closing],
+  }));
+  if (currentUserId) {
+    upsertCloudClosing(closing, currentUserId).catch((e) => reportCloudError("month closing", e));
+  }
+  return closing;
+}
+
+/** Re-opens a month for corrections. The closing record is kept, only its status changes. */
+export function reopenMonth(year: number, month: number) {
+  const existing = closingFor(state, year, month);
+  if (!existing) return;
+  const updated: MonthClosing = { ...existing, status: "Open" };
+  setState((s) => ({
+    closings: s.closings.map((c) => (c.year === year && c.month === month ? updated : c)),
+  }));
+  if (currentUserId) {
+    upsertCloudClosing(updated, currentUserId).catch((e) => reportCloudError("month reopen", e));
+  }
+}
+
 
 
 // ---------- Derived selectors ----------
@@ -689,8 +814,12 @@ function migrateFromV1(v1: V1): FinanceState {
       "dumonde-petty": v1.dumondeOpeningBalance ?? 0,
       cbq: v1.cbqBalance ?? 0,
     },
+    payables: [],
+    payablePayments: [],
+    closings: [],
   };
 }
+
 
 // Re-export wallet meta helpers
 export { WALLETS, WALLET_BY_KEY, CARD_WALLETS, PETTY_WALLETS, COMPANY_ACCOUNT_WALLETS, COMPANY_ACCOUNT_BY_COMPANY };

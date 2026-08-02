@@ -12,7 +12,9 @@ import {
   ClipboardCheck,
   FileBarChart2,
   ListOrdered,
+  CalendarRange,
   LogOut,
+
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -30,7 +32,9 @@ const nav = [
   { to: "/cards", label: "Company Cards", icon: CreditCard },
   { to: "/transfers", label: "CBQ Transfers", icon: ArrowLeftRight },
   { to: "/reconciliation", label: "Reconciliation", icon: ClipboardCheck },
+  { to: "/months", label: "Month Management", icon: CalendarRange },
   { to: "/reports", label: "Reports", icon: FileBarChart2 },
+
 ] as const;
 
 export function AppLayout({ children }: { children?: ReactNode }) {

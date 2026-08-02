@@ -1,5 +1,5 @@
 // ============================================================
-// AHG Finance Core – Phase 1
+// AHG Finance Core – Phase 2
 // Single source of truth: one Master Transactions table.
 // Every screen is a filtered view over `transactions`.
 // ============================================================
@@ -26,6 +26,7 @@ export const VOUCHER_COMPANIES: Company[] = ["FAST", "BROKER", "SKILL", "DANET",
 export type WalletKey =
   | "office-petty"
   | "dumonde-petty"
+  | "salary-wallet"
   | "cbq"
   | "fast-acct"
   | "broker-acct"
@@ -35,13 +36,15 @@ export type WalletKey =
   | "yousef-card"
   | "maha-card"
   | "limit-card"
+  | "hassan"
   | "external"; // outside the business (sponsors, POLO, vendors, drivers, staff, etc.)
 
-export type WalletKind = "cash" | "bank" | "company-account" | "card" | "external";
+export type WalletKind = "cash" | "bank" | "company-account" | "card" | "holding" | "person" | "external";
 
 export const WALLETS: { key: WalletKey; name: string; kind: WalletKind; last4?: string; limit?: number; purpose?: string }[] = [
   { key: "office-petty", name: "Office Petty Cash", kind: "cash" },
   { key: "dumonde-petty", name: "Du Monde Petty Cash", kind: "cash" },
+  { key: "salary-wallet", name: "Housemaid Salary Wallet", kind: "holding", purpose: "Housemaid salary money only" },
   { key: "cbq", name: "CBQ", kind: "bank" },
   { key: "fast-acct", name: "FAST Account", kind: "company-account" },
   { key: "broker-acct", name: "BROKER Account", kind: "company-account" },
@@ -51,6 +54,7 @@ export const WALLETS: { key: WalletKey; name: string; kind: WalletKind; last4?: 
   { key: "yousef-card", name: "Yousef Card", kind: "card", last4: "6921", limit: 5000, purpose: "Immigration Expenses" },
   { key: "maha-card", name: "Maha Petrol Card", kind: "card", last4: "0552", limit: 5000, purpose: "Fuel" },
   { key: "limit-card", name: "Limit Card", kind: "card", last4: "3852", limit: 1000, purpose: "Mixed Expenses" },
+  { key: "hassan", name: "MR HASSAN", kind: "person", purpose: "Owner funds in / personal settlements" },
   { key: "external", name: "External / Third Party", kind: "external" },
 ];
 
@@ -69,6 +73,36 @@ export const COMPANY_ACCOUNT_BY_COMPANY: Partial<Record<Company, WalletKey>> = {
 export const CARD_WALLETS: WalletKey[] = ["maryam-card", "yousef-card", "maha-card", "limit-card"];
 export const PETTY_WALLETS: WalletKey[] = ["office-petty", "dumonde-petty"];
 export const COMPANY_ACCOUNT_WALLETS: WalletKey[] = ["fast-acct", "broker-acct", "skill-acct", "danet-acct"];
+/** Wallets that appear in wallet reports and reconciliation. */
+export const REPORT_WALLETS: WalletKey[] = [
+  "office-petty",
+  "dumonde-petty",
+  "salary-wallet",
+  "cbq",
+  "maryam-card",
+  "yousef-card",
+  "maha-card",
+  "limit-card",
+  "hassan",
+  ...COMPANY_ACCOUNT_WALLETS,
+];
+/** Wallets whose incoming money may settle an outstanding payable. */
+export const REIMBURSEMENT_WALLETS: WalletKey[] = [
+  "office-petty",
+  "dumonde-petty",
+  "cbq",
+  ...COMPANY_ACCOUNT_WALLETS,
+];
+
+/** Monthly reconciliation targets — the ERP only reports these, it never moves money. */
+export const RECON_TARGETS: { wallet: WalletKey; target: number }[] = [
+  { wallet: "office-petty", target: 0 },
+  { wallet: "dumonde-petty", target: 0 },
+  { wallet: "maryam-card", target: 5000 },
+  { wallet: "yousef-card", target: 5000 },
+  { wallet: "maha-card", target: 5000 },
+  { wallet: "limit-card", target: 1000 },
+];
 
 // ---------- Transaction ----------
 export type TxnType =
@@ -134,6 +168,69 @@ export const STATUSES: Status[] = ["Pending", "Completed", "Refunded", "Cancelle
 
 export type CardCategory = "Personal" | "Company Expense" | "Factory Catering";
 
+// ---------- Payment responsibility ----------
+export type PayableBy = "Company" | "Factory" | "Sponsor" | "Personal" | "Other";
+export const PAYABLE_BY_OPTIONS: PayableBy[] = ["Company", "Factory", "Sponsor", "Personal", "Other"];
+/** Which wallet is expected to reimburse the card. */
+export const PAYABLE_SOURCE_WALLET: Record<PayableBy, WalletKey | undefined> = {
+  Company: "office-petty",
+  Factory: "dumonde-petty",
+  Personal: "hassan",
+  Sponsor: "external",
+  Other: undefined,
+};
+
+export type PayableStatus = "Outstanding" | "Partially Paid" | "Fully Paid";
+
+export type Payable = {
+  id: string;
+  txnId?: string;
+  date: string;
+  responsibleParty: PayableBy;
+  payerName?: string;
+  cardWallet: WalletKey;
+  company?: Company;
+  candidate?: string;
+  sponsor?: string;
+  particulars?: string;
+  amount: number;
+  paid: number;
+  status: PayableStatus;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PayablePayment = {
+  id: string;
+  payableId: string;
+  txnId?: string;
+  date: string;
+  amount: number;
+  notes?: string;
+  createdAt: string;
+};
+
+// ---------- Month closing ----------
+export type MonthStatus = "Open" | "Ready to Close" | "Closed";
+
+export type MonthClosing = {
+  id: string;
+  year: number;
+  month: number; // 1-12
+  status: "Closed" | "Open";
+  closedWithExceptions: boolean;
+  exceptions: string[];
+  snapshot: Record<string, unknown>;
+  notes?: string;
+  closedAt: string;
+};
+
+export const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
 export type Transaction = {
   id: string;
   date: string; // ISO date (YYYY-MM-DD)
@@ -157,6 +254,8 @@ export type Transaction = {
   attachment?: string;
   // Card-specific
   cardCategory?: CardCategory; // Limit card branching
+  payableBy?: PayableBy;
+  payerName?: string;
   // Fuel-specific
   driver?: string;
   vehicle?: string;
