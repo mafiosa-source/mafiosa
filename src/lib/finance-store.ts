@@ -29,6 +29,9 @@ import {
 export type FinanceState = {
   transactions: Transaction[];
   openingBalances: Partial<Record<WalletKey, number>>;
+  payables: Payable[];
+  payablePayments: PayablePayment[];
+  closings: MonthClosing[];
 };
 
 const KEY = "ahg-finance-v2";
@@ -37,7 +40,11 @@ const LEGACY_KEY = "finance-control-v1";
 const initial: FinanceState = {
   transactions: [],
   openingBalances: {},
+  payables: [],
+  payablePayments: [],
+  closings: [],
 };
+
 
 // ---------- State (mirror of the cloud database) ----------
 let state: FinanceState = initial;
