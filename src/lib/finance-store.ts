@@ -6,7 +6,12 @@ import type {
   Company,
   Classification,
   TxnType,
+  Payable,
+  PayablePayment,
+  PayableBy,
+  MonthClosing,
 } from "./finance-types";
+
 import {
   CARD_WALLETS,
   COMPANY_ACCOUNT_BY_COMPANY,
@@ -696,8 +701,12 @@ function migrateFromV1(v1: V1): FinanceState {
       "dumonde-petty": v1.dumondeOpeningBalance ?? 0,
       cbq: v1.cbqBalance ?? 0,
     },
+    payables: [],
+    payablePayments: [],
+    closings: [],
   };
 }
+
 
 // Re-export wallet meta helpers
 export { WALLETS, WALLET_BY_KEY, CARD_WALLETS, PETTY_WALLETS, COMPANY_ACCOUNT_WALLETS, COMPANY_ACCOUNT_BY_COMPANY };
