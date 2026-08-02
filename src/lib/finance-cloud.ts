@@ -2,7 +2,16 @@
 // The finance store keeps a synchronous in-memory mirror; this module
 // loads it from the backend and writes every mutation through.
 import { supabase } from "@/integrations/supabase/client";
-import type { Transaction, WalletKey } from "./finance-types";
+import type {
+  Transaction,
+  WalletKey,
+  Payable,
+  PayablePayment,
+  MonthClosing,
+  PayableBy,
+  PayableStatus,
+  Company,
+} from "./finance-types";
 
 type Row = Record<string, unknown>;
 
@@ -29,6 +38,8 @@ export function rowToTransaction(r: Row): Transaction {
     referenceNumber: (r.reference_number as string) ?? undefined,
     attachment: (r.attachment as string) ?? undefined,
     cardCategory: (r.card_category as Transaction["cardCategory"]) ?? undefined,
+    payableBy: (r.payable_by as Transaction["payableBy"]) ?? undefined,
+    payerName: (r.payer_name as string) ?? undefined,
     driver: (r.driver as string) ?? undefined,
     vehicle: (r.vehicle as string) ?? undefined,
     plateNumber: (r.plate_number as string) ?? undefined,
@@ -68,6 +79,8 @@ export function transactionToRow(t: Partial<Transaction>): Row {
   set("reference_number", t.referenceNumber);
   set("attachment", t.attachment);
   set("card_category", t.cardCategory);
+  set("payable_by", t.payableBy);
+  set("payer_name", t.payerName);
   set("driver", t.driver);
   set("vehicle", t.vehicle);
   set("plate_number", t.plateNumber);
@@ -79,23 +92,104 @@ export function transactionToRow(t: Partial<Transaction>): Row {
   return row;
 }
 
-export async function fetchCloudState(): Promise<{
+// ---------- Payables ----------
+function rowToPayable(r: Row): Payable {
+  return {
+    id: String(r.id),
+    txnId: (r.txn_id as string) ?? undefined,
+    date: String(r.date),
+    responsibleParty: (r.responsible_party as PayableBy) ?? "Other",
+    payerName: (r.payer_name as string) ?? undefined,
+    cardWallet: r.card_wallet as WalletKey,
+    company: (r.company as Company) ?? undefined,
+    candidate: (r.candidate as string) ?? undefined,
+    sponsor: (r.sponsor as string) ?? undefined,
+    particulars: (r.particulars as string) ?? undefined,
+    amount: Number(r.amount ?? 0),
+    paid: Number(r.paid ?? 0),
+    status: (r.status as PayableStatus) ?? "Outstanding",
+    notes: (r.notes as string) ?? undefined,
+    createdAt: String(r.created_at ?? new Date().toISOString()),
+    updatedAt: String(r.updated_at ?? new Date().toISOString()),
+  };
+}
+
+function payableToRow(p: Partial<Payable>): Row {
+  const row: Row = {};
+  const set = (k: string, v: unknown) => {
+    if (v !== undefined) row[k] = v === "" ? null : v;
+  };
+  set("id", p.id);
+  set("txn_id", p.txnId);
+  set("date", p.date);
+  set("responsible_party", p.responsibleParty);
+  set("payer_name", p.payerName);
+  set("card_wallet", p.cardWallet);
+  set("company", p.company);
+  set("candidate", p.candidate);
+  set("sponsor", p.sponsor);
+  set("particulars", p.particulars);
+  set("amount", p.amount);
+  set("paid", p.paid);
+  set("status", p.status);
+  set("notes", p.notes);
+  return row;
+}
+
+function rowToPayablePayment(r: Row): PayablePayment {
+  return {
+    id: String(r.id),
+    payableId: String(r.payable_id),
+    txnId: (r.txn_id as string) ?? undefined,
+    date: String(r.date),
+    amount: Number(r.amount ?? 0),
+    notes: (r.notes as string) ?? undefined,
+    createdAt: String(r.created_at ?? new Date().toISOString()),
+  };
+}
+
+function rowToClosing(r: Row): MonthClosing {
+  return {
+    id: String(r.id),
+    year: Number(r.year),
+    month: Number(r.month),
+    status: (r.status as MonthClosing["status"]) ?? "Closed",
+    closedWithExceptions: Boolean(r.closed_with_exceptions),
+    exceptions: Array.isArray(r.exceptions) ? (r.exceptions as string[]) : [],
+    snapshot: (r.snapshot as Record<string, unknown>) ?? {},
+    notes: (r.notes as string) ?? undefined,
+    closedAt: String(r.closed_at ?? new Date().toISOString()),
+  };
+}
+
+export type CloudState = {
   transactions: Transaction[];
   openingBalances: Partial<Record<WalletKey, number>>;
-}> {
-  const [{ data: txns, error: e1 }, { data: obs, error: e2 }] = await Promise.all([
+  payables: Payable[];
+  payablePayments: PayablePayment[];
+  closings: MonthClosing[];
+};
+
+export async function fetchCloudState(): Promise<CloudState> {
+  const [txnRes, obRes, payRes, payPayRes, closeRes] = await Promise.all([
     supabase.from("transactions").select("*").order("date", { ascending: false }),
     supabase.from("opening_balances").select("*"),
+    supabase.from("payables").select("*").order("date", { ascending: false }),
+    supabase.from("payable_payments").select("*").order("date", { ascending: false }),
+    supabase.from("month_closings").select("*"),
   ]);
-  if (e1) throw e1;
-  if (e2) throw e2;
+  if (txnRes.error) throw txnRes.error;
+  if (obRes.error) throw obRes.error;
   const openingBalances: Partial<Record<WalletKey, number>> = {};
-  for (const o of (obs ?? []) as Row[]) {
+  for (const o of (obRes.data ?? []) as Row[]) {
     openingBalances[o.wallet as WalletKey] = Number(o.amount ?? 0);
   }
   return {
-    transactions: ((txns ?? []) as Row[]).map(rowToTransaction),
+    transactions: ((txnRes.data ?? []) as Row[]).map(rowToTransaction),
     openingBalances,
+    payables: ((payRes.data ?? []) as Row[]).map(rowToPayable),
+    payablePayments: ((payPayRes.data ?? []) as Row[]).map(rowToPayablePayment),
+    closings: ((closeRes.data ?? []) as Row[]).map(rowToClosing),
   };
 }
 
@@ -134,5 +228,48 @@ export async function upsertCloudOpeningBalance(
   const { error } = await supabase
     .from("opening_balances")
     .upsert({ wallet, amount, user_id: userId } as never, { onConflict: "user_id,wallet" });
+  if (error) throw error;
+}
+
+export async function insertCloudPayable(p: Payable, userId: string) {
+  const { error } = await supabase
+    .from("payables")
+    .insert({ ...payableToRow(p), user_id: userId } as never);
+  if (error) throw error;
+}
+
+export async function updateCloudPayable(id: string, patch: Partial<Payable>) {
+  const { error } = await supabase.from("payables").update(payableToRow(patch) as never).eq("id", id);
+  if (error) throw error;
+}
+
+export async function insertCloudPayablePayment(p: PayablePayment, userId: string) {
+  const { error } = await supabase.from("payable_payments").insert({
+    id: p.id,
+    payable_id: p.payableId,
+    txn_id: p.txnId ?? null,
+    date: p.date,
+    amount: p.amount,
+    notes: p.notes ?? null,
+    user_id: userId,
+  } as never);
+  if (error) throw error;
+}
+
+export async function upsertCloudClosing(c: MonthClosing, userId: string) {
+  const { error } = await supabase.from("month_closings").upsert(
+    {
+      year: c.year,
+      month: c.month,
+      status: c.status,
+      closed_with_exceptions: c.closedWithExceptions,
+      exceptions: c.exceptions,
+      snapshot: c.snapshot,
+      notes: c.notes ?? null,
+      closed_at: c.closedAt,
+      user_id: userId,
+    } as never,
+    { onConflict: "user_id,year,month" },
+  );
   if (error) throw error;
 }
