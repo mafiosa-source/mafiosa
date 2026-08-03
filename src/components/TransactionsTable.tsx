@@ -29,11 +29,13 @@ export function TransactionsTable({
   showColumns = { voucher: true, company: true, candidate: true, wallets: true, status: true, type: true },
   empty = "No transactions yet.",
   exportName,
+  printTitle = "Transaction Report",
 }: {
   rows: Transaction[];
   showColumns?: { voucher?: boolean; company?: boolean; candidate?: boolean; wallets?: boolean; status?: boolean; type?: boolean };
   empty?: string;
   exportName?: string;
+  printTitle?: string;
 }) {
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
