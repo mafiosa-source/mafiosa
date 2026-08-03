@@ -153,6 +153,7 @@ export function TransactionsTable({
             <SelectTrigger className="h-8 w-[150px]"><SelectValue placeholder="Company" /></SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>All companies</SelectItem>
+              <SelectItem value={NO_COMPANY}>-- None --</SelectItem>
               {options.companies.map((v) => (
                 <SelectItem key={v} value={v}>{COMPANY_LABEL[v as keyof typeof COMPANY_LABEL] ?? v}</SelectItem>
               ))}
