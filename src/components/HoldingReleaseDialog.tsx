@@ -11,31 +11,26 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Check, ChevronsUpDown, AlertTriangle } from "lucide-react";
 import type { ReactNode } from "react";
-import { COMPANIES, COMPANY_LABEL, WALLETS } from "@/lib/finance-types";
-import type { Company, WalletKey, PaymentMethod } from "@/lib/finance-types";
-import { addTransaction, salaryLedger, useFinance } from "@/lib/finance-store";
+import { COMPANIES, COMPANY_LABEL, WALLETS, HOLDING_RELEASE_PURPOSES } from "@/lib/finance-types";
+import type { Company, WalletKey, PurposeCategory, PaymentMethod } from "@/lib/finance-types";
+import { addTransaction, useFinance } from "@/lib/finance-store";
+import { housemaidHoldingLedger } from "@/lib/finance-derived";
 import { qar, today } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-// Salary releases are normally paid from the dedicated Housemaid Salary Wallet,
-// but the operator may pick any wallet — the selected wallet is always the one debited.
-const PAY_WALLETS: WalletKey[] = [
-  "salary-wallet",
+/** Where released holding money can go. */
+const DESTINATIONS: WalletKey[] = [
+  "external",
   "office-petty",
   "dumonde-petty",
   "cbq",
+  "salary-wallet",
   "maryam-card",
   "yousef-card",
   "maha-card",
   "limit-card",
-  "fast-acct",
-  "broker-acct",
-  "skill-acct",
-  "danet-acct",
 ];
-
-const DEFAULT_PAY_WALLET: WalletKey = "salary-wallet";
 
 function methodFor(w: WalletKey): PaymentMethod {
   if (w === "cbq") return "CBQ";
@@ -44,23 +39,31 @@ function methodFor(w: WalletKey): PaymentMethod {
   return "Cash";
 }
 
-export function SalaryReleaseDialog({
+const NONE = "__none";
+
+export function HoldingReleaseDialog({
   trigger,
   presetName,
+  mode = "release",
 }: {
   trigger?: ReactNode;
   presetName?: string;
+  mode?: "release" | "receipt";
 }) {
   const s = useFinance();
-  const ledger = useMemo(() => salaryLedger(s), [s]);
+  const ledger = useMemo(() => housemaidHoldingLedger(s), [s]);
+  const isRelease = mode === "release";
 
   const [open, setOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [name, setName] = useState(presetName ?? "");
+  const [sponsor, setSponsor] = useState("");
   const [company, setCompany] = useState<Company | undefined>(undefined);
-  const [amount, setAmount] = useState<string>("");
-  const [wallet, setWallet] = useState<WalletKey>(DEFAULT_PAY_WALLET);
+  const [purpose, setPurpose] = useState<PurposeCategory>("Visa");
+  const [particulars, setParticulars] = useState("");
+  const [amount, setAmount] = useState("");
+  const [destination, setDestination] = useState<WalletKey>("external");
   const [date, setDate] = useState(today());
   const [notes, setNotes] = useState("");
   const [confirming, setConfirming] = useState(false);
@@ -71,21 +74,17 @@ export function SalaryReleaseDialog({
   );
   const balance = selected?.balance ?? 0;
   const value = Number(amount) || 0;
-  const newBalance = balance - value;
-  const exceeds = value > balance + 0.001;
-
-  function pick(entry: { name: string; company?: Company }) {
-    setName(entry.name);
-    if (entry.company) setCompany(entry.company);
-    setPickerOpen(false);
-    setConfirming(false);
-  }
+  const newBalance = isRelease ? balance - value : balance + value;
+  const exceeds = isRelease && value > balance + 0.001;
 
   function reset() {
     setName(presetName ?? "");
+    setSponsor("");
     setCompany(undefined);
+    setPurpose(isRelease ? "Visa" : "Other");
+    setParticulars("");
     setAmount("");
-    setWallet(DEFAULT_PAY_WALLET);
+    setDestination("external");
     setDate(today());
     setNotes("");
     setConfirming(false);
@@ -95,30 +94,34 @@ export function SalaryReleaseDialog({
   function save() {
     addTransaction({
       date,
-      type: "Salary Release",
+      type: isRelease ? "Holding Release" : "Housemaid Holding",
       amount: value,
       candidate: name.trim(),
-      company,
-      purposeCategory: "Salary",
-      purpose: "Housemaid salary release",
-      paymentMethod: methodFor(wallet),
-      fromWallet: wallet,
-      toWallet: "external",
+      sponsor: sponsor.trim() || selected?.sponsor,
+      company: company ?? selected?.company,
+      classification: "Sponsor Expense",
+      purposeCategory: purpose,
+      purpose: particulars.trim() || (isRelease ? `Holding released for ${purpose}` : "Sponsor money received into holding"),
+      paymentMethod: methodFor(isRelease ? destination : "office-petty"),
+      fromWallet: isRelease ? "housemaid-holding" : "external",
+      toWallet: isRelease ? destination : "housemaid-holding",
+      currentLocation: isRelease ? destination : "housemaid-holding",
       status: "Completed",
       description: notes || undefined,
-      currentLocation: "external",
     });
-    toast.success(`Salary released · ${qar(value)}`, {
-      description: `${name.trim()} · new balance ${qar(newBalance)}`,
-    });
+    toast.success(
+      isRelease ? `Holding released · ${qar(value)}` : `Holding received · ${qar(value)}`,
+      { description: `${name.trim()} · new holding balance ${qar(newBalance)}` },
+    );
     setOpen(false);
     reset();
   }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return toast.error("Select a housemaid");
+    if (!name.trim()) return toast.error("Enter the housemaid name");
     if (!value || value <= 0) return toast.error("Enter an amount");
+    if (isRelease && destination === "housemaid-holding") return toast.error("Choose a destination outside the holding wallet");
     if (exceeds && !confirming) {
       setConfirming(true);
       return;
@@ -127,25 +130,23 @@ export function SalaryReleaseDialog({
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v);
-        if (v) reset();
-      }}
-    >
-      <DialogTrigger asChild>{trigger ?? <Button size="sm">Release salary</Button>}</DialogTrigger>
-      <DialogContent className="max-w-lg">
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) reset(); }}>
+      <DialogTrigger asChild>
+        {trigger ?? <Button size="sm">{isRelease ? "Release holding" : "Receive holding"}</Button>}
+      </DialogTrigger>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Release housemaid salary</DialogTitle>
+          <DialogTitle>{isRelease ? "Release from Housemaid Holding Wallet" : "Receive into Housemaid Holding Wallet"}</DialogTitle>
           <DialogDescription>
-            Balances are calculated automatically from the salary ledger.
+            {isRelease
+              ? "Money leaves the holding wallet for an approved purpose. The balance decreases automatically."
+              : "Sponsor money is held for a specific housemaid until it is released."}
           </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-3" onSubmit={submit}>
           <div className="space-y-1.5">
-            <Label className="text-xs">Housemaid name</Label>
+            <Label className="text-xs">Housemaid</Label>
             <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
               <PopoverTrigger asChild>
                 <Button type="button" variant="outline" role="combobox" className="w-full justify-between font-normal">
@@ -162,17 +163,27 @@ export function SalaryReleaseDialog({
                         <button
                           type="button"
                           className="text-sm underline"
-                          onClick={() => pick({ name: query.trim() })}
+                          onClick={() => { setName(query.trim()); setPickerOpen(false); setConfirming(false); }}
                         >
                           Use "{query.trim()}" as a new housemaid
                         </button>
                       ) : (
-                        "No housemaids yet."
+                        "No holdings yet."
                       )}
                     </CommandEmpty>
                     <CommandGroup>
                       {ledger.map((e) => (
-                        <CommandItem key={e.name} value={e.name} onSelect={() => pick(e)}>
+                        <CommandItem
+                          key={e.name}
+                          value={e.name}
+                          onSelect={() => {
+                            setName(e.name);
+                            if (e.sponsor) setSponsor(e.sponsor);
+                            if (e.company) setCompany(e.company);
+                            setPickerOpen(false);
+                            setConfirming(false);
+                          }}
+                        >
                           <Check className={cn("h-4 w-4", selected?.name === e.name ? "opacity-100" : "opacity-0")} />
                           <span className="flex-1">{e.name}</span>
                           <span className={cn("tabular text-xs", e.balance < 0 ? "text-rose-400" : "text-muted-foreground")}>
@@ -190,7 +201,7 @@ export function SalaryReleaseDialog({
           {name.trim() ? (
             <div className="rounded-md border bg-muted/30 p-3 text-xs space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Salary received</span>
+                <span className="text-muted-foreground">Held for this housemaid</span>
                 <span className="tabular">{qar(selected?.received ?? 0)}</span>
               </div>
               <div className="flex justify-between">
@@ -198,12 +209,12 @@ export function SalaryReleaseDialog({
                 <span className="tabular">{qar(selected?.released ?? 0)}</span>
               </div>
               <div className="flex justify-between font-medium">
-                <span>Current balance</span>
+                <span>Current holding balance</span>
                 <span className={cn("tabular", balance < 0 && "text-rose-400")}>{qar(balance)}</span>
               </div>
               {value > 0 && (
                 <div className="flex justify-between font-semibold border-t pt-1">
-                  <span>New balance</span>
+                  <span>New holding balance</span>
                   <span className={cn("tabular", newBalance < 0 && "text-rose-400")}>{qar(newBalance)}</span>
                 </div>
               )}
@@ -212,11 +223,25 @@ export function SalaryReleaseDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
+              <Label className="text-xs">Sponsor</Label>
+              <Input value={sponsor} onChange={(e) => setSponsor(e.target.value)} placeholder="Sponsor name" />
+            </div>
+            <div className="space-y-1.5">
               <Label className="text-xs">Company</Label>
-              <Select value={company ?? ""} onValueChange={(v) => setCompany(v as Company)}>
+              <Select value={company ?? NONE} onValueChange={(v) => setCompany(v === NONE ? undefined : (v as Company))}>
                 <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value={NONE}>-- None --</SelectItem>
                   {COMPANIES.map((c) => <SelectItem key={c} value={c}>{COMPANY_LABEL[c]}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Purpose</Label>
+              <Select value={purpose} onValueChange={(v) => setPurpose(v as PurposeCategory)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {HOLDING_RELEASE_PURPOSES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -230,22 +255,29 @@ export function SalaryReleaseDialog({
                 required
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Payment wallet</Label>
-              <Select value={wallet} onValueChange={(v) => setWallet(v as WalletKey)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {PAY_WALLETS.map((k) => {
-                    const w = WALLETS.find((x) => x.key === k)!;
-                    return <SelectItem key={k} value={k}>{w.name}</SelectItem>;
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
+            {isRelease && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">Destination</Label>
+                <Select value={destination} onValueChange={(v) => setDestination(v as WalletKey)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {DESTINATIONS.map((k) => {
+                      const w = WALLETS.find((x) => x.key === k)!;
+                      return <SelectItem key={k} value={k}>{w.name}</SelectItem>;
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label className="text-xs">Date</Label>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Particulars</Label>
+            <Input value={particulars} onChange={(e) => setParticulars(e.target.value)} placeholder="e.g. Visa stamping fee" />
           </div>
 
           <div className="space-y-1.5">
@@ -257,12 +289,10 @@ export function SalaryReleaseDialog({
             <div className="rounded-md border border-rose-300 bg-rose-50 p-3 text-xs text-rose-700 flex gap-2">
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <div className="font-medium">
-                  Warning: This release exceeds the employee's available salary balance.
-                </div>
+                <div className="font-medium">This release exceeds the amount held for this housemaid.</div>
                 <div>
-                  Continuing will create a temporary negative salary balance until additional salary is received.
-                  New balance will be <span className="font-semibold tabular">{qar(newBalance)}</span>.
+                  Continuing creates a negative holding balance of{" "}
+                  <span className="font-semibold tabular">{qar(newBalance)}</span> until more sponsor money is received.
                 </div>
               </div>
             </div>
@@ -271,7 +301,7 @@ export function SalaryReleaseDialog({
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" variant={exceeds && confirming ? "destructive" : "default"}>
-              {exceeds ? (confirming ? "Proceed anyway" : "Release salary") : "Release salary"}
+              {exceeds && confirming ? "Proceed anyway" : isRelease ? "Release holding" : "Receive holding"}
             </Button>
           </DialogFooter>
         </form>

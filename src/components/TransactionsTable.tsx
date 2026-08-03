@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Pencil, Trash2, Download, X } from "lucide-react";
+import { Search, Pencil, Trash2, Download, X, Printer } from "lucide-react";
 import type { Transaction, WalletKey } from "@/lib/finance-types";
 import { WALLET_BY_KEY, COMPANIES, COMPANY_LABEL, CARD_WALLETS } from "@/lib/finance-types";
 import { deleteTransaction, sortByDateDesc } from "@/lib/finance-store";
-import { qar, exportCsv } from "@/lib/format";
+import { qar, exportCsv, printAccountingReport } from "@/lib/format";
 import { TransactionDialog } from "./TransactionDialog";
 import { toast } from "sonner";
 
@@ -20,17 +20,22 @@ const STATUS_TONE: Record<string, string> = {
 };
 
 const ALL = "__all__";
+/** Matches transactions that have no company assigned. */
+const NO_COMPANY = "__none__";
+
 
 export function TransactionsTable({
   rows,
   showColumns = { voucher: true, company: true, candidate: true, wallets: true, status: true, type: true },
   empty = "No transactions yet.",
   exportName,
+  printTitle = "Transaction Report",
 }: {
   rows: Transaction[];
   showColumns?: { voucher?: boolean; company?: boolean; candidate?: boolean; wallets?: boolean; status?: boolean; type?: boolean };
   empty?: string;
   exportName?: string;
+  printTitle?: string;
 }) {
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
@@ -63,7 +68,9 @@ export function TransactionsTable({
       if (from && t.date < from) return false;
       if (to && t.date > to) return false;
       if (type !== ALL && t.type !== type) return false;
-      if (company !== ALL && t.company !== company) return false;
+      if (company === NO_COMPANY) {
+        if (t.company) return false;
+      } else if (company !== ALL && t.company !== company) return false;
       if (status !== ALL && t.status !== status) return false;
       if (card !== ALL && t.fromWallet !== card && t.toWallet !== card) return false;
       return true;
@@ -77,6 +84,35 @@ export function TransactionsTable({
     setQ(""); setFrom(""); setTo(""); setType(ALL); setCompany(ALL); setStatus(ALL); setCard(ALL);
   }
 
+  function print() {
+    const companyLabel =
+      company === ALL
+        ? undefined
+        : company === NO_COMPANY
+          ? "No company assigned"
+          : COMPANY_LABEL[company as keyof typeof COMPANY_LABEL] ?? company;
+    printAccountingReport({
+      title: printTitle,
+      from,
+      to,
+      company: companyLabel,
+      rows: [...filtered]
+        .sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1))
+        .map((t) => ({
+          date: t.date,
+          company: t.company ? COMPANY_LABEL[t.company] ?? t.company : "—",
+          particulars:
+            [t.purpose || t.description || t.purposeCategory || t.type, t.candidate]
+              .filter(Boolean)
+              .join(" · "),
+          amount: t.amount,
+          wallet:
+            t.toWallet === "external"
+              ? WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet
+              : `${WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet} → ${WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet}`,
+        })),
+    });
+  }
 
   return (
     <div className="rounded-lg border bg-card">
@@ -94,6 +130,9 @@ export function TransactionsTable({
             <Download className="h-4 w-4" /> CSV
           </Button>
         ) : null}
+        <Button variant="outline" size="sm" onClick={print}>
+          <Printer className="h-4 w-4" /> Print Report
+        </Button>
       </div>
       <div className="px-3 py-2 border-b flex flex-wrap items-center gap-2 bg-muted/30">
         <span className="text-xs text-muted-foreground">From</span>
@@ -114,6 +153,7 @@ export function TransactionsTable({
             <SelectTrigger className="h-8 w-[150px]"><SelectValue placeholder="Company" /></SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>All companies</SelectItem>
+              <SelectItem value={NO_COMPANY}>-- None --</SelectItem>
               {options.companies.map((v) => (
                 <SelectItem key={v} value={v}>{COMPANY_LABEL[v as keyof typeof COMPANY_LABEL] ?? v}</SelectItem>
               ))}

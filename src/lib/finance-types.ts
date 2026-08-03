@@ -27,6 +27,7 @@ export type WalletKey =
   | "office-petty"
   | "dumonde-petty"
   | "salary-wallet"
+  | "housemaid-holding"
   | "cbq"
   | "fast-acct"
   | "broker-acct"
@@ -45,6 +46,12 @@ export const WALLETS: { key: WalletKey; name: string; kind: WalletKind; last4?: 
   { key: "office-petty", name: "Office Petty Cash", kind: "cash" },
   { key: "dumonde-petty", name: "Du Monde Petty Cash", kind: "cash" },
   { key: "salary-wallet", name: "Housemaid Salary Wallet", kind: "holding", purpose: "Housemaid salary money only" },
+  {
+    key: "housemaid-holding",
+    name: "Housemaid Holding Wallet",
+    kind: "holding",
+    purpose: "Sponsor money held for a specific housemaid until released",
+  },
   { key: "cbq", name: "CBQ", kind: "bank" },
   { key: "fast-acct", name: "FAST Account", kind: "company-account" },
   { key: "broker-acct", name: "BROKER Account", kind: "company-account" },
@@ -78,6 +85,7 @@ export const REPORT_WALLETS: WalletKey[] = [
   "office-petty",
   "dumonde-petty",
   "salary-wallet",
+  "housemaid-holding",
   "cbq",
   "maryam-card",
   "yousef-card",
@@ -93,6 +101,13 @@ export const REIMBURSEMENT_WALLETS: WalletKey[] = [
   "cbq",
   ...COMPANY_ACCOUNT_WALLETS,
 ];
+
+/**
+ * Wallets that are NOT expected to return to a target at month end.
+ * Their closing balance simply becomes next month's carry-forward (C/F),
+ * because the money is held on behalf of housemaids or sponsors.
+ */
+export const CARRY_FORWARD_WALLETS: WalletKey[] = ["salary-wallet", "housemaid-holding"];
 
 /** Monthly reconciliation targets — the ERP only reports these, it never moves money. */
 export const RECON_TARGETS: { wallet: WalletKey; target: number }[] = [
@@ -113,6 +128,8 @@ export type TxnType =
   | "Petty Cash"
   | "Salary Holding"
   | "Salary Release"
+  | "Housemaid Holding"
+  | "Holding Release"
   | "Fuel Expense"
   | "Adjustment";
 
@@ -124,6 +141,8 @@ export const TXN_TYPES: TxnType[] = [
   "Petty Cash",
   "Salary Holding",
   "Salary Release",
+  "Housemaid Holding",
+  "Holding Release",
   "Fuel Expense",
   "Adjustment",
 ];
@@ -141,6 +160,7 @@ export type PurposeCategory =
   | "Service Charge"
   | "Salary"
   | "Fuel"
+  | "Ticket"
   | "Office Expense"
   | "Factory Catering"
   | "Other";
@@ -155,8 +175,23 @@ export const PURPOSE_CATEGORIES: PurposeCategory[] = [
   "Service Charge",
   "Salary",
   "Fuel",
+  "Ticket",
   "Office Expense",
   "Factory Catering",
+  "Other",
+];
+
+/** Approved destinations for money released from the Housemaid Holding Wallet. */
+export const HOLDING_RELEASE_PURPOSES: PurposeCategory[] = [
+  "Visa",
+  "Medical",
+  "QVC",
+  "POLO",
+  "Ticket",
+  "Transportation",
+  "Service Charge",
+  "Penalty",
+  "Salary",
   "Other",
 ];
 
