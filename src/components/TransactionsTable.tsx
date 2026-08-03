@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Pencil, Trash2, Download, X } from "lucide-react";
+import { Search, Pencil, Trash2, Download, X, Printer } from "lucide-react";
 import type { Transaction, WalletKey } from "@/lib/finance-types";
 import { WALLET_BY_KEY, COMPANIES, COMPANY_LABEL, CARD_WALLETS } from "@/lib/finance-types";
 import { deleteTransaction, sortByDateDesc } from "@/lib/finance-store";
-import { qar, exportCsv } from "@/lib/format";
+import { qar, exportCsv, printAccountingReport } from "@/lib/format";
 import { TransactionDialog } from "./TransactionDialog";
 import { toast } from "sonner";
 
@@ -20,6 +20,9 @@ const STATUS_TONE: Record<string, string> = {
 };
 
 const ALL = "__all__";
+/** Matches transactions that have no company assigned. */
+const NO_COMPANY = "__none__";
+
 
 export function TransactionsTable({
   rows,
