@@ -18,6 +18,7 @@ import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ReconciliationRouteImport } from './routes/reconciliation'
 import { Route as PettyCashRouteImport } from './routes/petty-cash'
 import { Route as MonthsRouteImport } from './routes/months'
+import { Route as HoldingWalletRouteImport } from './routes/holding-wallet'
 import { Route as DuMondeRouteImport } from './routes/du-monde'
 import { Route as CardsRouteImport } from './routes/cards'
 import { Route as CandidatesRouteImport } from './routes/candidates'
@@ -71,6 +72,11 @@ const MonthsRoute = MonthsRouteImport.update({
   path: '/months',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HoldingWalletRoute = HoldingWalletRouteImport.update({
+  id: '/holding-wallet',
+  path: '/holding-wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DuMondeRoute = DuMondeRouteImport.update({
   id: '/du-monde',
   path: '/du-monde',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/candidates': typeof CandidatesRoute
   '/cards': typeof CardsRoute
   '/du-monde': typeof DuMondeRoute
+  '/holding-wallet': typeof HoldingWalletRoute
   '/months': typeof MonthsRoute
   '/petty-cash': typeof PettyCashRoute
   '/reconciliation': typeof ReconciliationRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/candidates': typeof CandidatesRoute
   '/cards': typeof CardsRoute
   '/du-monde': typeof DuMondeRoute
+  '/holding-wallet': typeof HoldingWalletRoute
   '/months': typeof MonthsRoute
   '/petty-cash': typeof PettyCashRoute
   '/reconciliation': typeof ReconciliationRoute
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/candidates': typeof CandidatesRoute
   '/cards': typeof CardsRoute
   '/du-monde': typeof DuMondeRoute
+  '/holding-wallet': typeof HoldingWalletRoute
   '/months': typeof MonthsRoute
   '/petty-cash': typeof PettyCashRoute
   '/reconciliation': typeof ReconciliationRoute
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/cards'
     | '/du-monde'
+    | '/holding-wallet'
     | '/months'
     | '/petty-cash'
     | '/reconciliation'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/cards'
     | '/du-monde'
+    | '/holding-wallet'
     | '/months'
     | '/petty-cash'
     | '/reconciliation'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/cards'
     | '/du-monde'
+    | '/holding-wallet'
     | '/months'
     | '/petty-cash'
     | '/reconciliation'
@@ -224,6 +236,7 @@ export interface RootRouteChildren {
   CandidatesRoute: typeof CandidatesRoute
   CardsRoute: typeof CardsRoute
   DuMondeRoute: typeof DuMondeRoute
+  HoldingWalletRoute: typeof HoldingWalletRoute
   MonthsRoute: typeof MonthsRoute
   PettyCashRoute: typeof PettyCashRoute
   ReconciliationRoute: typeof ReconciliationRoute
@@ -303,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonthsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/holding-wallet': {
+      id: '/holding-wallet'
+      path: '/holding-wallet'
+      fullPath: '/holding-wallet'
+      preLoaderRoute: typeof HoldingWalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/du-monde': {
       id: '/du-monde'
       path: '/du-monde'
@@ -360,6 +380,7 @@ const rootRouteChildren: RootRouteChildren = {
   CandidatesRoute: CandidatesRoute,
   CardsRoute: CardsRoute,
   DuMondeRoute: DuMondeRoute,
+  HoldingWalletRoute: HoldingWalletRoute,
   MonthsRoute: MonthsRoute,
   PettyCashRoute: PettyCashRoute,
   ReconciliationRoute: ReconciliationRoute,
