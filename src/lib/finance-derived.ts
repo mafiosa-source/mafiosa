@@ -470,3 +470,66 @@ export function totalCardExposure(s: FinanceState): number {
 export function pendingTransfersTotal(s: FinanceState): number {
   return COMPANY_ACCOUNT_WALLETS.reduce((a, k) => a + Math.max(0, walletBalance(s, k).balance), 0);
 }
+
+// ---------- Housemaid Holding Wallet (sponsor money held per housemaid) ----------
+export type HoldingWalletEntry = {
+  name: string;
+  sponsor?: string;
+  company?: Company;
+  received: number;
+  released: number;
+  balance: number;
+  lastDate: string;
+  timeline: Transaction[];
+};
+
+const HOLDING_WALLET: WalletKey = "housemaid-holding";
+
+/** Per-housemaid breakdown of the Housemaid Holding Wallet. */
+export function housemaidHoldingLedger(s: FinanceState): HoldingWalletEntry[] {
+  const map = new Map<string, HoldingWalletEntry>();
+  for (const t of s.transactions) {
+    if (!active(t)) continue;
+    const into = t.toWallet === HOLDING_WALLET && t.fromWallet !== HOLDING_WALLET;
+    const outOf = t.fromWallet === HOLDING_WALLET && t.toWallet !== HOLDING_WALLET;
+    if (!into && !outOf) continue;
+    const name = (t.candidate ?? "").trim() || "Unassigned";
+    const key = name.toLowerCase();
+    let cur = map.get(key);
+    if (!cur) {
+      cur = { name, sponsor: t.sponsor, company: t.company, received: 0, released: 0, balance: 0, lastDate: t.date, timeline: [] };
+      map.set(key, cur);
+    }
+    if (!cur.sponsor && t.sponsor) cur.sponsor = t.sponsor;
+    if (!cur.company && t.company) cur.company = t.company;
+    if (into) cur.received += t.amount;
+    else cur.released += t.amount;
+    cur.timeline.push(t);
+    if (t.date > cur.lastDate) cur.lastDate = t.date;
+  }
+  for (const cur of map.values()) {
+    cur.balance = cur.received - cur.released;
+    cur.timeline.sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1));
+  }
+  return Array.from(map.values()).sort((a, b) => (a.lastDate < b.lastDate ? 1 : -1));
+}
+
+export function holdingWalletTotal(s: FinanceState): number {
+  return walletBalance(s, HOLDING_WALLET).balance;
+}
+
+/**
+ * Carry-forward reconciliation for a wallet that is not expected to reach zero.
+ * Opening + Received − Released = Closing (C/F to the next month).
+ */
+export function carryForwardSummary(
+  s: FinanceState,
+  wallet: WalletKey,
+  year: number,
+  month?: number,
+): { opening: number; received: number; released: number; closing: number; rows: WalletLedgerRow[] } {
+  const start = month ? monthRange(year, month).start : `${year}-01-01`;
+  const end = month ? monthRange(year, month).end : `${year}-12-31`;
+  const led = walletLedger(s, wallet, { start, end });
+  return { opening: led.opening, received: led.debit, released: led.credit, closing: led.closing, rows: led.rows };
+}
