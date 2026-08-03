@@ -68,7 +68,9 @@ export function TransactionsTable({
       if (from && t.date < from) return false;
       if (to && t.date > to) return false;
       if (type !== ALL && t.type !== type) return false;
-      if (company !== ALL && t.company !== company) return false;
+      if (company === NO_COMPANY) {
+        if (t.company) return false;
+      } else if (company !== ALL && t.company !== company) return false;
       if (status !== ALL && t.status !== status) return false;
       if (card !== ALL && t.fromWallet !== card && t.toWallet !== card) return false;
       return true;
@@ -82,6 +84,35 @@ export function TransactionsTable({
     setQ(""); setFrom(""); setTo(""); setType(ALL); setCompany(ALL); setStatus(ALL); setCard(ALL);
   }
 
+  function print() {
+    const companyLabel =
+      company === ALL
+        ? undefined
+        : company === NO_COMPANY
+          ? "No company assigned"
+          : COMPANY_LABEL[company as keyof typeof COMPANY_LABEL] ?? company;
+    printAccountingReport({
+      title: printTitle,
+      from,
+      to,
+      company: companyLabel,
+      rows: [...filtered]
+        .sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1))
+        .map((t) => ({
+          date: t.date,
+          company: t.company ? COMPANY_LABEL[t.company] ?? t.company : "—",
+          particulars:
+            [t.purpose || t.description || t.purposeCategory || t.type, t.candidate]
+              .filter(Boolean)
+              .join(" · "),
+          amount: t.amount,
+          wallet:
+            t.toWallet === "external"
+              ? WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet
+              : `${WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet} → ${WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet}`,
+        })),
+    });
+  }
 
   return (
     <div className="rounded-lg border bg-card">
@@ -99,6 +130,9 @@ export function TransactionsTable({
             <Download className="h-4 w-4" /> CSV
           </Button>
         ) : null}
+        <Button variant="outline" size="sm" onClick={print}>
+          <Printer className="h-4 w-4" /> Print Report
+        </Button>
       </div>
       <div className="px-3 py-2 border-b flex flex-wrap items-center gap-2 bg-muted/30">
         <span className="text-xs text-muted-foreground">From</span>
