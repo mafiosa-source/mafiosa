@@ -85,6 +85,7 @@ export const REPORT_WALLETS: WalletKey[] = [
   "office-petty",
   "dumonde-petty",
   "salary-wallet",
+  "housemaid-holding",
   "cbq",
   "maryam-card",
   "yousef-card",
@@ -100,6 +101,13 @@ export const REIMBURSEMENT_WALLETS: WalletKey[] = [
   "cbq",
   ...COMPANY_ACCOUNT_WALLETS,
 ];
+
+/**
+ * Wallets that are NOT expected to return to a target at month end.
+ * Their closing balance simply becomes next month's carry-forward (C/F),
+ * because the money is held on behalf of housemaids or sponsors.
+ */
+export const CARRY_FORWARD_WALLETS: WalletKey[] = ["salary-wallet", "housemaid-holding"];
 
 /** Monthly reconciliation targets — the ERP only reports these, it never moves money. */
 export const RECON_TARGETS: { wallet: WalletKey; target: number }[] = [
