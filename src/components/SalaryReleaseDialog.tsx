@@ -18,7 +18,10 @@ import { qar, today } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+// Salary releases are normally paid from the dedicated Housemaid Salary Wallet,
+// but the operator may pick any wallet — the selected wallet is always the one debited.
 const PAY_WALLETS: WalletKey[] = [
+  "salary-wallet",
   "office-petty",
   "dumonde-petty",
   "cbq",
@@ -31,6 +34,8 @@ const PAY_WALLETS: WalletKey[] = [
   "skill-acct",
   "danet-acct",
 ];
+
+const DEFAULT_PAY_WALLET: WalletKey = "salary-wallet";
 
 function methodFor(w: WalletKey): PaymentMethod {
   if (w === "cbq") return "CBQ";
