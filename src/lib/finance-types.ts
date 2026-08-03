@@ -27,6 +27,7 @@ export type WalletKey =
   | "office-petty"
   | "dumonde-petty"
   | "salary-wallet"
+  | "housemaid-holding"
   | "cbq"
   | "fast-acct"
   | "broker-acct"
@@ -45,6 +46,12 @@ export const WALLETS: { key: WalletKey; name: string; kind: WalletKind; last4?: 
   { key: "office-petty", name: "Office Petty Cash", kind: "cash" },
   { key: "dumonde-petty", name: "Du Monde Petty Cash", kind: "cash" },
   { key: "salary-wallet", name: "Housemaid Salary Wallet", kind: "holding", purpose: "Housemaid salary money only" },
+  {
+    key: "housemaid-holding",
+    name: "Housemaid Holding Wallet",
+    kind: "holding",
+    purpose: "Sponsor money held for a specific housemaid until released",
+  },
   { key: "cbq", name: "CBQ", kind: "bank" },
   { key: "fast-acct", name: "FAST Account", kind: "company-account" },
   { key: "broker-acct", name: "BROKER Account", kind: "company-account" },
