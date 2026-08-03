@@ -275,7 +275,7 @@ function Sel<T extends string>({
     <Select value={value ?? ""} onValueChange={onChange}>
       <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
       <SelectContent>
-        {allowEmpty && <SelectItem value="__none">—</SelectItem>}
+        {allowEmpty && <SelectItem value="__none">-- None --</SelectItem>}
         {options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
       </SelectContent>
     </Select>
