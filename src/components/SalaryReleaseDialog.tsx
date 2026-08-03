@@ -60,7 +60,7 @@ export function SalaryReleaseDialog({
   const [name, setName] = useState(presetName ?? "");
   const [company, setCompany] = useState<Company | undefined>(undefined);
   const [amount, setAmount] = useState<string>("");
-  const [wallet, setWallet] = useState<WalletKey>("office-petty");
+  const [wallet, setWallet] = useState<WalletKey>(DEFAULT_PAY_WALLET);
   const [date, setDate] = useState(today());
   const [notes, setNotes] = useState("");
   const [confirming, setConfirming] = useState(false);
@@ -85,7 +85,7 @@ export function SalaryReleaseDialog({
     setName(presetName ?? "");
     setCompany(undefined);
     setAmount("");
-    setWallet("office-petty");
+    setWallet(DEFAULT_PAY_WALLET);
     setDate(today());
     setNotes("");
     setConfirming(false);
