@@ -128,6 +128,8 @@ export type TxnType =
   | "Petty Cash"
   | "Salary Holding"
   | "Salary Release"
+  | "Housemaid Holding"
+  | "Holding Release"
   | "Fuel Expense"
   | "Adjustment";
 
@@ -139,6 +141,8 @@ export const TXN_TYPES: TxnType[] = [
   "Petty Cash",
   "Salary Holding",
   "Salary Release",
+  "Housemaid Holding",
+  "Holding Release",
   "Fuel Expense",
   "Adjustment",
 ];
@@ -156,6 +160,7 @@ export type PurposeCategory =
   | "Service Charge"
   | "Salary"
   | "Fuel"
+  | "Ticket"
   | "Office Expense"
   | "Factory Catering"
   | "Other";
@@ -170,8 +175,23 @@ export const PURPOSE_CATEGORIES: PurposeCategory[] = [
   "Service Charge",
   "Salary",
   "Fuel",
+  "Ticket",
   "Office Expense",
   "Factory Catering",
+  "Other",
+];
+
+/** Approved destinations for money released from the Housemaid Holding Wallet. */
+export const HOLDING_RELEASE_PURPOSES: PurposeCategory[] = [
+  "Visa",
+  "Medical",
+  "QVC",
+  "POLO",
+  "Ticket",
+  "Transportation",
+  "Service Charge",
+  "Penalty",
+  "Salary",
   "Other",
 ];
 
