@@ -10,6 +10,9 @@ import type { Company } from "@/lib/finance-types";
 import { COMPANY_ACCOUNT_BY_COMPANY, COMPANY_ACCOUNT_WALLETS } from "@/lib/finance-types";
 
 export const Route = createFileRoute("/transfers")({
+  validateSearch: (search: Record<string, unknown>): { company?: string } => ({
+    company: typeof search.company === "string" ? search.company : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "CBQ Transfers · AHG Finance Core" },
@@ -21,6 +24,7 @@ export const Route = createFileRoute("/transfers")({
 
 function TransfersPage() {
   const s = useFinance();
+  const { company: companyFilter } = Route.useSearch();
   const rows = s.transactions.filter(
     (t) =>
       t.type === "Transfer" &&
@@ -66,7 +70,7 @@ function TransfersPage() {
         })}
       </div>
 
-      <TransactionsTable rows={rows} exportName="cbq-transfers.csv" />
+      <TransactionsTable rows={rows} exportName="cbq-transfers.csv" initialCompany={companyFilter} />
     </AppLayout>
   );
 }

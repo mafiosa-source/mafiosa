@@ -6,7 +6,13 @@ import { useFinance } from "@/lib/finance-store";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
+type TxSearch = { status?: string; company?: string };
+
 export const Route = createFileRoute("/transactions")({
+  validateSearch: (search: Record<string, unknown>): TxSearch => ({
+    status: typeof search.status === "string" ? search.status : undefined,
+    company: typeof search.company === "string" ? search.company : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "All Transactions · AHG Finance Core" },
@@ -18,6 +24,7 @@ export const Route = createFileRoute("/transactions")({
 
 function TransactionsPage() {
   const s = useFinance();
+  const { status, company } = Route.useSearch();
   return (
     <AppLayout>
       <PageHeader
@@ -25,7 +32,12 @@ function TransactionsPage() {
         description="Every movement of money is recorded here exactly once."
         action={<TransactionDialog trigger={<Button size="sm"><Plus className="h-4 w-4" /> New transaction</Button>} />}
       />
-      <TransactionsTable rows={s.transactions} exportName="transactions.csv" />
+      <TransactionsTable
+        rows={s.transactions}
+        exportName="transactions.csv"
+        initialStatus={status}
+        initialCompany={company}
+      />
     </AppLayout>
   );
 }
