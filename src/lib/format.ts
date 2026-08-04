@@ -97,11 +97,20 @@ const nf = (n: number) =>
 /** Opens a print-ready accounting report in a new window (use "Save as PDF"). */
 export function printAccountingReport(opts: PrintReportOptions) {
   if (typeof window === "undefined") return;
-  const { title, subtitle, from, to, company, rows, summary } = opts;
+  const { title, subtitle, from, to, company, rows, summary, columns = "single" } = opts;
+  const inout = columns === "inout";
   const total = rows.reduce((a, r) => a + (r.amount || 0), 0);
+  const totalIn = rows.reduce((a, r) => a + (r.moneyIn || 0), 0);
+  const totalOut = rows.reduce((a, r) => a + (r.moneyOut || 0), 0);
+  const colCount = inout ? 7 : 6;
   const range =
     from || to ? `${from ? from : "Beginning"} to ${to ? to : "Date"}` : "All dates";
   const generated = new Date().toLocaleString("en-GB", { hour12: false });
+
+  const amountCells = (r: PrintReportRow) =>
+    inout
+      ? `<td class="r">${r.moneyIn ? nf(r.moneyIn) : ""}</td><td class="r">${r.moneyOut ? nf(r.moneyOut) : ""}</td>`
+      : `<td class="r">${nf(r.amount)}</td>`;
 
   const body = rows.length
     ? rows
@@ -111,12 +120,13 @@ export function printAccountingReport(opts: PrintReportOptions) {
 <td class="nw">${esc(r.date)}</td>
 <td>${esc(r.company ?? "—")}</td>
 <td>${esc(r.particulars ?? "—")}</td>
-<td class="r">${nf(r.amount)}</td>
+${amountCells(r)}
 <td>${esc(r.wallet ?? "—")}</td>
 </tr>`,
         )
         .join("")
-    : `<tr><td colspan="6" class="c muted">No transactions for the selected filters.</td></tr>`;
+    : `<tr><td colspan="${colCount}" class="c muted">No transactions for the selected filters.</td></tr>`;
+
 
   const html = `<!doctype html><html><head><meta charset="utf-8" />
 <title>${esc(title)}</title>
