@@ -70,6 +70,10 @@ export type PrintReportRow = {
   company?: string;
   particulars?: string;
   amount: number;
+  /** Ledger mode: money received into the account. */
+  moneyIn?: number;
+  /** Ledger mode: money paid out of the account. */
+  moneyOut?: number;
   wallet?: string;
 };
 
@@ -80,9 +84,12 @@ export type PrintReportOptions = {
   to?: string;
   company?: string;
   rows: PrintReportRow[];
+  /** "inout" renders separate Money In / Money Out columns (cash-book style). */
+  columns?: "single" | "inout";
   /** Optional carry-forward style summary shown above the table. */
   summary?: { label: string; value: string }[];
 };
+
 
 const nf = (n: number) =>
   new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
