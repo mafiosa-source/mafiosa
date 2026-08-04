@@ -30,20 +30,26 @@ export function TransactionsTable({
   empty = "No transactions yet.",
   exportName,
   printTitle = "Transaction Report",
+  initialCompany,
+  initialStatus,
 }: {
   rows: Transaction[];
   showColumns?: { voucher?: boolean; company?: boolean; candidate?: boolean; wallets?: boolean; status?: boolean; type?: boolean };
   empty?: string;
   exportName?: string;
   printTitle?: string;
+  /** Pre-applied filters (used when arriving from a dashboard card). */
+  initialCompany?: string;
+  initialStatus?: string;
 }) {
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [type, setType] = useState(ALL);
-  const [company, setCompany] = useState(ALL);
-  const [status, setStatus] = useState(ALL);
+  const [company, setCompany] = useState(initialCompany ?? ALL);
+  const [status, setStatus] = useState(initialStatus ?? ALL);
   const [card, setCard] = useState<string>(ALL);
+
 
   const sorted = useMemo(() => sortByDateDesc(rows), [rows]);
 

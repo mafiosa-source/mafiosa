@@ -70,6 +70,10 @@ export type PrintReportRow = {
   company?: string;
   particulars?: string;
   amount: number;
+  /** Ledger mode: money received into the account. */
+  moneyIn?: number;
+  /** Ledger mode: money paid out of the account. */
+  moneyOut?: number;
   wallet?: string;
 };
 
@@ -80,9 +84,12 @@ export type PrintReportOptions = {
   to?: string;
   company?: string;
   rows: PrintReportRow[];
+  /** "inout" renders separate Money In / Money Out columns (cash-book style). */
+  columns?: "single" | "inout";
   /** Optional carry-forward style summary shown above the table. */
   summary?: { label: string; value: string }[];
 };
+
 
 const nf = (n: number) =>
   new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
@@ -90,11 +97,20 @@ const nf = (n: number) =>
 /** Opens a print-ready accounting report in a new window (use "Save as PDF"). */
 export function printAccountingReport(opts: PrintReportOptions) {
   if (typeof window === "undefined") return;
-  const { title, subtitle, from, to, company, rows, summary } = opts;
+  const { title, subtitle, from, to, company, rows, summary, columns = "single" } = opts;
+  const inout = columns === "inout";
   const total = rows.reduce((a, r) => a + (r.amount || 0), 0);
+  const totalIn = rows.reduce((a, r) => a + (r.moneyIn || 0), 0);
+  const totalOut = rows.reduce((a, r) => a + (r.moneyOut || 0), 0);
+  const colCount = inout ? 7 : 6;
   const range =
     from || to ? `${from ? from : "Beginning"} to ${to ? to : "Date"}` : "All dates";
   const generated = new Date().toLocaleString("en-GB", { hour12: false });
+
+  const amountCells = (r: PrintReportRow) =>
+    inout
+      ? `<td class="r">${r.moneyIn ? nf(r.moneyIn) : ""}</td><td class="r">${r.moneyOut ? nf(r.moneyOut) : ""}</td>`
+      : `<td class="r">${nf(r.amount)}</td>`;
 
   const body = rows.length
     ? rows
@@ -104,12 +120,13 @@ export function printAccountingReport(opts: PrintReportOptions) {
 <td class="nw">${esc(r.date)}</td>
 <td>${esc(r.company ?? "—")}</td>
 <td>${esc(r.particulars ?? "—")}</td>
-<td class="r">${nf(r.amount)}</td>
+${amountCells(r)}
 <td>${esc(r.wallet ?? "—")}</td>
 </tr>`,
         )
         .join("")
-    : `<tr><td colspan="6" class="c muted">No transactions for the selected filters.</td></tr>`;
+    : `<tr><td colspan="${colCount}" class="c muted">No transactions for the selected filters.</td></tr>`;
+
 
   const html = `<!doctype html><html><head><meta charset="utf-8" />
 <title>${esc(title)}</title>
@@ -167,16 +184,35 @@ ${
     <th style="width:78px">Date</th>
     <th style="width:90px">Company</th>
     <th>Particulars / Purpose</th>
-    <th class="r" style="width:100px">Amount (QAR)</th>
+    ${
+      inout
+        ? `<th class="r" style="width:95px">Money In (QAR)</th><th class="r" style="width:95px">Money Out (QAR)</th>`
+        : `<th class="r" style="width:100px">Amount (QAR)</th>`
+    }
     <th style="width:130px">Payment Wallet</th>
   </tr></thead>
   <tbody>${body}</tbody>
-  <tfoot><tr>
+  <tfoot>${
+    inout
+      ? `<tr>
+    <td colspan="4" class="r">TOTALS</td>
+    <td class="r">${nf(totalIn)}</td>
+    <td class="r">${nf(totalOut)}</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td colspan="4" class="r">NET MOVEMENT</td>
+    <td colspan="2" class="r">${nf(totalIn - totalOut)}</td>
+    <td></td>
+  </tr>`
+      : `<tr>
     <td colspan="4" class="r">GRAND TOTAL</td>
     <td class="r">${nf(total)}</td>
     <td></td>
-  </tr></tfoot>
+  </tr>`
+  }</tfoot>
 </table>
+
 <div class="pf"><span>${esc(title)} · Generated ${esc(generated)}</span><span class="pn"></span></div>
 </body></html>`;
 
