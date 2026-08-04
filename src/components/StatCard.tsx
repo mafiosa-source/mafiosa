@@ -2,11 +2,12 @@ import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
-// Dashboard cards link to many static routes; loosen the generic route typing.
-const NavLink = Link as unknown as ComponentType<Record<string, unknown>>;
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { qar } from "@/lib/format";
+
+// Dashboard cards link to many static routes; loosen the generic route typing.
+const NavLink = Link as unknown as ComponentType<Record<string, unknown>>;
 
 type Tone = "default" | "success" | "warning" | "danger" | "info";
 
