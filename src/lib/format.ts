@@ -184,16 +184,35 @@ ${
     <th style="width:78px">Date</th>
     <th style="width:90px">Company</th>
     <th>Particulars / Purpose</th>
-    <th class="r" style="width:100px">Amount (QAR)</th>
+    ${
+      inout
+        ? `<th class="r" style="width:95px">Money In (QAR)</th><th class="r" style="width:95px">Money Out (QAR)</th>`
+        : `<th class="r" style="width:100px">Amount (QAR)</th>`
+    }
     <th style="width:130px">Payment Wallet</th>
   </tr></thead>
   <tbody>${body}</tbody>
-  <tfoot><tr>
+  <tfoot>${
+    inout
+      ? `<tr>
+    <td colspan="4" class="r">TOTALS</td>
+    <td class="r">${nf(totalIn)}</td>
+    <td class="r">${nf(totalOut)}</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td colspan="4" class="r">NET MOVEMENT</td>
+    <td colspan="2" class="r">${nf(totalIn - totalOut)}</td>
+    <td></td>
+  </tr>`
+      : `<tr>
     <td colspan="4" class="r">GRAND TOTAL</td>
     <td class="r">${nf(total)}</td>
     <td></td>
-  </tr></tfoot>
+  </tr>`
+  }</tfoot>
 </table>
+
 <div class="pf"><span>${esc(title)} · Generated ${esc(generated)}</span><span class="pn"></span></div>
 </body></html>`;
 
