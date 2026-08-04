@@ -1,5 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+
+// Dashboard cards link to many static routes; loosen the generic route typing.
+const NavLink = Link as unknown as React.ComponentType<Record<string, unknown>>;
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { qar } from "@/lib/format";
@@ -84,7 +87,7 @@ export function StatCard({
   if (!to) return <div className={base}>{body}</div>;
 
   return (
-    <Link
+    <NavLink
       to={to}
       search={search}
       className={cn(
@@ -93,6 +96,6 @@ export function StatCard({
       )}
     >
       {body}
-    </Link>
+    </NavLink>
   );
 }
