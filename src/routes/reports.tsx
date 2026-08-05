@@ -12,9 +12,10 @@ import { walletLedger } from "@/lib/finance-derived";
 import {
   WALLETS, CARD_WALLETS, COMPANY_ACCOUNT_WALLETS, PETTY_WALLETS, COMPANIES, COMPANY_LABEL, WALLET_BY_KEY,
 } from "@/lib/finance-types";
-import type { Company, Transaction } from "@/lib/finance-types";
+import type { Company, Transaction, WalletKey } from "@/lib/finance-types";
 import { qar, exportCsv, printAccountingReport, today } from "@/lib/format";
 import type { PrintReportRow } from "@/lib/format";
+import { toDirectionalPrintRows, toLedgerPrintRows } from "@/lib/report-filters";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
