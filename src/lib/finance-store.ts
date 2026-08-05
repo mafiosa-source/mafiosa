@@ -144,21 +144,37 @@ export const uid = () =>
 const nowIso = () => new Date().toISOString();
 
 // ---------- Voucher numbering ----------
-export function nextVoucherNumber(company: Company, type: "Receipt Voucher" | "Payment Voucher"): string {
-  const prefix = type === "Receipt Voucher" ? "RV" : "PV";
+/**
+ * One continuous sequence per company, shared by Receipt and Payment Vouchers.
+ * FAST0001 (RV) · FAST0002 (PV) · FAST0003 (RV) …
+ * The voucher type never affects the number, and numbers are unique per company.
+ */
+export function voucherSequence(company: Company): number {
   const existing = state.transactions
-    .filter((t) => t.company === company && t.type === type && t.voucherNumber)
+    .filter((t) => t.company === company && t.voucherNumber)
     .map((t) => {
-      const m = t.voucherNumber!.match(/-(\d+)$/);
+      // Matches both the legacy "FAST RV-0001" format and the new "FAST0001".
+      const m = t.voucherNumber!.match(/(\d+)\s*$/);
       return m ? parseInt(m[1], 10) : 0;
     });
-  const next = (existing.length ? Math.max(...existing) : 0) + 1;
-  return `${company} ${prefix}-${String(next).padStart(4, "0")}`;
+  return existing.length ? Math.max(...existing) : 0;
 }
 
-export function isVoucherNumberTaken(number: string, excludeId?: string): boolean {
-  return state.transactions.some((t) => t.voucherNumber === number && t.id !== excludeId);
+export function nextVoucherNumber(company: Company, _type?: "Receipt Voucher" | "Payment Voucher"): string {
+  return `${company}${String(voucherSequence(company) + 1).padStart(4, "0")}`;
 }
+
+/** A voucher number may never repeat inside the same company. */
+export function isVoucherNumberTaken(number: string, excludeId?: string, company?: Company): boolean {
+  const target = number.trim().toUpperCase();
+  return state.transactions.some(
+    (t) =>
+      t.id !== excludeId &&
+      (t.voucherNumber ?? "").trim().toUpperCase() === target &&
+      (company ? t.company === company : true),
+  );
+}
+
 
 // ---------- Mutations ----------
 export function addTransaction(t: Omit<Transaction, "id" | "createdAt" | "updatedAt">): Transaction {
