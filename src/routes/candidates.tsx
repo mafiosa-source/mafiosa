@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
 import { StatCard } from "@/components/StatCard";
 import { TransactionsTable } from "@/components/TransactionsTable";
+import { HousemaidLink } from "@/components/HousemaidLink";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,7 +106,7 @@ function CandidatesPage() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="text-sm font-semibold">{c.candidate}</div>
+                      <div className="text-sm font-semibold"><HousemaidLink name={c.candidate} /></div>
                       <div className="text-xs text-muted-foreground">
                         {c.sponsor ?? "—"} · {c.company ?? "—"}
                       </div>
@@ -162,7 +163,7 @@ function CandidatesPage() {
         </CardContent>
       </Card>
 
-      <TransactionsTable rows={rows} exportName="candidate-holdings.csv" />
+      <TransactionsTable rows={rows} exportName="candidate-holdings.csv" printTitle="Candidate Holdings Report" />
 
       <Dialog open={!!active} onOpenChange={(v) => !v && setActive(null)}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">

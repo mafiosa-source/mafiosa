@@ -48,7 +48,7 @@ function DuMonde() {
         <Input value={opening} onChange={(e) => setOpening(e.target.value)} type="number" step="0.01" className="max-w-[180px] h-8" />
         <Button size="sm" variant="outline" onClick={() => setOpeningBalance("dumonde-petty", Number(opening) || 0)}>Save</Button>
       </div>
-      <TransactionsTable rows={rows} exportName="dumonde-petty.csv" />
+      <TransactionsTable rows={rows} exportName="dumonde-petty.csv" ledgerWallet="dumonde-petty" printTitle="Du Monde Petty Cash Report" />
     </AppLayout>
   );
 }

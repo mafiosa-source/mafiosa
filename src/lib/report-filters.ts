@@ -147,3 +147,27 @@ export function toLedgerCsvRows(rows: Transaction[], wallet: WalletKey): Record<
     Wallet: r.wallet,
   }));
 }
+
+/**
+ * Money In / Money Out rows for a mixed list that has no single wallet context
+ * (e.g. the master transactions table or a voucher list). Money entering the
+ * business from outside is Money In; everything else is Money Out.
+ */
+export function toDirectionalPrintRows(rows: Transaction[]): PrintReportRow[] {
+  return byDateAsc(rows).map((t) => {
+    const incoming =
+      t.type === "Receipt Voucher" ||
+      t.type === "Salary Holding" ||
+      t.type === "Housemaid Holding" ||
+      (t.fromWallet === "external" && t.toWallet !== "external");
+    return {
+      date: t.date,
+      company: companyOf(t),
+      particulars: particularsOf(t),
+      amount: t.amount,
+      moneyIn: incoming ? t.amount : 0,
+      moneyOut: incoming ? 0 : t.amount,
+      wallet: walletPath(t),
+    };
+  });
+}

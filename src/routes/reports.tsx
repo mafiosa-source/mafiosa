@@ -12,9 +12,10 @@ import { walletLedger } from "@/lib/finance-derived";
 import {
   WALLETS, CARD_WALLETS, COMPANY_ACCOUNT_WALLETS, PETTY_WALLETS, COMPANIES, COMPANY_LABEL, WALLET_BY_KEY,
 } from "@/lib/finance-types";
-import type { Company, Transaction } from "@/lib/finance-types";
+import type { Company, Transaction, WalletKey } from "@/lib/finance-types";
 import { qar, exportCsv, printAccountingReport, today } from "@/lib/format";
 import type { PrintReportRow } from "@/lib/format";
+import { toDirectionalPrintRows, toLedgerPrintRows } from "@/lib/report-filters";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
@@ -33,20 +34,14 @@ export const Route = createFileRoute("/reports")({
 const ALL = "__all__";
 const NO_COMPANY = "__none__";
 
-/** Converts master transactions to the printable accounting row shape. */
+/** Converts master transactions to printable cash-book rows (Money In / Money Out). */
 function toPrintRows(rows: Transaction[]): PrintReportRow[] {
-  return [...rows]
-    .sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1))
-    .map((t) => ({
-      date: t.date,
-      company: t.company ? COMPANY_LABEL[t.company] ?? t.company : "—",
-      particulars: [t.purpose || t.description || t.purposeCategory || t.type, t.candidate].filter(Boolean).join(" · "),
-      amount: t.amount,
-      wallet:
-        t.toWallet === "external"
-          ? WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet
-          : `${WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet} → ${WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet}`,
-    }));
+  return toDirectionalPrintRows(rows);
+}
+
+/** Cash-book rows for a single wallet statement. */
+function toWalletRows(rows: Transaction[], wallet: WalletKey): PrintReportRow[] {
+  return toLedgerPrintRows(rows, wallet);
 }
 
 function ReportsPage() {
@@ -114,6 +109,7 @@ function ReportsPage() {
           title: "Candidate Holdings Report",
           subtitle: "Sponsor money received and utilised",
           ...meta,
+          columns: "inout",
           rows: toPrintRows(scoped.filter((t) => t.classification === "Sponsor Expense")),
         }),
     },
@@ -133,7 +129,8 @@ function ReportsPage() {
           title: "Housemaid Holding Wallet Statement",
           subtitle: "Opening + Received − Released = Closing (Carry Forward)",
           ...meta,
-          rows: toPrintRows(led.rows.map((r) => r.txn)),
+          columns: "inout",
+          rows: toWalletRows(led.rows.map((r) => r.txn), "housemaid-holding"),
           summary: [
             { label: "Opening Balance", value: qar(led.opening) },
             { label: "Money Received", value: qar(led.debit) },
@@ -159,7 +156,8 @@ function ReportsPage() {
           title: "Housemaid Salary Wallet Statement",
           subtitle: "Opening + Received − Released = Closing (Carry Forward)",
           ...meta,
-          rows: toPrintRows(scoped.filter((t) => t.type === "Salary Holding" || t.type === "Salary Release")),
+          columns: "inout",
+          rows: toWalletRows(scoped.filter((t) => t.type === "Salary Holding" || t.type === "Salary Release"), "salary-wallet"),
           summary: [
             { label: "Opening Balance", value: qar(led.opening) },
             { label: "Money Received", value: qar(led.debit) },
@@ -181,6 +179,7 @@ function ReportsPage() {
         printAccountingReport({
           title: "Company Expenses Report",
           ...meta,
+          columns: "inout",
           rows: toPrintRows(scoped.filter((t) => t.classification === "Company Expense")),
         }),
     },
@@ -202,6 +201,7 @@ function ReportsPage() {
         printAccountingReport({
           title: "CBQ & Company Account Transfers",
           ...meta,
+          columns: "inout",
           rows: toPrintRows(
             scoped.filter(
               (t) =>
@@ -226,6 +226,7 @@ function ReportsPage() {
           title: "Petty Cash Report",
           subtitle: "Office Petty Cash and Du Monde Petty Cash",
           ...meta,
+          columns: "inout",
           rows: toPrintRows(
             scoped.filter((t) => PETTY_WALLETS.includes(t.fromWallet) || PETTY_WALLETS.includes(t.toWallet)),
           ),

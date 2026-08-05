@@ -9,6 +9,8 @@ import type { Transaction, WalletKey } from "@/lib/finance-types";
 import { WALLET_BY_KEY, COMPANIES, COMPANY_LABEL, CARD_WALLETS } from "@/lib/finance-types";
 import { deleteTransaction, sortByDateDesc } from "@/lib/finance-store";
 import { qar, exportCsv, printAccountingReport } from "@/lib/format";
+import { toLedgerPrintRows, toDirectionalPrintRows } from "@/lib/report-filters";
+import { HousemaidLink } from "./HousemaidLink";
 import { TransactionDialog } from "./TransactionDialog";
 import { toast } from "sonner";
 
@@ -32,6 +34,7 @@ export function TransactionsTable({
   printTitle = "Transaction Report",
   initialCompany,
   initialStatus,
+  ledgerWallet,
 }: {
   rows: Transaction[];
   showColumns?: { voucher?: boolean; company?: boolean; candidate?: boolean; wallets?: boolean; status?: boolean; type?: boolean };
@@ -41,6 +44,8 @@ export function TransactionsTable({
   /** Pre-applied filters (used when arriving from a dashboard card). */
   initialCompany?: string;
   initialStatus?: string;
+  /** When this table is a single-wallet ledger, printed Money In / Money Out follow that wallet. */
+  ledgerWallet?: WalletKey;
 }) {
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
@@ -97,26 +102,17 @@ export function TransactionsTable({
         : company === NO_COMPANY
           ? "No company assigned"
           : COMPANY_LABEL[company as keyof typeof COMPANY_LABEL] ?? company;
+    const asc = [...filtered].sort((a, b) =>
+      a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1,
+    );
+    const printRows = ledgerWallet ? toLedgerPrintRows(asc, ledgerWallet) : toDirectionalPrintRows(asc);
     printAccountingReport({
       title: printTitle,
       from,
       to,
       company: companyLabel,
-      rows: [...filtered]
-        .sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1))
-        .map((t) => ({
-          date: t.date,
-          company: t.company ? COMPANY_LABEL[t.company] ?? t.company : "—",
-          particulars:
-            [t.purpose || t.description || t.purposeCategory || t.type, t.candidate]
-              .filter(Boolean)
-              .join(" · "),
-          amount: t.amount,
-          wallet:
-            t.toWallet === "external"
-              ? WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet
-              : `${WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet} → ${WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet}`,
-        })),
+      columns: "inout",
+      rows: printRows,
     });
   }
 
@@ -227,7 +223,9 @@ export function TransactionsTable({
                 {showColumns.company && <TableCell>{t.company ? (COMPANY_LABEL[t.company] ?? t.company) : "—"}</TableCell>}
                 {showColumns.candidate && (
                   <TableCell>
-                    <div className="text-sm">{t.candidate ?? "—"}</div>
+                    <div className="text-sm">
+                      {t.candidate ? <HousemaidLink name={t.candidate} /> : "—"}
+                    </div>
                     {t.sponsor ? <div className="text-xs text-muted-foreground">{t.sponsor}</div> : null}
                   </TableCell>
                 )}

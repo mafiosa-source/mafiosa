@@ -78,6 +78,7 @@ function CardsPage() {
       <TransactionsTable
         rows={s.transactions.filter((t) => CARD_WALLETS.includes(t.fromWallet) || CARD_WALLETS.includes(t.toWallet))}
         exportName="cards.csv"
+        printTitle="Company Cards Report"
       />
     </AppLayout>
   );

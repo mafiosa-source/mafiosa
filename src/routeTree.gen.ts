@@ -25,6 +25,7 @@ import { Route as CandidatesRouteImport } from './routes/candidates'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
 import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
+import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as MonthsYearMonthRouteImport } from './routes/months_.$year.$month'
 
 const VouchersRoute = VouchersRouteImport.update({
@@ -107,6 +108,11 @@ const SalariesNameRoute = SalariesNameRouteImport.update({
   path: '/salaries/$name',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HousemaidNameRoute = HousemaidNameRouteImport.update({
+  id: '/housemaid/$name',
+  path: '/housemaid/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MonthsYearMonthRoute = MonthsYearMonthRouteImport.update({
   id: '/months_/$year/$month',
   path: '/months/$year/$month',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof TransactionsRoute
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
+  '/housemaid/$name': typeof HousemaidNameRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof TransactionsRoute
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
+  '/housemaid/$name': typeof HousemaidNameRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/transactions': typeof TransactionsRoute
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
+  '/housemaid/$name': typeof HousemaidNameRoute
   '/salaries_/$name': typeof SalariesNameRoute
   '/transactions_/$id': typeof TransactionsIdRoute
   '/months_/$year/$month': typeof MonthsYearMonthRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/transfers'
     | '/vouchers'
+    | '/housemaid/$name'
     | '/salaries/$name'
     | '/transactions/$id'
     | '/months/$year/$month'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/transfers'
     | '/vouchers'
+    | '/housemaid/$name'
     | '/salaries/$name'
     | '/transactions/$id'
     | '/months/$year/$month'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/transfers'
     | '/vouchers'
+    | '/housemaid/$name'
     | '/salaries_/$name'
     | '/transactions_/$id'
     | '/months_/$year/$month'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   TransactionsRoute: typeof TransactionsRoute
   TransfersRoute: typeof TransfersRoute
   VouchersRoute: typeof VouchersRoute
+  HousemaidNameRoute: typeof HousemaidNameRoute
   SalariesNameRoute: typeof SalariesNameRoute
   TransactionsIdRoute: typeof TransactionsIdRoute
   MonthsYearMonthRoute: typeof MonthsYearMonthRoute
@@ -365,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalariesNameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/housemaid/$name': {
+      id: '/housemaid/$name'
+      path: '/housemaid/$name'
+      fullPath: '/housemaid/$name'
+      preLoaderRoute: typeof HousemaidNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/months_/$year/$month': {
       id: '/months_/$year/$month'
       path: '/months/$year/$month'
@@ -390,6 +410,7 @@ const rootRouteChildren: RootRouteChildren = {
   TransactionsRoute: TransactionsRoute,
   TransfersRoute: TransfersRoute,
   VouchersRoute: VouchersRoute,
+  HousemaidNameRoute: HousemaidNameRoute,
   SalariesNameRoute: SalariesNameRoute,
   TransactionsIdRoute: TransactionsIdRoute,
   MonthsYearMonthRoute: MonthsYearMonthRoute,

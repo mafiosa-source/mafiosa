@@ -48,7 +48,7 @@ function OfficePetty() {
         <Input value={opening} onChange={(e) => setOpening(e.target.value)} type="number" step="0.01" className="max-w-[180px] h-8" />
         <Button size="sm" variant="outline" onClick={() => setOpeningBalance("office-petty", Number(opening) || 0)}>Save</Button>
       </div>
-      <TransactionsTable rows={rows} exportName="office-petty.csv" />
+      <TransactionsTable rows={rows} exportName="office-petty.csv" ledgerWallet="office-petty" printTitle="Office Petty Cash Report" />
     </AppLayout>
   );
 }

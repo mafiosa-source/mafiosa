@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Download, Printer, Plus, ArrowDownToLine } from "lucide-react";
 import { HoldingReleaseDialog } from "@/components/HoldingReleaseDialog";
 import { TransactionsTable } from "@/components/TransactionsTable";
+import { DrillDownStat } from "@/components/DrillDownStat";
+import { HousemaidLink } from "@/components/HousemaidLink";
 import { useFinance, walletBalance } from "@/lib/finance-store";
 import { housemaidHoldingLedger, walletLedger } from "@/lib/finance-derived";
 import { COMPANY_LABEL, WALLET_BY_KEY } from "@/lib/finance-types";
@@ -50,6 +52,17 @@ function HoldingWalletPage() {
     (t) => t.fromWallet === "housemaid-holding" || t.toWallet === "housemaid-holding",
   ), [s]);
 
+  const holdingDrill = (pick: (e: (typeof perHousemaid)[number]) => number) =>
+    perHousemaid
+      .map((e) => ({
+        housemaid: e.name,
+        company: e.company ? COMPANY_LABEL[e.company] : "—",
+        particulars: e.sponsor ? `Sponsor · ${e.sponsor}` : "—",
+        amount: pick(e),
+      }))
+      .filter((r) => Math.abs(r.amount) > 0.001)
+      .sort((a, b) => b.amount - a.amount);
+
   function csv() {
     exportCsv(
       `housemaid-holding-wallet-${today()}.csv`,
@@ -73,11 +86,14 @@ function HoldingWalletPage() {
       subtitle: "Sponsor money held on behalf of housemaids (carry-forward wallet)",
       from,
       to,
+      columns: "inout",
       rows: led.rows.map((r) => ({
         date: r.date,
         company: r.company ? COMPANY_LABEL[r.company] : "—",
         particulars: [r.txn.candidate, r.particulars].filter(Boolean).join(" · "),
         amount: r.credit > 0 ? r.credit : r.debit,
+        moneyIn: r.debit,
+        moneyOut: r.credit,
         wallet:
           r.credit > 0
             ? WALLET_BY_KEY[r.txn.toWallet]?.name ?? r.txn.toWallet
@@ -111,11 +127,36 @@ function HoldingWalletPage() {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Stat label="Opening balance" value={qar(balance.opening)} />
-        <Stat label="Money received" value={qar(balance.inflow)} tone="text-emerald-600" />
-        <Stat label="Money released" value={qar(balance.outflow)} tone="text-rose-600" />
-        <Stat label="Closing balance (C/F)" value={qar(balance.balance)} tone="font-semibold" />
+        <DrillDownStat
+          label="Money received"
+          value={balance.inflow}
+          tone="success"
+          caption="Sponsor money in"
+          title="Money received per housemaid"
+          columns={["housemaid", "company", "particulars", "amount"]}
+          rows={holdingDrill((e) => e.received)}
+        />
+        <DrillDownStat
+          label="Money released"
+          value={balance.outflow}
+          tone="warning"
+          caption="Released to expenses"
+          title="Money released per housemaid"
+          columns={["housemaid", "company", "particulars", "amount"]}
+          rows={holdingDrill((e) => e.released)}
+        />
+        <DrillDownStat
+          label="Closing balance (C/F)"
+          value={balance.balance}
+          tone="info"
+          caption="Carried forward"
+          title="Housemaids making up the held balance"
+          description="Sponsor money still held for each housemaid."
+          columns={["housemaid", "company", "particulars", "amount"]}
+          rows={holdingDrill((e) => e.balance)}
+        />
       </div>
 
       <Card className="mb-6">
@@ -164,9 +205,7 @@ function HoldingWalletPage() {
                   <TableRow key={r.txn.id}>
                     <TableCell className="whitespace-nowrap">{r.date}</TableCell>
                     <TableCell>
-                      <Link to="/transactions/$id" params={{ id: r.txn.id }} className="hover:underline">
-                        {r.txn.candidate ?? "—"}
-                      </Link>
+                      <HousemaidLink name={r.txn.candidate} />
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{r.txn.sponsor ?? "—"}</TableCell>
                     <TableCell>
@@ -198,7 +237,7 @@ function HoldingWalletPage() {
             <Card key={e.name}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center justify-between gap-2">
-                  <span className="truncate">{e.name}</span>
+                  <span className="truncate"><HousemaidLink name={e.name} /></span>
                   <Badge variant="outline" className={e.balance > 0.001 ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : ""}>
                     {e.balance > 0.001 ? "Holding" : "Cleared"}
                   </Badge>
@@ -223,7 +262,7 @@ function HoldingWalletPage() {
       </div>
 
       <h2 className="text-sm font-semibold mb-3">Search, filter & audit history</h2>
-      <TransactionsTable rows={rows} exportName="housemaid-holding-transactions.csv" empty="No holding wallet transactions yet." />
+      <TransactionsTable rows={rows} ledgerWallet="housemaid-holding" printTitle="Housemaid Holding Wallet Report" exportName="housemaid-holding-transactions.csv" empty="No holding wallet transactions yet." />
     </AppLayout>
   );
 }
