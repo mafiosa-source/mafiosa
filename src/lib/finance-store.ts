@@ -920,7 +920,6 @@ export function housemaidProfile(s: FinanceState, name: string): HousemaidProfil
   const expenses = outgoing
     .filter((t) => t.toWallet === "external" && t.type !== "Salary Release")
     .reduce((a, t) => a + t.amount, 0);
-  const latest = timeline[timeline.length - 1];
   return {
     name: timeline[0]?.candidate?.trim() || name,
     key: housemaidKey(name),
@@ -939,6 +938,3 @@ export function housemaidProfile(s: FinanceState, name: string): HousemaidProfil
     outgoing,
   };
 }
-
-void (() => latest_unused_guard);
-const latest_unused_guard = 0;
