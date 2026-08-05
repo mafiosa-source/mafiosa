@@ -102,10 +102,10 @@ export function TransactionsTable({
         : company === NO_COMPANY
           ? "No company assigned"
           : COMPANY_LABEL[company as keyof typeof COMPANY_LABEL] ?? company;
-    const sorted = [...filtered].sort((a, b) =>
+    const asc = [...filtered].sort((a, b) =>
       a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1,
     );
-    const printRows = ledgerWallet ? toLedgerPrintRows(sorted, ledgerWallet) : toDirectionalPrintRows(sorted);
+    const printRows = ledgerWallet ? toLedgerPrintRows(asc, ledgerWallet) : toDirectionalPrintRows(asc);
     printAccountingReport({
       title: printTitle,
       from,
