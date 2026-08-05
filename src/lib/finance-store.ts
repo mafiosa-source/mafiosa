@@ -839,3 +839,106 @@ function migrateFromV1(v1: V1): FinanceState {
 
 // Re-export wallet meta helpers
 export { WALLETS, WALLET_BY_KEY, CARD_WALLETS, PETTY_WALLETS, COMPANY_ACCOUNT_WALLETS, COMPANY_ACCOUNT_BY_COMPANY };
+
+// ============================================================
+// Housemaid Financial Profile (360° view)
+// Every transaction that references a housemaid, regardless of the
+// module that created it, resolved through a stable identity key.
+// ============================================================
+
+/** Stable identity key for a housemaid — survives spacing/casing corrections. */
+export function housemaidKey(name?: string) {
+  return normalize(name).replace(/\s+/g, " ");
+}
+
+/** Direction of a transaction from the housemaid's point of view. */
+export function housemaidDirection(t: Transaction): "in" | "out" {
+  if (t.type === "Salary Holding" || t.type === "Housemaid Holding" || t.type === "Receipt Voucher") return "in";
+  if (t.type === "Salary Release" || t.type === "Holding Release") return "out";
+  if (t.fromWallet === "external" && t.toWallet !== "external") return "in";
+  return "out";
+}
+
+/** Which module a transaction belongs to, for the unified timeline. */
+export function housemaidModule(t: Transaction): string {
+  if (t.type === "Salary Holding" || t.type === "Salary Release") return "Salary";
+  if (t.type === "Housemaid Holding" || t.type === "Holding Release") return "Candidate";
+  if (t.purposeCategory && t.purposeCategory !== "Other") return t.purposeCategory;
+  if (CARD_WALLETS.includes(t.fromWallet) || CARD_WALLETS.includes(t.toWallet)) return "Card";
+  if (PETTY_WALLETS.includes(t.fromWallet) || PETTY_WALLETS.includes(t.toWallet)) return "Petty Cash";
+  if (t.fromWallet === "cbq" || t.toWallet === "cbq") return "Bank";
+  return t.type;
+}
+
+/** Every distinct housemaid / candidate name referenced anywhere in the ledger. */
+export function housemaidNames(s: FinanceState): { name: string; key: string; company?: Company }[] {
+  const map = new Map<string, { name: string; key: string; company?: Company }>();
+  for (const t of s.transactions) {
+    const name = (t.candidate ?? "").trim();
+    if (!name) continue;
+    const key = housemaidKey(name);
+    const cur = map.get(key);
+    if (!cur) map.set(key, { name, key, company: t.company });
+    else if (!cur.company && t.company) cur.company = t.company;
+  }
+  return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** All transactions linked to a housemaid, oldest first. */
+export function housemaidTransactions(s: FinanceState, name: string): Transaction[] {
+  const key = housemaidKey(name);
+  return s.transactions
+    .filter((t) => housemaidKey(t.candidate) === key)
+    .sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1));
+}
+
+export type HousemaidProfile = {
+  name: string;
+  key: string;
+  company?: Company;
+  sponsor?: string;
+  passport?: string;
+  nationality?: string;
+  received: number;
+  paid: number;
+  expenses: number;
+  salaryHeld: number;
+  candidateHeld: number;
+  outstanding: number;
+  timeline: Transaction[];
+  incoming: Transaction[];
+  outgoing: Transaction[];
+};
+
+export function housemaidProfile(s: FinanceState, name: string): HousemaidProfile {
+  const timeline = housemaidTransactions(s, name);
+  const active = timeline.filter(isActive);
+  const incoming = active.filter((t) => housemaidDirection(t) === "in");
+  const outgoing = active.filter((t) => housemaidDirection(t) === "out");
+  const received = incoming.reduce((a, t) => a + t.amount, 0);
+  const paid = outgoing.reduce((a, t) => a + t.amount, 0);
+  const expenses = outgoing
+    .filter((t) => t.toWallet === "external" && t.type !== "Salary Release")
+    .reduce((a, t) => a + t.amount, 0);
+  const latest = timeline[timeline.length - 1];
+  return {
+    name: timeline[0]?.candidate?.trim() || name,
+    key: housemaidKey(name),
+    company: [...timeline].reverse().find((t) => t.company)?.company,
+    sponsor: [...timeline].reverse().find((t) => t.sponsor)?.sponsor,
+    passport: [...timeline].reverse().find((t) => t.passport)?.passport,
+    nationality: undefined,
+    received,
+    paid,
+    expenses,
+    salaryHeld: salaryBalanceFor(s, name),
+    candidateHeld: candidateLedger(s).find((c) => housemaidKey(c.candidate) === housemaidKey(name))?.balance ?? 0,
+    outstanding: received - paid,
+    timeline,
+    incoming,
+    outgoing,
+  };
+}
+
+void (() => latest_unused_guard);
+const latest_unused_guard = 0;
