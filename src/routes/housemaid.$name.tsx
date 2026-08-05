@@ -116,6 +116,7 @@ function HousemaidProfilePage() {
 
   const handleExport = () =>
     exportExcel(
+      `housemaid-${p.key.replace(/\s+/g, "-")}.csv`,
       rows.map((r) => ({
         Date: r.t.date,
         Module: housemaidModule(r.t),
@@ -128,7 +129,7 @@ function HousemaidProfilePage() {
         Wallet: `${WALLET_BY_KEY[r.t.fromWallet]?.name ?? r.t.fromWallet} → ${WALLET_BY_KEY[r.t.toWallet]?.name ?? r.t.toWallet}`,
         Status: r.t.status,
       })),
-      `housemaid-${p.key.replace(/\s+/g, "-")}.csv`,
+      `Housemaid Statement — ${p.name}`,
     );
 
   return (
