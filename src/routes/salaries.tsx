@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
-import { StatCard } from "@/components/StatCard";
+import { DrillDownStat } from "@/components/DrillDownStat";
+import { HousemaidLink } from "@/components/HousemaidLink";
 import { TransactionsTable } from "@/components/TransactionsTable";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { SalaryReleaseDialog } from "@/components/SalaryReleaseDialog";
@@ -34,6 +35,17 @@ function SalariesPage() {
   const received = ledger.reduce((a, e) => a + e.received, 0);
   const released = ledger.reduce((a, e) => a + e.released, 0);
 
+  const byHousemaid = (pick: (e: (typeof ledger)[number]) => number) =>
+    ledger
+      .map((e) => ({
+        housemaid: e.name,
+        company: e.company ? COMPANY_LABEL[e.company] : "—",
+        particulars: `Last movement ${e.lastDate ?? "—"}`,
+        amount: pick(e),
+      }))
+      .filter((r) => Math.abs(r.amount) > 0.001)
+      .sort((a, b) => b.amount - a.amount);
+
   return (
     <AppLayout>
       <PageHeader
@@ -51,11 +63,44 @@ function SalariesPage() {
           </div>
         }
       />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Currently Held" value={held} tone={held < 0 ? "warning" : "success"} />
-        <StatCard label="Total Received" value={received} tone="success" />
-        <StatCard label="Total Released" value={released} />
-        <StatCard label="Housemaids" value={ledger.length} format="raw" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <DrillDownStat
+          label="Currently Held"
+          value={held}
+          tone={held < 0 ? "warning" : "success"}
+          caption="Received − released"
+          title="Housemaids making up the held balance"
+          description="Every housemaid with salary money still sitting in the wallet."
+          columns={["housemaid", "company", "particulars", "amount"]}
+          rows={byHousemaid((e) => e.balance)}
+          empty="No salary balances are being held."
+        />
+        <DrillDownStat
+          label="Total Received"
+          value={received}
+          tone="success"
+          caption="All salary money in"
+          title="Salary received per housemaid"
+          columns={["housemaid", "company", "particulars", "amount"]}
+          rows={byHousemaid((e) => e.received)}
+        />
+        <DrillDownStat
+          label="Total Released"
+          value={released}
+          caption="All salary money out"
+          title="Salary released per housemaid"
+          columns={["housemaid", "company", "particulars", "amount"]}
+          rows={byHousemaid((e) => e.released)}
+        />
+        <DrillDownStat
+          label="Housemaids"
+          value={ledger.length}
+          format="raw"
+          caption="With salary records"
+          title="All housemaids with salary records"
+          columns={["housemaid", "company", "particulars", "amount"]}
+          rows={byHousemaid((e) => e.balance || e.received)}
+        />
       </div>
 
       <div className="rounded-lg border bg-card mb-6">
@@ -83,9 +128,12 @@ function SalariesPage() {
               ledger.map((e) => (
                 <TableRow key={e.name} className="cursor-pointer hover:bg-muted/50">
                   <TableCell>
-                    <Link to="/salaries/$name" params={{ name: e.name }} className="font-medium hover:underline">
-                      {e.name}
-                    </Link>
+                    <HousemaidLink name={e.name} />
+                    <div className="text-xs">
+                      <Link to="/salaries/$name" params={{ name: e.name }} className="text-muted-foreground hover:underline">
+                        Salary history
+                      </Link>
+                    </div>
                   </TableCell>
                   <TableCell className="text-xs">{e.company ? COMPANY_LABEL[e.company] : "—"}</TableCell>
                   <TableCell className="text-right tabular">{qar(e.received)}</TableCell>
@@ -106,7 +154,7 @@ function SalariesPage() {
         </Table>
       </div>
 
-      <TransactionsTable rows={rows} exportName="salaries.csv" />
+      <TransactionsTable rows={rows} exportName="salaries.csv" ledgerWallet="salary-wallet" printTitle="Housemaid Salary Wallet Report" />
     </AppLayout>
   );
 }
