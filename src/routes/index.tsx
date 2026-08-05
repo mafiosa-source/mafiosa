@@ -17,10 +17,12 @@ import {
 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { StatCard } from "@/components/StatCard";
+import { DrillDownStat } from "@/components/DrillDownStat";
 import {
   useFinance, walletBalance, cardUsage, candidateHoldingTotal, salariesHeldTotal, pendingCompanyTransfer,
-  sortByDateDesc,
+  sortByDateDesc, salaryLedger, candidateLedger,
 } from "@/lib/finance-store";
+import { housemaidHoldingLedger } from "@/lib/finance-derived";
 import { CARD_WALLETS, WALLET_BY_KEY, COMPANY_LABEL } from "@/lib/finance-types";
 import type { WalletKey, Company } from "@/lib/finance-types";
 import { qar } from "@/lib/format";
@@ -82,6 +84,31 @@ function Dashboard() {
   const held = candidateHoldingTotal(s);
   const salaries = salariesHeldTotal(s);
   const holdingWallet = walletBalance(s, "housemaid-holding");
+
+  const salaryRows = salaryLedger(s)
+    .filter((e) => Math.abs(e.balance) > 0.001)
+    .map((e) => ({
+      housemaid: e.name,
+      company: e.company ? COMPANY_LABEL[e.company] : "—",
+      particulars: `Received ${qar(e.received)} · Released ${qar(e.released)}`,
+      amount: e.balance,
+    }));
+  const candidateRows = candidateLedger(s)
+    .filter((e) => Math.abs(e.balance) > 0.001)
+    .map((e) => ({
+      housemaid: e.candidate,
+      company: e.company ? COMPANY_LABEL[e.company] : "—",
+      particulars: e.sponsor ? `Sponsor · ${e.sponsor}` : "—",
+      amount: e.balance,
+    }));
+  const holdingRows = housemaidHoldingLedger(s)
+    .filter((e) => Math.abs(e.balance) > 0.001)
+    .map((e) => ({
+      housemaid: e.name,
+      company: e.company ? COMPANY_LABEL[e.company] : "—",
+      particulars: e.sponsor ? `Sponsor · ${e.sponsor}` : "—",
+      amount: e.balance,
+    }));
 
   const pending: { company: Exclude<Company, "AHG">; amount: number }[] = [
     { company: "FAST", amount: pendingCompanyTransfer(s, "FAST") },
@@ -192,32 +219,39 @@ function Dashboard() {
 
       <Section title="Held Funds" hint="Money held on behalf of housemaids, candidates and sponsors — not company money.">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard
+          <DrillDownStat
             label="Housemaid Salaries Held"
             value={salaries}
             icon={HandCoins}
             tone="warning"
-            to="/salaries"
             caption="Received − released"
-            cta="Open salary module"
+            title="Housemaids making up the held salary balance"
+            description="Click a name to open that housemaid's full financial profile."
+            columns={["housemaid", "company", "particulars", "amount"]}
+            rows={salaryRows}
+            empty="No salary money is being held."
           />
-          <StatCard
+          <DrillDownStat
             label="Candidate Money Held"
             value={held}
             icon={UsersRound}
             tone="warning"
-            to="/candidates"
             caption="Remaining sponsor funds"
-            cta="Open candidate module"
+            title="Candidates with remaining sponsor money"
+            columns={["housemaid", "company", "particulars", "amount"]}
+            rows={candidateRows}
+            empty="No candidate money is being held."
           />
-          <StatCard
+          <DrillDownStat
             label="Housemaid Holding Wallet"
             value={holdingWallet.balance}
             icon={PiggyBank}
             tone="warning"
-            to="/holding-wallet"
             caption="Carry-forward balance"
-            cta="View wallet ledger"
+            title="Sponsor money held per housemaid"
+            columns={["housemaid", "company", "particulars", "amount"]}
+            rows={holdingRows}
+            empty="The holding wallet is empty."
           />
         </div>
       </Section>
