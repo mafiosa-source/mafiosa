@@ -835,7 +835,9 @@ function migrateFromV1(v1: V1): FinanceState {
       "dumonde-petty": v1.dumondeOpeningBalance ?? 0,
       cbq: v1.cbqBalance ?? 0,
     },
+    walletTargets: {},
     payables: [],
+
     payablePayments: [],
     closings: [],
   };
