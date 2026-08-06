@@ -27,6 +27,7 @@ import {
   insertCloudTransactions,
   updateCloudTransaction,
   upsertCloudOpeningBalance,
+  upsertCloudWalletTarget,
   insertCloudPayable,
   updateCloudPayable,
   insertCloudPayablePayment,
@@ -39,6 +40,8 @@ import {
 export type FinanceState = {
   transactions: Transaction[];
   openingBalances: Partial<Record<WalletKey, number>>;
+  /** Configurable target balance per wallet (cards must return to this at month end). */
+  walletTargets: Partial<Record<WalletKey, number>>;
   payables: Payable[];
   payablePayments: PayablePayment[];
   closings: MonthClosing[];
@@ -50,10 +53,12 @@ const LEGACY_KEY = "finance-control-v1";
 const initial: FinanceState = {
   transactions: [],
   openingBalances: {},
+  walletTargets: {},
   payables: [],
   payablePayments: [],
   closings: [],
 };
+
 
 
 // ---------- State (mirror of the cloud database) ----------
