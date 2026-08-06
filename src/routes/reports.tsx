@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MultiSelect } from "@/components/MultiSelect";
 import { Download, Printer } from "lucide-react";
-import { useFinance, walletBalance, cardUsage, sortByDateDesc } from "@/lib/finance-store";
+import { useFinance, walletBalance, cardUsage, sortByDateDesc, walletTarget } from "@/lib/finance-store";
 import { walletLedger } from "@/lib/finance-derived";
 import {
   WALLETS, CARD_WALLETS, COMPANY_ACCOUNT_WALLETS, PETTY_WALLETS, COMPANIES, COMPANY_LABEL, WALLET_BY_KEY,
@@ -15,7 +16,14 @@ import {
 import type { Company, Transaction, WalletKey } from "@/lib/finance-types";
 import { qar, exportCsv, printAccountingReport, today } from "@/lib/format";
 import type { PrintReportRow } from "@/lib/format";
-import { toDirectionalPrintRows, toLedgerPrintRows } from "@/lib/report-filters";
+import {
+  toDirectionalPrintRows,
+  toLedgerPrintRows,
+  companyExpenseClosingRows,
+  toExpenseClosingPrintRows,
+  toExpenseClosingCsvRows,
+} from "@/lib/report-filters";
+import { COMPANY_EXPENSE_WALLETS, cardReconciliation } from "@/lib/wallet-rules";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
@@ -34,6 +42,8 @@ export const Route = createFileRoute("/reports")({
 const ALL = "__all__";
 const NO_COMPANY = "__none__";
 
+const CLASSIFICATIONS = ["Company Expense", "Sponsor Expense", "Internal Transfer", "Liability", "All"];
+
 /** Converts master transactions to printable cash-book rows (Money In / Money Out). */
 function toPrintRows(rows: Transaction[]): PrintReportRow[] {
   return toDirectionalPrintRows(rows);
@@ -49,6 +59,9 @@ function ReportsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [company, setCompany] = useState(ALL);
+  const [closingWallets, setClosingWallets] = useState<WalletKey[]>(COMPANY_EXPENSE_WALLETS);
+  const [classification, setClassification] = useState("Company Expense");
+
 
   const companyLabel =
     company === ALL ? undefined : company === NO_COMPANY ? "No company assigned" : COMPANY_LABEL[company as Company];
