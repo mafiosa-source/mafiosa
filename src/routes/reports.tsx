@@ -276,36 +276,50 @@ function ReportsPage() {
         }),
     },
     {
-      title: "Company Cards",
-      desc: "Card usage, remaining and amount to restore.",
+      title: "Company Cards Reconciliation",
+      desc: "Opening, top ups, expenses, closing and variance from each card's target balance.",
       csv: () =>
         exportCsv(
-          `cards-report-${today()}.csv`,
+          `cards-reconciliation-${today()}.csv`,
           CARD_WALLETS.map((k) => {
-            const u = cardUsage(s, k);
-            const m = WALLETS.find((w) => w.key === k)!;
-            return { card: m.name, last4: m.last4, limit: u.limit, used: u.used, remaining: u.remaining, toRestore: u.used };
+            const r = cardRecon(k);
+            return {
+              Card: r.name,
+              Last4: r.last4,
+              "Opening Balance": r.opening,
+              "Total Top Ups": r.topUps,
+              "Total Card Expenses": r.expenses,
+              "Closing Balance": r.closing,
+              "Target Balance": r.target,
+              "Variance from Target": r.variance,
+              "Top Up Required": r.topUpRequired,
+            };
           }),
         ),
       print: () =>
         printAccountingReport({
-          title: "Company Cards Report",
-          subtitle: "Usage against limit and amount to restore",
+          title: "Company Cards Reconciliation",
+          subtitle: "Opening + Top Ups − Card Expenses = Closing, against each card's target balance",
           ...meta,
           company: undefined,
+          columns: "inout",
           rows: CARD_WALLETS.map((k) => {
-            const u = cardUsage(s, k);
-            const m = WALLETS.find((w) => w.key === k)!;
+            const r = cardRecon(k);
             return {
               date: to || today(),
               company: "—",
-              particulars: `${m.name} (••${m.last4}) — limit ${qar(u.limit)}, remaining ${qar(u.remaining)}`,
-              amount: u.used,
-              wallet: m.name,
+              particulars: `${r.name} (••${r.last4}) — opening ${qar(r.opening)}, closing ${qar(
+                r.closing,
+              )}, target ${qar(r.target)}, variance ${r.variance >= 0 ? "+" : "−"}${qar(Math.abs(r.variance))}`,
+              amount: r.closing,
+              moneyIn: r.topUps,
+              moneyOut: r.expenses,
+              wallet: r.name,
             };
           }),
         }),
     },
+
     {
       title: "Monthly Closing",
       desc: "Full wallet closing snapshot for the selected range.",
