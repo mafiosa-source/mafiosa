@@ -5,11 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Pencil, Trash2, Download, X, Printer } from "lucide-react";
-import type { Transaction, WalletKey } from "@/lib/finance-types";
-import { WALLET_BY_KEY, COMPANIES, COMPANY_LABEL, CARD_WALLETS } from "@/lib/finance-types";
+import type { Transaction, TxnType, WalletKey } from "@/lib/finance-types";
+import { WALLET_BY_KEY, COMPANIES, COMPANY_LABEL, REPORT_WALLETS, TXN_TYPES } from "@/lib/finance-types";
 import { deleteTransaction, sortByDateDesc } from "@/lib/finance-store";
 import { qar, exportCsv, printAccountingReport } from "@/lib/format";
-import { toLedgerPrintRows, toDirectionalPrintRows } from "@/lib/report-filters";
+import {
+  toLedgerPrintRows,
+  toDirectionalPrintRows,
+  toLedgerCsvRows,
+  toDirectionalCsvRows,
+} from "@/lib/report-filters";
+import type { FinancialCategory } from "@/lib/wallet-rules";
+import { FINANCIAL_CATEGORIES, REPORT_PRESETS, matchesCategory, presetById } from "@/lib/wallet-rules";
+import { MultiSelect } from "./MultiSelect";
 import { HousemaidLink } from "./HousemaidLink";
 import { TransactionDialog } from "./TransactionDialog";
 import { toast } from "sonner";
@@ -25,6 +33,14 @@ const ALL = "__all__";
 /** Matches transactions that have no company assigned. */
 const NO_COMPANY = "__none__";
 
+const WALLET_GROUP: Partial<Record<string, string>> = {
+  cash: "Petty cash",
+  card: "Company cards",
+  bank: "Bank",
+  "company-account": "Company accounts",
+  holding: "Held funds",
+  person: "People",
+};
 
 export function TransactionsTable({
   rows,
@@ -34,6 +50,7 @@ export function TransactionsTable({
   printTitle = "Transaction Report",
   initialCompany,
   initialStatus,
+  initialPreset,
   ledgerWallet,
 }: {
   rows: Transaction[];
@@ -44,17 +61,22 @@ export function TransactionsTable({
   /** Pre-applied filters (used when arriving from a dashboard card). */
   initialCompany?: string;
   initialStatus?: string;
+  /** Quick preset applied on first render, e.g. "company-expense". */
+  initialPreset?: string;
   /** When this table is a single-wallet ledger, printed Money In / Money Out follow that wallet. */
   ledgerWallet?: WalletKey;
 }) {
+  const startPreset = initialPreset ? presetById(initialPreset) : undefined;
+
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [type, setType] = useState(ALL);
+  const [types, setTypes] = useState<TxnType[]>(startPreset?.types ?? []);
+  const [wallets, setWallets] = useState<WalletKey[]>(startPreset?.wallets ?? []);
+  const [categories, setCategories] = useState<FinancialCategory[]>(startPreset?.categories ?? []);
   const [company, setCompany] = useState(initialCompany ?? ALL);
   const [status, setStatus] = useState(initialStatus ?? ALL);
-  const [card, setCard] = useState<string>(ALL);
-
+  const [preset, setPreset] = useState(startPreset?.id ?? "all");
 
   const sorted = useMemo(() => sortByDateDesc(rows), [rows]);
 
@@ -62,58 +84,113 @@ export function TransactionsTable({
     const uniq = (vals: (string | undefined)[]) =>
       Array.from(new Set(vals.filter((v): v is string => !!v))).sort();
     const present = new Set(rows.map((t) => t.company).filter(Boolean) as string[]);
+    const presentTypes = new Set(rows.map((t) => t.type));
+    const presentWallets = new Set<WalletKey>();
+    for (const t of rows) {
+      presentWallets.add(t.fromWallet);
+      presentWallets.add(t.toWallet);
+    }
     return {
-      types: uniq(rows.map((t) => t.type)),
+      types: TXN_TYPES.filter((t) => presentTypes.has(t)),
       companies: Array.from(new Set([...COMPANIES, ...present])) as string[],
       statuses: uniq(rows.map((t) => t.status)),
-      cards: CARD_WALLETS.filter((k) =>
-        rows.some((t) => t.fromWallet === k || t.toWallet === k),
-      ) as WalletKey[],
+      wallets: REPORT_WALLETS.filter((k) => presentWallets.has(k)),
     };
   }, [rows]);
 
   const filtered = useMemo(() => {
     const n = q.trim().toLowerCase();
+    const typeSet = types.length ? new Set(types) : null;
+    const walletSet = wallets.length ? new Set(wallets) : null;
     return sorted.filter((t) => {
       if (n && !JSON.stringify(t).toLowerCase().includes(n)) return false;
       if (from && t.date < from) return false;
       if (to && t.date > to) return false;
-      if (type !== ALL && t.type !== type) return false;
+      if (typeSet && !typeSet.has(t.type)) return false;
       if (company === NO_COMPANY) {
         if (t.company) return false;
       } else if (company !== ALL && t.company !== company) return false;
       if (status !== ALL && t.status !== status) return false;
-      if (card !== ALL && t.fromWallet !== card && t.toWallet !== card) return false;
+      if (walletSet && !walletSet.has(t.fromWallet) && !walletSet.has(t.toWallet)) return false;
+      if (categories.length && !categories.some((c) => matchesCategory(t, c))) return false;
       return true;
     });
-  }, [sorted, q, from, to, type, company, status, card]);
+  }, [sorted, q, from, to, types, company, status, wallets, categories]);
 
-  const total = useMemo(() => filtered.reduce((a, t) => a + (t.amount ?? 0), 0), [filtered]);
-  const hasFilters = !!(q || from || to || type !== ALL || company !== ALL || status !== ALL || card !== ALL);
+  const totals = useMemo(() => {
+    const rowsForTotals = ledgerWallet
+      ? toLedgerPrintRows(filtered, ledgerWallet)
+      : toDirectionalPrintRows(filtered);
+    return {
+      amount: filtered.reduce((a, t) => a + (t.amount ?? 0), 0),
+      moneyIn: rowsForTotals.reduce((a, r) => a + (r.moneyIn ?? 0), 0),
+      moneyOut: rowsForTotals.reduce((a, r) => a + (r.moneyOut ?? 0), 0),
+    };
+  }, [filtered, ledgerWallet]);
+
+  const hasFilters = !!(
+    q || from || to || types.length || wallets.length || categories.length ||
+    company !== ALL || status !== ALL
+  );
 
   function reset() {
-    setQ(""); setFrom(""); setTo(""); setType(ALL); setCompany(ALL); setStatus(ALL); setCard(ALL);
+    setQ(""); setFrom(""); setTo(""); setTypes([]); setWallets([]); setCategories([]);
+    setCompany(ALL); setStatus(ALL); setPreset("all");
   }
 
+  function applyPreset(id: string) {
+    setPreset(id);
+    const p = presetById(id);
+    setTypes(p?.types ?? []);
+    setWallets((p?.wallets ?? []).filter((w) => options.wallets.includes(w)));
+    setCategories(p?.categories ?? []);
+  }
+
+  const companyLabel =
+    company === ALL
+      ? undefined
+      : company === NO_COMPANY
+        ? "No company assigned"
+        : COMPANY_LABEL[company as keyof typeof COMPANY_LABEL] ?? company;
+
+  /** Everything printed / exported uses exactly the filters on screen. */
+  const filterSummary = () =>
+    [
+      types.length ? `Types: ${types.join(", ")}` : null,
+      categories.length ? `Categories: ${categories.join(", ")}` : null,
+      wallets.length ? `Wallets: ${wallets.map((w) => WALLET_BY_KEY[w]?.name ?? w).join(", ")}` : null,
+      status !== ALL ? `Status: ${status}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ") || undefined;
+
   function print() {
-    const companyLabel =
-      company === ALL
-        ? undefined
-        : company === NO_COMPANY
-          ? "No company assigned"
-          : COMPANY_LABEL[company as keyof typeof COMPANY_LABEL] ?? company;
     const asc = [...filtered].sort((a, b) =>
       a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1,
     );
     const printRows = ledgerWallet ? toLedgerPrintRows(asc, ledgerWallet) : toDirectionalPrintRows(asc);
+    const totalIn = printRows.reduce((a, r) => a + (r.moneyIn ?? 0), 0);
+    const totalOut = printRows.reduce((a, r) => a + (r.moneyOut ?? 0), 0);
     printAccountingReport({
       title: printTitle,
+      subtitle: filterSummary(),
       from,
       to,
       company: companyLabel,
       columns: "inout",
       rows: printRows,
+      summary: [
+        { label: "Total Money In", value: qar(totalIn) },
+        { label: "Total Money Out", value: qar(totalOut) },
+        { label: ledgerWallet ? "Net Movement" : "Net", value: qar(totalIn - totalOut) },
+      ],
     });
+  }
+
+  function csv() {
+    if (!exportName) return;
+    const data = ledgerWallet ? toLedgerCsvRows(filtered, ledgerWallet) : toDirectionalCsvRows(filtered);
+    exportCsv(exportName, data);
   }
 
   return (
@@ -128,7 +205,7 @@ export function TransactionsTable({
         />
         <span className="ml-auto text-xs text-muted-foreground">{filtered.length} of {rows.length}</span>
         {exportName ? (
-          <Button variant="outline" size="sm" onClick={() => exportCsv(exportName, filtered as unknown as Record<string, unknown>[])}>
+          <Button variant="outline" size="sm" onClick={csv}>
             <Download className="h-4 w-4" /> CSV
           </Button>
         ) : null}
@@ -136,23 +213,53 @@ export function TransactionsTable({
           <Printer className="h-4 w-4" /> Print Report
         </Button>
       </div>
+
       <div className="px-3 py-2 border-b flex flex-wrap items-center gap-2 bg-muted/30">
+        <Select value={preset} onValueChange={applyPreset}>
+          <SelectTrigger className="h-9 w-[220px]"><SelectValue placeholder="Preset" /></SelectTrigger>
+          <SelectContent>
+            {REPORT_PRESETS.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <span className="text-xs text-muted-foreground">From</span>
-        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-8 w-[150px]" />
+        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-9 w-[150px]" />
         <span className="text-xs text-muted-foreground">To</span>
-        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-8 w-[150px]" />
+        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-9 w-[150px]" />
+
+        <MultiSelect
+          className="w-[180px]"
+          allLabel="All categories"
+          options={FINANCIAL_CATEGORIES.map((c) => ({ value: c, label: c }))}
+          value={categories}
+          onChange={(v) => setCategories(v as FinancialCategory[])}
+        />
         {showColumns.type !== false && options.types.length > 1 && (
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger className="h-8 w-[160px]"><SelectValue placeholder="Type" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>All types</SelectItem>
-              {options.types.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <MultiSelect
+            className="w-[170px]"
+            allLabel="All types"
+            options={options.types.map((t) => ({ value: t, label: t }))}
+            value={types}
+            onChange={(v) => setTypes(v as TxnType[])}
+          />
+        )}
+        {options.wallets.length > 1 && (
+          <MultiSelect
+            className="w-[180px]"
+            allLabel="All wallets"
+            options={options.wallets.map((k) => ({
+              value: k,
+              label: WALLET_BY_KEY[k]?.name ?? k,
+              group: WALLET_GROUP[WALLET_BY_KEY[k]?.kind ?? ""] ?? "Other",
+            }))}
+            value={wallets}
+            onChange={(v) => setWallets(v as WalletKey[])}
+          />
         )}
         {showColumns.company && (
           <Select value={company} onValueChange={setCompany}>
-            <SelectTrigger className="h-8 w-[150px]"><SelectValue placeholder="Company" /></SelectTrigger>
+            <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Company" /></SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>All companies</SelectItem>
               <SelectItem value={NO_COMPANY}>-- None --</SelectItem>
@@ -162,20 +269,9 @@ export function TransactionsTable({
             </SelectContent>
           </Select>
         )}
-        {options.cards.length > 0 && (
-          <Select value={card} onValueChange={setCard}>
-            <SelectTrigger className="h-8 w-[160px]"><SelectValue placeholder="Card" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>All cards</SelectItem>
-              {options.cards.map((k) => (
-                <SelectItem key={k} value={k}>{WALLET_BY_KEY[k]?.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
         {showColumns.status && options.statuses.length > 1 && (
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="h-8 w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger className="h-9 w-[130px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>All statuses</SelectItem>
               {options.statuses.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
@@ -184,13 +280,23 @@ export function TransactionsTable({
         )}
 
         {hasFilters && (
-          <Button variant="ghost" size="sm" className="h-8" onClick={reset}>
+          <Button variant="ghost" size="sm" className="h-9" onClick={reset}>
             <X className="h-3.5 w-3.5" /> Clear
           </Button>
         )}
-        <span className="ml-auto text-xs">
-          <span className="text-muted-foreground">Filtered total </span>
-          <span className="font-semibold tabular">{qar(total)}</span>
+        <span className="ml-auto flex items-center gap-4 text-xs">
+          <span>
+            <span className="text-muted-foreground">Money in </span>
+            <span className="font-semibold tabular text-emerald-600">{qar(totals.moneyIn)}</span>
+          </span>
+          <span>
+            <span className="text-muted-foreground">Money out </span>
+            <span className="font-semibold tabular text-rose-600">{qar(totals.moneyOut)}</span>
+          </span>
+          <span>
+            <span className="text-muted-foreground">Total </span>
+            <span className="font-semibold tabular">{qar(totals.amount)}</span>
+          </span>
         </span>
       </div>
 

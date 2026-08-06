@@ -27,6 +27,7 @@ import {
   insertCloudTransactions,
   updateCloudTransaction,
   upsertCloudOpeningBalance,
+  upsertCloudWalletTarget,
   insertCloudPayable,
   updateCloudPayable,
   insertCloudPayablePayment,
@@ -39,6 +40,8 @@ import {
 export type FinanceState = {
   transactions: Transaction[];
   openingBalances: Partial<Record<WalletKey, number>>;
+  /** Configurable target balance per wallet (cards must return to this at month end). */
+  walletTargets: Partial<Record<WalletKey, number>>;
   payables: Payable[];
   payablePayments: PayablePayment[];
   closings: MonthClosing[];
@@ -50,10 +53,12 @@ const LEGACY_KEY = "finance-control-v1";
 const initial: FinanceState = {
   transactions: [],
   openingBalances: {},
+  walletTargets: {},
   payables: [],
   payablePayments: [],
   closings: [],
 };
+
 
 
 // ---------- State (mirror of the cloud database) ----------
@@ -219,6 +224,27 @@ export function setOpeningBalance(wallet: WalletKey, value: number) {
     );
   }
 }
+
+/**
+ * Target balance a wallet should be restored to at month end.
+ * Falls back to the card's built-in limit until the user configures one.
+ */
+export function walletTarget(s: FinanceState, wallet: WalletKey): number {
+  const configured = s.walletTargets[wallet];
+  if (configured != null) return configured;
+  return WALLET_BY_KEY[wallet]?.limit ?? 0;
+}
+
+export function setWalletTarget(wallet: WalletKey, value: number) {
+  setState((s) => ({ walletTargets: { ...s.walletTargets, [wallet]: value } }));
+  if (currentUserId) {
+    upsertCloudWalletTarget(wallet, value, currentUserId).catch((e) =>
+      reportCloudError("target balance", e),
+    );
+  }
+}
+
+
 
 // ---------- Payables (payment responsibility ledger) ----------
 export function addPayable(input: {
@@ -830,7 +856,9 @@ function migrateFromV1(v1: V1): FinanceState {
       "dumonde-petty": v1.dumondeOpeningBalance ?? 0,
       cbq: v1.cbqBalance ?? 0,
     },
+    walletTargets: {},
     payables: [],
+
     payablePayments: [],
     closings: [],
   };

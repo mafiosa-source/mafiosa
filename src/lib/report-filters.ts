@@ -1,82 +1,51 @@
 // ============================================================
 // Report filtering engine — pure, derived, read-only.
-// Separates real company operating expenses from money that is
-// only HELD on behalf of housemaids, candidates or sponsors.
+//
+// Money In / Money Out is decided by the standardised Movement Type
+// rules in wallet-rules.ts, never by reading free text.
 // ============================================================
-import type { Transaction, WalletKey } from "@/lib/finance-types";
-import { COMPANY_LABEL, WALLET_BY_KEY, PETTY_WALLETS, CARD_WALLETS } from "@/lib/finance-types";
+import type { Transaction, TxnType, WalletKey } from "@/lib/finance-types";
+import { COMPANY_LABEL, WALLET_BY_KEY } from "@/lib/finance-types";
 import type { PrintReportRow } from "@/lib/format";
-
-export type TxnCategory =
-  | "Company Expenses"
-  | "Income"
-  | "Internal Transfer"
-  | "Housemaid Salary"
-  | "Candidate Money"
-  | "Polo Visa"
-  | "Other";
-
-export const TXN_CATEGORIES: TxnCategory[] = [
-  "Company Expenses",
-  "Income",
-  "Internal Transfer",
-  "Housemaid Salary",
-  "Candidate Money",
-  "Polo Visa",
-  "Other",
-];
-
-/** Categories that represent money held for third parties — never a company cost. */
-export const HELD_FUND_CATEGORIES: TxnCategory[] = ["Housemaid Salary", "Candidate Money", "Polo Visa"];
-
-/** Categories included in an Expense Report by default. */
-export const EXPENSE_CATEGORIES: TxnCategory[] = ["Company Expenses"];
-
-/** Classifies a master transaction into a single reporting category. */
-export function txnCategory(t: Transaction): TxnCategory {
-  const w = [t.fromWallet, t.toWallet];
-  if (t.type === "Salary Holding" || t.type === "Salary Release" || w.includes("salary-wallet")) {
-    return "Housemaid Salary";
-  }
-  if (t.purposeCategory === "POLO") return "Polo Visa";
-  if (
-    t.type === "Housemaid Holding" ||
-    t.type === "Holding Release" ||
-    w.includes("housemaid-holding") ||
-    t.classification === "Sponsor Expense"
-  ) {
-    return "Candidate Money";
-  }
-  const internal = t.fromWallet !== "external" && t.toWallet !== "external";
-  if (internal) return "Internal Transfer";
-  if (t.fromWallet === "external" || t.type === "Receipt Voucher") return "Income";
-  if (t.classification === "Company Expense" || t.toWallet === "external") return "Company Expenses";
-  return "Other";
-}
+import type { FinancialCategory } from "@/lib/wallet-rules";
+import {
+  isCompanyOperatingExpense,
+  matchesCategory,
+  movementLabel,
+  movementType,
+  walletDirection,
+} from "@/lib/wallet-rules";
 
 export type ReportScope = {
   from?: string;
   to?: string;
   /** Empty = all companies. "__none__" matches transactions with no company. */
   company?: string;
-  /** Empty = all wallets. */
+  /** Empty = all types. */
+  types?: TxnType[];
+  /** Empty = all wallets. Matches the paying or receiving wallet. */
   wallets?: WalletKey[];
-  /** Empty = all categories. */
-  categories?: TxnCategory[];
+  /** Empty = all categories. Multiple categories are OR-ed together. */
+  categories?: FinancialCategory[];
+  /** Empty = all statuses. */
+  status?: string;
 };
 
 export function applyScope(rows: Transaction[], scope: ReportScope): Transaction[] {
-  const { from, to, company, wallets, categories } = scope;
+  const { from, to, company, wallets, categories, types, status } = scope;
   const walletSet = wallets && wallets.length ? new Set<WalletKey>(wallets) : null;
-  const catSet = categories && categories.length ? new Set<TxnCategory>(categories) : null;
+  const catList = categories && categories.length ? categories : null;
+  const typeSet = types && types.length ? new Set<TxnType>(types) : null;
   return rows.filter((t) => {
     if (from && t.date < from) return false;
     if (to && t.date > to) return false;
     if (company === "__none__") {
       if (t.company) return false;
     } else if (company && company !== "__all__" && t.company !== company) return false;
+    if (status && status !== "__all__" && t.status !== status) return false;
+    if (typeSet && !typeSet.has(t.type)) return false;
     if (walletSet && !walletSet.has(t.fromWallet) && !walletSet.has(t.toWallet)) return false;
-    if (catSet && !catSet.has(txnCategory(t))) return false;
+    if (catList && !catList.some((c) => matchesCategory(t, c))) return false;
     return true;
   });
 }
@@ -86,8 +55,8 @@ export const byDateAsc = (rows: Transaction[]) =>
     a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1,
   );
 
-export const particularsOf = (t: Transaction) =>
-  [t.purpose || t.description || t.purposeCategory || t.type, t.candidate].filter(Boolean).join(" · ");
+export const particularsOf = (t: Transaction, wallet?: WalletKey) =>
+  [movementLabel(t, wallet), t.candidate].filter(Boolean).join(" · ");
 
 export const walletPath = (t: Transaction) =>
   t.toWallet === "external"
@@ -107,31 +76,22 @@ export function toPrintRows(rows: Transaction[]): PrintReportRow[] {
   }));
 }
 
-const isOpeningBalance = (t: Transaction) =>
-  (t.purpose ?? "").trim().toUpperCase() === "OPENING BALANCE" ||
-  (t.description ?? "").trim().toUpperCase() === "OPENING BALANCE";
-
 /**
- * Cash-book print rows for a wallet: Money In / Money Out.
- *
- * Petty cash wallets and company cards only treat "OPENING BALANCE" as Money In —
- * every other movement is a distribution of cash that already exists there.
- * Holding wallets (salary, housemaid holding) treat any incoming movement as Money In.
+ * Cash-book print rows for one wallet: Money In / Money Out.
+ * Money arriving in the wallet is Money In, money leaving it is Money Out —
+ * so a card top-up is Money Out on petty cash and Money In on the card.
  */
 export function toLedgerPrintRows(rows: Transaction[], wallet: WalletKey): PrintReportRow[] {
-  const strict = PETTY_WALLETS.includes(wallet) || CARD_WALLETS.includes(wallet);
   return byDateAsc(rows).map((t) => {
-    const incoming = t.toWallet === wallet && t.fromWallet !== wallet;
-    const moneyIn = incoming && (!strict || isOpeningBalance(t)) ? t.amount : 0;
-    const moneyOut = moneyIn ? 0 : t.amount;
+    const { moneyIn, moneyOut } = walletDirection(t, wallet);
     return {
       date: t.date,
       company: companyOf(t),
-      particulars: particularsOf(t),
+      particulars: particularsOf(t, wallet),
       amount: t.amount,
       moneyIn,
       moneyOut,
-      wallet: walletPath(t),
+      wallet: WALLET_BY_KEY[wallet]?.name ?? wallet,
     };
   });
 }
@@ -149,17 +109,21 @@ export function toLedgerCsvRows(rows: Transaction[], wallet: WalletKey): Record<
 }
 
 /**
- * Money In / Money Out rows for a mixed list that has no single wallet context
- * (e.g. the master transactions table or a voucher list). Money entering the
- * business from outside is Money In; everything else is Money Out.
+ * Money In / Money Out rows for a mixed list with no single wallet context
+ * (the master transactions table, a voucher list, a multi-wallet report).
+ * The standardised movement type decides the direction.
  */
+const INFLOW_MOVEMENTS = new Set([
+  "Income",
+  "Opening Balance",
+  "Salary Received",
+  "Holding Received",
+  "Candidate Money Received",
+]);
+
 export function toDirectionalPrintRows(rows: Transaction[]): PrintReportRow[] {
   return byDateAsc(rows).map((t) => {
-    const incoming =
-      t.type === "Receipt Voucher" ||
-      t.type === "Salary Holding" ||
-      t.type === "Housemaid Holding" ||
-      (t.fromWallet === "external" && t.toWallet !== "external");
+    const incoming = INFLOW_MOVEMENTS.has(movementType(t));
     return {
       date: t.date,
       company: companyOf(t),
@@ -170,4 +134,76 @@ export function toDirectionalPrintRows(rows: Transaction[]): PrintReportRow[] {
       wallet: walletPath(t),
     };
   });
+}
+
+/** Generic CSV rows that mirror exactly what is on screen / printed. */
+export function toDirectionalCsvRows(rows: Transaction[]): Record<string, unknown>[] {
+  return byDateAsc(rows).map((t) => ({
+    Date: t.date,
+    Type: t.type,
+    "Movement Type": movementType(t),
+    Voucher: t.voucherNumber ?? "",
+    Company: companyOf(t),
+    "Candidate / Party": t.candidate ?? "",
+    Particulars: particularsOf(t),
+    "Money In": INFLOW_MOVEMENTS.has(movementType(t)) ? t.amount : "",
+    "Money Out": INFLOW_MOVEMENTS.has(movementType(t)) ? "" : t.amount,
+    Amount: t.amount,
+    "From Wallet": WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
+    "To Wallet": WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet,
+    Status: t.status,
+  }));
+}
+
+// ---------- Monthly Company Expense Closing ----------
+/**
+ * Genuine company operating expenses across every selected company wallet.
+ * Internal transfers, card top-ups, opening balances, bank movements and all
+ * held funds are excluded — they are cash movements, not expenses.
+ */
+export function companyExpenseClosingRows(
+  rows: Transaction[],
+  opts: { from?: string; to?: string; company?: string; wallets?: WalletKey[]; classification?: string },
+): Transaction[] {
+  const walletSet = opts.wallets && opts.wallets.length ? new Set(opts.wallets) : null;
+  return byDateAsc(
+    rows.filter((t) => {
+      if (opts.from && t.date < opts.from) return false;
+      if (opts.to && t.date > opts.to) return false;
+      if (opts.company === "__none__") {
+        if (t.company) return false;
+      } else if (opts.company && opts.company !== "__all__" && t.company !== opts.company) return false;
+      if (walletSet && !walletSet.has(t.fromWallet)) return false;
+      const cls = opts.classification ?? "Company Expense";
+      if (cls === "Company Expense") return isCompanyOperatingExpense(t);
+      if (cls === "Sponsor Expense") return t.classification === "Sponsor Expense";
+      if (cls === "Internal Transfer") return movementType(t) === "Internal Transfer" || movementType(t) === "Top Up Balance";
+      if (cls === "Liability") return matchesCategory(t, "Liabilities / Held Funds");
+      return true;
+    }),
+  );
+}
+
+/** Printable rows for the Monthly Company Expense Closing Report. */
+export function toExpenseClosingPrintRows(rows: Transaction[]): PrintReportRow[] {
+  return rows.map((t) => ({
+    date: t.date,
+    company: companyOf(t),
+    particulars: [t.purposeCategory, particularsOf(t)].filter(Boolean).join(" · "),
+    amount: t.amount,
+    moneyIn: 0,
+    moneyOut: t.amount,
+    wallet: WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
+  }));
+}
+
+export function toExpenseClosingCsvRows(rows: Transaction[]): Record<string, unknown>[] {
+  return rows.map((t) => ({
+    Date: t.date,
+    "Source Wallet": WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
+    Company: companyOf(t),
+    "Expense Category": t.purposeCategory ?? "",
+    Particulars: particularsOf(t),
+    "Money Out": t.amount,
+  }));
 }

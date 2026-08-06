@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MultiSelect } from "@/components/MultiSelect";
 import { Download, Printer } from "lucide-react";
-import { useFinance, walletBalance, cardUsage, sortByDateDesc } from "@/lib/finance-store";
+import { useFinance, walletBalance, cardUsage, sortByDateDesc, walletTarget } from "@/lib/finance-store";
 import { walletLedger } from "@/lib/finance-derived";
 import {
   WALLETS, CARD_WALLETS, COMPANY_ACCOUNT_WALLETS, PETTY_WALLETS, COMPANIES, COMPANY_LABEL, WALLET_BY_KEY,
@@ -15,7 +16,14 @@ import {
 import type { Company, Transaction, WalletKey } from "@/lib/finance-types";
 import { qar, exportCsv, printAccountingReport, today } from "@/lib/format";
 import type { PrintReportRow } from "@/lib/format";
-import { toDirectionalPrintRows, toLedgerPrintRows } from "@/lib/report-filters";
+import {
+  toDirectionalPrintRows,
+  toLedgerPrintRows,
+  companyExpenseClosingRows,
+  toExpenseClosingPrintRows,
+  toExpenseClosingCsvRows,
+} from "@/lib/report-filters";
+import { COMPANY_EXPENSE_WALLETS, cardReconciliation } from "@/lib/wallet-rules";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
@@ -34,6 +42,8 @@ export const Route = createFileRoute("/reports")({
 const ALL = "__all__";
 const NO_COMPANY = "__none__";
 
+const CLASSIFICATIONS = ["Company Expense", "Sponsor Expense", "Internal Transfer", "Liability", "All"];
+
 /** Converts master transactions to printable cash-book rows (Money In / Money Out). */
 function toPrintRows(rows: Transaction[]): PrintReportRow[] {
   return toDirectionalPrintRows(rows);
@@ -49,6 +59,9 @@ function ReportsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [company, setCompany] = useState(ALL);
+  const [closingWallets, setClosingWallets] = useState<WalletKey[]>(COMPANY_EXPENSE_WALLETS);
+  const [classification, setClassification] = useState("Company Expense");
+
 
   const companyLabel =
     company === ALL ? undefined : company === NO_COMPANY ? "No company assigned" : COMPANY_LABEL[company as Company];
@@ -65,11 +78,52 @@ function ReportsPage() {
 
   const meta = { from, to, company: companyLabel };
 
+  /** Monthly Company Expense Closing — genuine operating expenses only. */
+  const closingRows = useMemo(
+    () =>
+      companyExpenseClosingRows(s.transactions, {
+        from: from || undefined,
+        to: to || undefined,
+        company,
+        wallets: closingWallets,
+        classification,
+      }),
+    [s.transactions, from, to, company, closingWallets, classification],
+  );
+  const closingTotal = closingRows.reduce((a, t) => a + t.amount, 0);
+
+  const printClosing = () =>
+    printAccountingReport({
+      title: "Monthly Company Expense Closing Report",
+      subtitle: `${classification === "All" ? "All classifications" : classification} · ${
+        closingWallets.length ? closingWallets.map((w) => WALLET_BY_KEY[w]?.name ?? w).join(", ") : "All wallets"
+      }`,
+      ...meta,
+      columns: "inout",
+      rows: toExpenseClosingPrintRows(closingRows),
+      summary: [
+        { label: "Entries", value: String(closingRows.length) },
+        { label: "Total Company Expenses", value: qar(closingTotal) },
+      ],
+    });
+
   const walletRows = () =>
     WALLETS.filter((w) => w.key !== "external").map((w) => {
       const led = walletLedger(s, w.key, { start: from || undefined, end: to || undefined });
       return { wallet: w.name, kind: w.kind, opening: led.opening, in: led.debit, out: led.credit, closing: led.closing };
     });
+
+  /** Card reconciliation for the selected period, against the configurable target balance. */
+  const cardRecon = (k: WalletKey) =>
+    cardReconciliation(
+      s.transactions.filter((t) => t.fromWallet === k || t.toWallet === k),
+      k,
+      walletTarget(s, k),
+      s.openingBalances[k] ?? 0,
+      { start: from || undefined, end: to || undefined },
+    );
+
+
 
   const reports: {
     title: string;
@@ -233,36 +287,50 @@ function ReportsPage() {
         }),
     },
     {
-      title: "Company Cards",
-      desc: "Card usage, remaining and amount to restore.",
+      title: "Company Cards Reconciliation",
+      desc: "Opening, top ups, expenses, closing and variance from each card's target balance.",
       csv: () =>
         exportCsv(
-          `cards-report-${today()}.csv`,
+          `cards-reconciliation-${today()}.csv`,
           CARD_WALLETS.map((k) => {
-            const u = cardUsage(s, k);
-            const m = WALLETS.find((w) => w.key === k)!;
-            return { card: m.name, last4: m.last4, limit: u.limit, used: u.used, remaining: u.remaining, toRestore: u.used };
+            const r = cardRecon(k);
+            return {
+              Card: r.name,
+              Last4: r.last4,
+              "Opening Balance": r.opening,
+              "Total Top Ups": r.topUps,
+              "Total Card Expenses": r.expenses,
+              "Closing Balance": r.closing,
+              "Target Balance": r.target,
+              "Variance from Target": r.variance,
+              "Top Up Required": r.topUpRequired,
+            };
           }),
         ),
       print: () =>
         printAccountingReport({
-          title: "Company Cards Report",
-          subtitle: "Usage against limit and amount to restore",
+          title: "Company Cards Reconciliation",
+          subtitle: "Opening + Top Ups − Card Expenses = Closing, against each card's target balance",
           ...meta,
           company: undefined,
+          columns: "inout",
           rows: CARD_WALLETS.map((k) => {
-            const u = cardUsage(s, k);
-            const m = WALLETS.find((w) => w.key === k)!;
+            const r = cardRecon(k);
             return {
               date: to || today(),
               company: "—",
-              particulars: `${m.name} (••${m.last4}) — limit ${qar(u.limit)}, remaining ${qar(u.remaining)}`,
-              amount: u.used,
-              wallet: m.name,
+              particulars: `${r.name} (••${r.last4}) — opening ${qar(r.opening)}, closing ${qar(
+                r.closing,
+              )}, target ${qar(r.target)}, variance ${r.variance >= 0 ? "+" : "−"}${qar(Math.abs(r.variance))}`,
+              amount: r.closing,
+              moneyIn: r.topUps,
+              moneyOut: r.expenses,
+              wallet: r.name,
             };
           }),
         }),
     },
+
     {
       title: "Monthly Closing",
       desc: "Full wallet closing snapshot for the selected range.",
@@ -322,6 +390,64 @@ function ReportsPage() {
           </span>
         </div>
       </div>
+
+      <Card className="mb-5 border-primary/40">
+        <CardHeader>
+          <CardTitle className="text-base">📊 Monthly Company Expense Closing</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            One consolidated report of genuine company operating expenses across every selected company wallet.
+            Card top-ups, internal and bank transfers, opening balances, salary, candidate and sponsor held funds are
+            always excluded. Choose the company and month above, then generate.
+          </p>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Expense classification</Label>
+              <Select value={classification} onValueChange={setClassification}>
+                <SelectTrigger className="h-9 w-[190px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CLASSIFICATIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Source wallets</Label>
+              <MultiSelect
+                className="w-[240px]"
+                allLabel="All company wallets"
+                options={COMPANY_EXPENSE_WALLETS.map((k) => ({
+                  value: k,
+                  label: WALLET_BY_KEY[k]?.name ?? k,
+                }))}
+                value={closingWallets}
+                onChange={(v) => setClosingWallets(v as WalletKey[])}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Total company expenses</Label>
+              <div className="h-9 flex items-center font-semibold tabular">{qar(closingTotal)}</div>
+            </div>
+            <div className="flex gap-2 ml-auto">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  exportCsv(`company-expense-closing-${today()}.csv`, toExpenseClosingCsvRows(closingRows))
+                }
+              >
+                <Download className="h-4 w-4" /> CSV
+              </Button>
+              <Button size="sm" onClick={printClosing}>
+                <Printer className="h-4 w-4" /> Generate Report
+              </Button>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">{closingRows.length} expense entries in scope.</p>
+        </CardContent>
+      </Card>
+
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {reports.map((r) => (
