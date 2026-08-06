@@ -113,6 +113,17 @@ function ReportsPage() {
       return { wallet: w.name, kind: w.kind, opening: led.opening, in: led.debit, out: led.credit, closing: led.closing };
     });
 
+  /** Card reconciliation for the selected period, against the configurable target balance. */
+  const cardRecon = (k: WalletKey) =>
+    cardReconciliation(
+      s.transactions.filter((t) => t.fromWallet === k || t.toWallet === k),
+      k,
+      walletTarget(s, k),
+      s.openingBalances[k] ?? 0,
+      { start: from || undefined, end: to || undefined },
+    );
+
+
 
   const reports: {
     title: string;
