@@ -391,6 +391,64 @@ function ReportsPage() {
         </div>
       </div>
 
+      <Card className="mb-5 border-primary/40">
+        <CardHeader>
+          <CardTitle className="text-base">📊 Monthly Company Expense Closing</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            One consolidated report of genuine company operating expenses across every selected company wallet.
+            Card top-ups, internal and bank transfers, opening balances, salary, candidate and sponsor held funds are
+            always excluded. Choose the company and month above, then generate.
+          </p>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Expense classification</Label>
+              <Select value={classification} onValueChange={setClassification}>
+                <SelectTrigger className="h-9 w-[190px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CLASSIFICATIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Source wallets</Label>
+              <MultiSelect
+                className="w-[240px]"
+                allLabel="All company wallets"
+                options={COMPANY_EXPENSE_WALLETS.map((k) => ({
+                  value: k,
+                  label: WALLET_BY_KEY[k]?.name ?? k,
+                }))}
+                value={closingWallets}
+                onChange={(v) => setClosingWallets(v as WalletKey[])}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Total company expenses</Label>
+              <div className="h-9 flex items-center font-semibold tabular">{qar(closingTotal)}</div>
+            </div>
+            <div className="flex gap-2 ml-auto">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  exportCsv(`company-expense-closing-${today()}.csv`, toExpenseClosingCsvRows(closingRows))
+                }
+              >
+                <Download className="h-4 w-4" /> CSV
+              </Button>
+              <Button size="sm" onClick={printClosing}>
+                <Printer className="h-4 w-4" /> Generate Report
+              </Button>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">{closingRows.length} expense entries in scope.</p>
+        </CardContent>
+      </Card>
+
+
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {reports.map((r) => (
           <Card key={r.title}>
