@@ -239,6 +239,15 @@ export async function upsertCloudOpeningBalance(
   if (error) throw error;
 }
 
+/** Configurable monthly target balance for a wallet (used by card reconciliation). */
+export async function upsertCloudWalletTarget(wallet: WalletKey, amount: number, userId: string) {
+  const { error } = await supabase
+    .from("wallet_targets")
+    .upsert({ wallet, amount, user_id: userId } as never, { onConflict: "user_id,wallet" });
+  if (error) throw error;
+}
+
+
 export async function insertCloudPayable(p: Payable, userId: string) {
   const { error } = await supabase
     .from("payables")
