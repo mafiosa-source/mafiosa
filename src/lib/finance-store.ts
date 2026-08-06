@@ -225,6 +225,27 @@ export function setOpeningBalance(wallet: WalletKey, value: number) {
   }
 }
 
+/**
+ * Target balance a wallet should be restored to at month end.
+ * Falls back to the card's built-in limit until the user configures one.
+ */
+export function walletTarget(s: FinanceState, wallet: WalletKey): number {
+  const configured = s.walletTargets[wallet];
+  if (configured != null) return configured;
+  return WALLET_BY_KEY[wallet]?.limit ?? 0;
+}
+
+export function setWalletTarget(wallet: WalletKey, value: number) {
+  setState((s) => ({ walletTargets: { ...s.walletTargets, [wallet]: value } }));
+  if (currentUserId) {
+    upsertCloudWalletTarget(wallet, value, currentUserId).catch((e) =>
+      reportCloudError("target balance", e),
+    );
+  }
+}
+
+
+
 // ---------- Payables (payment responsibility ledger) ----------
 export function addPayable(input: {
   txnId?: string;
