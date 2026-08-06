@@ -165,15 +165,17 @@ function rowToClosing(r: Row): MonthClosing {
 export type CloudState = {
   transactions: Transaction[];
   openingBalances: Partial<Record<WalletKey, number>>;
+  walletTargets: Partial<Record<WalletKey, number>>;
   payables: Payable[];
   payablePayments: PayablePayment[];
   closings: MonthClosing[];
 };
 
 export async function fetchCloudState(): Promise<CloudState> {
-  const [txnRes, obRes, payRes, payPayRes, closeRes] = await Promise.all([
+  const [txnRes, obRes, wtRes, payRes, payPayRes, closeRes] = await Promise.all([
     supabase.from("transactions").select("*").order("date", { ascending: false }),
     supabase.from("opening_balances").select("*"),
+    supabase.from("wallet_targets").select("*"),
     supabase.from("payables").select("*").order("date", { ascending: false }),
     supabase.from("payable_payments").select("*").order("date", { ascending: false }),
     supabase.from("month_closings").select("*"),
@@ -184,14 +186,20 @@ export async function fetchCloudState(): Promise<CloudState> {
   for (const o of (obRes.data ?? []) as Row[]) {
     openingBalances[o.wallet as WalletKey] = Number(o.amount ?? 0);
   }
+  const walletTargets: Partial<Record<WalletKey, number>> = {};
+  for (const o of (wtRes.data ?? []) as Row[]) {
+    walletTargets[o.wallet as WalletKey] = Number(o.amount ?? 0);
+  }
   return {
     transactions: ((txnRes.data ?? []) as Row[]).map(rowToTransaction),
     openingBalances,
+    walletTargets,
     payables: ((payRes.data ?? []) as Row[]).map(rowToPayable),
     payablePayments: ((payPayRes.data ?? []) as Row[]).map(rowToPayablePayment),
     closings: ((closeRes.data ?? []) as Row[]).map(rowToClosing),
   };
 }
+
 
 export async function insertCloudTransaction(t: Transaction, userId: string) {
   const { error } = await supabase
