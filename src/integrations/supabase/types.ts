@@ -301,6 +301,33 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_targets: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          wallet: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          wallet: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          wallet?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
