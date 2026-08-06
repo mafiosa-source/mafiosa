@@ -78,11 +78,41 @@ function ReportsPage() {
 
   const meta = { from, to, company: companyLabel };
 
+  /** Monthly Company Expense Closing — genuine operating expenses only. */
+  const closingRows = useMemo(
+    () =>
+      companyExpenseClosingRows(s.transactions, {
+        from: from || undefined,
+        to: to || undefined,
+        company,
+        wallets: closingWallets,
+        classification,
+      }),
+    [s.transactions, from, to, company, closingWallets, classification],
+  );
+  const closingTotal = closingRows.reduce((a, t) => a + t.amount, 0);
+
+  const printClosing = () =>
+    printAccountingReport({
+      title: "Monthly Company Expense Closing Report",
+      subtitle: `${classification === "All" ? "All classifications" : classification} · ${
+        closingWallets.length ? closingWallets.map((w) => WALLET_BY_KEY[w]?.name ?? w).join(", ") : "All wallets"
+      }`,
+      ...meta,
+      columns: "inout",
+      rows: toExpenseClosingPrintRows(closingRows),
+      summary: [
+        { label: "Entries", value: String(closingRows.length) },
+        { label: "Total Company Expenses", value: qar(closingTotal) },
+      ],
+    });
+
   const walletRows = () =>
     WALLETS.filter((w) => w.key !== "external").map((w) => {
       const led = walletLedger(s, w.key, { start: from || undefined, end: to || undefined });
       return { wallet: w.name, kind: w.kind, opening: led.opening, in: led.debit, out: led.credit, closing: led.closing };
     });
+
 
   const reports: {
     title: string;
