@@ -148,12 +148,12 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
 
           <div className="flex items-end justify-between gap-3">
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Limit</div>
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Card limit</div>
               <div className="text-sm font-medium tabular">{qar(limit)}</div>
             </div>
             <div className="text-right">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Available</div>
-              <div className="text-xl font-semibold tabular text-emerald-600">{qar(available)}</div>
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Balance remaining</div>
+              <div className="text-xl font-semibold tabular text-emerald-600">{qar(remaining)}</div>
             </div>
           </div>
 
@@ -165,10 +165,19 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
             />
           </div>
 
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Used</span>
-            <span className="tabular font-medium">{qar(used)}</span>
+          <div className="space-y-0.5 text-xs">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Used (spent on card)</span>
+              <span className="tabular font-medium text-rose-600">{qar(used)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Limit − Used</span>
+              <span className="tabular font-medium">
+                {qar(limit)} − {qar(used)} = {qar(remaining)}
+              </span>
+            </div>
           </div>
+
 
           <div className="rounded-md border bg-muted/30 p-2 space-y-1">
             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Period activity</div>
