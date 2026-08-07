@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { ReactNode } from "react";
 import {
   TXN_TYPES, COMPANIES, VOUCHER_COMPANIES, CLASSIFICATIONS, PURPOSE_CATEGORIES,
-  PAYMENT_METHODS, STATUSES, WALLETS,
+  PAYMENT_METHODS, STATUSES, WALLETS, DRIVERS, vehicleLabel, vehiclesForCompany,
 } from "@/lib/finance-types";
 import type {
   Transaction, TxnType, Company, Classification, PurposeCategory,
@@ -49,11 +49,16 @@ export function TransactionDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft>(editing ?? { ...newDraft(), ...defaults });
+  const [driverOther, setDriverOther] = useState(false);
 
   const isVoucher = draft.type === "Receipt Voucher" || draft.type === "Payment Voucher";
   const isLimitCard = draft.fromWallet === "limit-card" || draft.toWallet === "limit-card";
   const isFuel = draft.type === "Fuel Expense" || draft.purposeCategory === "Fuel";
   const isSalaryRelease = draft.type === "Salary Release";
+
+  const companyVehicles = vehiclesForCompany(draft.company);
+  const driverIsOther =
+    driverOther || (!!draft.driver && !(DRIVERS as readonly string[]).includes(draft.driver));
 
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
 
