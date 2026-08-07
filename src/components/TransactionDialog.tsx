@@ -17,7 +17,7 @@ import type {
   PaymentMethod, Status, WalletKey, CardCategory,
 } from "@/lib/finance-types";
 import { addTransaction, updateTransaction, isVoucherNumberTaken, nextVoucherNumber, findMatchingHoldings, getState } from "@/lib/finance-store";
-import { today } from "@/lib/format";
+import { today, dayOfWeek } from "@/lib/format";
 import { toast } from "sonner";
 
 type Draft = Partial<Transaction>;
@@ -52,7 +52,7 @@ export function TransactionDialog({
 
   const isVoucher = draft.type === "Receipt Voucher" || draft.type === "Payment Voucher";
   const isLimitCard = draft.fromWallet === "limit-card" || draft.toWallet === "limit-card";
-  const isFuel = draft.type === "Fuel Expense";
+  const isFuel = draft.type === "Fuel Expense" || draft.purposeCategory === "Fuel";
   const isSalaryRelease = draft.type === "Salary Release";
 
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
@@ -68,6 +68,9 @@ export function TransactionDialog({
     if (!draft.fromWallet || !draft.toWallet) return toast.error("Choose wallets");
     if (draft.fromWallet === draft.toWallet) return toast.error("From and To wallets must differ");
     if (isVoucher && !draft.company) return toast.error("Select company");
+    if (isFuel && (!draft.vehicle || !draft.plateNumber || !draft.driver || draft.kmBefore == null || draft.kmAfter == null)) {
+      return toast.error("Fuel entries require vehicle, number plate, driver and odometer readings");
+    }
     if (isVoucher && draft.company === "AHG") return toast.error("AHG cannot use vouchers");
     if (isVoucher && draft.voucherNumber && isVoucherNumberTaken(draft.voucherNumber, editing?.id)) {
       return toast.error("Voucher number already used");
