@@ -451,7 +451,9 @@ const explicitFunding = (t: Transaction) => /expense\s*funding/.test(text(t));
 export function isExpenseFunding(t: Transaction): boolean {
   if (t.status === "Cancelled" || t.status === "Refunded") return false;
   if (isHousemaidMoney(t) || isOtherHeldMoney(t)) return false;
-  if (looksLikeOpeningBalance(t)) return false;
+  // Money from Mr Hassan is always expense funding, even when the operator
+  // wrote "opening balance" in the purpose field.
+  if (looksLikeOpeningBalance(t) && t.fromWallet !== "hassan") return false;
   if (CARD_WALLETS.includes(t.fromWallet)) return false;
   if (explicitFunding(t)) return true;
   if (!EXPENSE_FUNDING_WALLETS.includes(t.toWallet)) return false;

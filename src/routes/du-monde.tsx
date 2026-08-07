@@ -61,10 +61,10 @@ function DuMonde() {
         <PeriodSelect period={period} onChange={setPeriod} />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <StatCard label={`Opening balance (${period.from || "start"})`} value={led.opening} />
-        <StatCard label="Money In (period)" value={led.debit} tone="success" />
-        <StatCard label="Money Out (period)" value={led.credit} tone="warning" />
-        <StatCard label="Closing balance (period)" value={led.closing} tone={led.closing < 0 ? "danger" : "info"} />
+        <StatCard label={`Opening balance (${period.from || "start"})`} value={led.opening} caption="Balance carried into the period" />
+        <StatCard label="Money In (period)" value={led.debit} tone="success" caption="Received in this period" />
+        <StatCard label="Money Out (period)" value={led.credit} tone="warning" caption="Paid out in this period" />
+        <StatCard label="Closing balance (period)" value={led.closing} tone={led.closing < 0 ? "danger" : "info"} caption="Opening + In − Out" />
       </div>
       <div className="mb-6 rounded-lg border bg-card p-3 flex flex-wrap items-center gap-3">
         <span className="text-sm text-muted-foreground">
