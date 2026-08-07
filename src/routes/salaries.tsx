@@ -16,9 +16,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/salaries")({
   head: () => ({
     meta: [
-      { title: "Housemaid Salaries · AHG Finance Core" },
+      { title: "Housemaid Salaries · Alhakeem Expenses ERP" },
       { name: "description", content: "Automatic salary ledger: received, released and running balance per housemaid." },
-      { property: "og:title", content: "Housemaid Salaries · AHG Finance Core" },
+      { property: "og:title", content: "Housemaid Salaries · Alhakeem Expenses ERP" },
       { property: "og:description", content: "Automatic salary ledger per housemaid, derived from the master transactions table." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

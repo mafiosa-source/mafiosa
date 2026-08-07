@@ -15,9 +15,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/months")({
   head: () => ({
     meta: [
-      { title: "Month Management · AHG Finance Core" },
+      { title: "Month Management · Alhakeem Expenses ERP" },
       { name: "description", content: "Every financial year organised by month, with manual reconciliation and closing." },
-      { property: "og:title", content: "Month Management · AHG Finance Core" },
+      { property: "og:title", content: "Month Management · Alhakeem Expenses ERP" },
       { property: "og:description", content: "Open, ready-to-close and closed months with full reconciliation history." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

@@ -161,7 +161,7 @@ td.nw { white-space: nowrap; }
 .pf .pn::after { content: "Page " counter(page) " of " counter(pages); }
 </style></head><body>
 <div class="head">
-  <div class="org">AHG Finance Core</div>
+  <div class="org">Alhakeem Expenses ERP</div>
   <h1>${esc(title)}</h1>
   ${subtitle ? `<div class="sub">${esc(subtitle)}</div>` : ""}
 </div>

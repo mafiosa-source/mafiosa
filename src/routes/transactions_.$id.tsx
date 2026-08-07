@@ -12,9 +12,9 @@ import type { ReactNode } from "react";
 export const Route = createFileRoute("/transactions_/$id")({
   head: () => ({
     meta: [
-      { title: "Transaction Summary · AHG Finance Core" },
+      { title: "Transaction Summary · Alhakeem Expenses ERP" },
       { name: "description", content: "Full detail of a single master ledger transaction, including wallets, party and status." },
-      { property: "og:title", content: "Transaction Summary · AHG Finance Core" },
+      { property: "og:title", content: "Transaction Summary · Alhakeem Expenses ERP" },
       { property: "og:description", content: "Full detail of a single master ledger transaction." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

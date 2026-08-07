@@ -12,7 +12,7 @@ import { useState } from "react";
 export const Route = createFileRoute("/petty-cash")({
   head: () => ({
     meta: [
-      { title: "Office Petty Cash · AHG Finance Core" },
+      { title: "Office Petty Cash · Alhakeem Expenses ERP" },
       { name: "description", content: "Office petty cash movements." },
     ],
   }),

@@ -10,7 +10,7 @@ import { useFinance } from "@/lib/finance-store";
 export const Route = createFileRoute("/vouchers")({
   head: () => ({
     meta: [
-      { title: "Vouchers · AHG Finance Core" },
+      { title: "Vouchers · Alhakeem Expenses ERP" },
       { name: "description", content: "Receipt and Payment vouchers per company." },
     ],
   }),

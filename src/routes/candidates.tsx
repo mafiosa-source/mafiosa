@@ -27,7 +27,7 @@ import { WALLET_BY_KEY } from "@/lib/finance-types";
 export const Route = createFileRoute("/candidates")({
   head: () => ({
     meta: [
-      { title: "Candidate Holdings · AHG Finance Core" },
+      { title: "Candidate Holdings · Alhakeem Expenses ERP" },
       {
         name: "description",
         content:

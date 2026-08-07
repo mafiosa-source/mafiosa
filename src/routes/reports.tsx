@@ -28,9 +28,9 @@ import { COMPANY_EXPENSE_WALLETS, cardReconciliation } from "@/lib/wallet-rules"
 export const Route = createFileRoute("/reports")({
   head: () => ({
     meta: [
-      { title: "Reports · AHG Finance Core" },
+      { title: "Reports · Alhakeem Expenses ERP" },
       { name: "description", content: "Reports generated live from the master ledger." },
-      { property: "og:title", content: "Reports · AHG Finance Core" },
+      { property: "og:title", content: "Reports · Alhakeem Expenses ERP" },
       { property: "og:description", content: "Printable accounting reports generated live from Master Transactions." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

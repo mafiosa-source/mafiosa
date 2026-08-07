@@ -15,7 +15,7 @@ export const Route = createFileRoute("/transfers")({
   }),
   head: () => ({
     meta: [
-      { title: "CBQ Transfers · AHG Finance Core" },
+      { title: "CBQ Transfers · Alhakeem Expenses ERP" },
       { name: "description", content: "Transfers between company accounts and CBQ." },
     ],
   }),
