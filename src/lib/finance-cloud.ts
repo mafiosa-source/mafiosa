@@ -48,6 +48,7 @@ export function rowToTransaction(r: Row): Transaction {
     kmAfter: r.km_after == null ? undefined : Number(r.km_after),
     parentTxnId: (r.parent_txn_id as string) ?? undefined,
     createdBy: (r.created_by as string) ?? undefined,
+    lastEditedBy: (r.last_edited_by as string) ?? undefined,
     createdAt: String(r.created_at ?? new Date().toISOString()),
     updatedAt: String(r.updated_at ?? new Date().toISOString()),
   };
@@ -89,6 +90,7 @@ export function transactionToRow(t: Partial<Transaction>): Row {
   set("km_after", t.kmAfter);
   set("parent_txn_id", t.parentTxnId);
   set("created_by", t.createdBy);
+  set("last_edited_by", t.lastEditedBy);
   return row;
 }
 

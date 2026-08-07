@@ -301,6 +301,8 @@ export type Transaction = {
   // Salary linkage
   parentTxnId?: string; // Salary Release → Salary Holding
   createdBy?: string;
+  /** Audit: operator who last edited the record. */
+  lastEditedBy?: string;
   createdAt: string;
   updatedAt: string;
 };

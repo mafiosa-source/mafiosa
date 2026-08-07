@@ -70,6 +70,13 @@ function notify() {
   listeners.forEach((l) => l());
 }
 
+let currentUserLabel = "";
+/** Operator label (email / name) used for the createdBy and lastEditedBy audit trail. */
+export function setCurrentUserLabel(label: string | null | undefined) {
+  currentUserLabel = label ?? "";
+}
+export const currentUser = () => currentUserLabel;
+
 export function setCloudUser(userId: string | null) {
   currentUserId = userId;
   if (!userId) {
@@ -190,6 +197,7 @@ export function addTransaction(t: Omit<Transaction, "id" | "createdAt" | "update
     createdAt: now,
     updatedAt: now,
     currentLocation: t.currentLocation ?? t.toWallet,
+    createdBy: t.createdBy || currentUserLabel || undefined,
   };
   // Auto-assign voucher number if RV/PV without one
   if ((txn.type === "Receipt Voucher" || txn.type === "Payment Voucher") && txn.company && !txn.voucherNumber) {
@@ -203,12 +211,13 @@ export function addTransaction(t: Omit<Transaction, "id" | "createdAt" | "update
 }
 
 export function updateTransaction(id: string, patch: Partial<Transaction>) {
+  const stamped: Partial<Transaction> = { ...patch, lastEditedBy: currentUserLabel || undefined };
   setState((s) => ({
     transactions: s.transactions.map((t) =>
-      t.id === id ? { ...t, ...patch, updatedAt: nowIso() } : t,
+      t.id === id ? { ...t, ...stamped, updatedAt: nowIso() } : t,
     ),
   }));
-  updateCloudTransaction(id, patch).catch((e) => reportCloudError("update", e));
+  updateCloudTransaction(id, stamped).catch((e) => reportCloudError("update", e));
 }
 
 export function deleteTransaction(id: string) {
