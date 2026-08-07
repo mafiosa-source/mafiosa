@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { setReportUser } from "@/lib/format";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck } from "lucide-react";
 import {
@@ -11,6 +12,7 @@ import {
   importLocalBackupToCloud,
   readLocalBackup,
   setCloudUser,
+  setCurrentUserLabel,
   useFinance,
 } from "@/lib/finance-store";
 
@@ -166,7 +168,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const userId = session?.user?.id ?? null;
+    const label = session?.user?.email ?? (userId ? "Signed-in user" : null);
     setCloudUser(userId);
+    setCurrentUserLabel(label);
+    setReportUser(label);
     if (!userId) {
       setLoaded(false);
       return;
