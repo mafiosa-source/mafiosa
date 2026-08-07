@@ -11,7 +11,7 @@ import { Plus, Printer, Check, ArrowRight } from "lucide-react";
 import { useFinance, walletBalance, walletTarget, setWalletTarget } from "@/lib/finance-store";
 import { CARD_WALLETS, WALLET_BY_KEY } from "@/lib/finance-types";
 import type { WalletKey } from "@/lib/finance-types";
-import { qar, printAccountingReport, today } from "@/lib/format";
+import { qar, printAccountingReport } from "@/lib/format";
 import { cardReconciliation } from "@/lib/wallet-rules";
 import { toBalanceLedgerRows } from "@/lib/report-filters";
 import { PeriodSelect } from "@/components/PeriodSelect";
@@ -165,6 +165,18 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">Used</span>
             <span className="tabular font-medium">{qar(used)}</span>
+          </div>
+
+          <div className="rounded-md border bg-muted/30 p-2 space-y-1">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Period activity</div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Money In / Top Ups</span>
+              <span className="tabular text-emerald-600">{qar(recon.topUps)}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Money Out</span>
+              <span className="tabular text-rose-600">{qar(recon.expenses)}</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5">

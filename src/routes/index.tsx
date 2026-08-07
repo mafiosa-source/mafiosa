@@ -26,6 +26,9 @@ import { housemaidHoldingLedger } from "@/lib/finance-derived";
 import { CARD_WALLETS, WALLET_BY_KEY, COMPANY_LABEL } from "@/lib/finance-types";
 import type { WalletKey, Company } from "@/lib/finance-types";
 import { qar } from "@/lib/format";
+import { walletLedger } from "@/lib/finance-derived";
+import { currentMonthPeriod } from "@/lib/period";
+import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { TransactionDialog } from "@/components/TransactionDialog";
@@ -123,6 +126,16 @@ function Dashboard() {
     return { key: k, meta, used: u.used, limit: u.limit, remaining: u.remaining };
   });
 
+  const period = useMemo(() => currentMonthPeriod(), []);
+  const monthly = useMemo(
+    () =>
+      (["office-petty", "dumonde-petty", ...CARD_WALLETS] as WalletKey[]).map((k) => {
+        const led = walletLedger(s, k, { start: period.from, end: period.to });
+        return { key: k, name: WALLET_BY_KEY[k].name, in: led.debit, out: led.credit };
+      }),
+    [s, period.from, period.to],
+  );
+
   const recent = sortByDateDesc(s.transactions).slice(0, 8);
   const pendingActions = s.transactions.filter((t) => t.status === "Pending");
   const cardExposure = cards.reduce((a, c) => a + c.used, 0);
@@ -214,6 +227,29 @@ function Dashboard() {
             caption="Spent on company cards"
             cta="Manage cards"
           />
+        </div>
+      </Section>
+
+      <Section
+        title={`Current Month Activity · ${period.label}`}
+        hint="Money In and Money Out for this month only. Historical months are not added in — open a wallet or the Reports page to choose another period."
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {monthly.map((m) => (
+            <Card key={m.key} className="rounded-xl shadow-sm">
+              <CardContent className="pt-5 space-y-2">
+                <div className="text-sm font-medium">{m.name}</div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Money In</span>
+                  <span className="tabular font-semibold text-emerald-600">{qar(m.in)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Money Out</span>
+                  <span className="tabular font-semibold text-rose-600">{qar(m.out)}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </Section>
 
