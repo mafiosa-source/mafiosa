@@ -6,7 +6,6 @@ import { TransactionDialog } from "@/components/TransactionDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Printer, Check, ArrowRight } from "lucide-react";
 import { useFinance, walletBalance, walletTarget, setWalletTarget } from "@/lib/finance-store";
@@ -32,8 +31,6 @@ export const Route = createFileRoute("/cards")({
   }),
   component: CardsPage,
 });
-
-const monthStart = () => `${today().slice(0, 7)}-01`;
 
 function CardsPage() {
   const s = useFinance();
