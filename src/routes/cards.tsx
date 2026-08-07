@@ -94,10 +94,13 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
 
   const opening = s.openingBalances[wallet] ?? 0;
   const live = walletBalance(s, wallet);
-  const available = live.balance;
-  const used = Math.max(0, limit - available);
+  // Used = actual card spending, net of any repayments / top-ups back onto the card.
+  const used = Math.max(0, live.outflow - live.inflow);
+  // Balance remaining on the card = limit − used (e.g. limit 5,000 − used 50 = 4,950).
+  const remaining = Math.max(0, limit - used);
   const pct = limit > 0 ? Math.min(100, Math.max(0, (used / limit) * 100)) : 0;
   const recon = cardReconciliation(rows, wallet, limit, opening, { start: from || undefined, end: to || undefined });
+
 
   const periodRows = useMemo(
     () => rows.filter((t) => (!from || t.date >= from) && (!to || t.date <= to)),
