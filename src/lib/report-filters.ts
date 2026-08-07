@@ -207,3 +207,185 @@ export function toExpenseClosingCsvRows(rows: Transaction[]): Record<string, unk
     "Money Out": t.amount,
   }));
 }
+
+// ============================================================
+// Company Expenses report — strictly separated money
+//
+// Money In  = Expense Funding only (e.g. from Mr Hassan)
+// Money Out = genuine company operating expenses
+// Everything else (housemaid money, third-party holdings, internal
+// transfers, card top-ups, pass-through) is excluded entirely.
+// ============================================================
+import {
+  isCompanyOperatingExpense as _isExpense,
+  isExpenseFunding,
+  COMPANY_EXPENSE_EXCLUSION_NOTE,
+} from "@/lib/wallet-rules";
+import { dayOfWeek } from "@/lib/format";
+import type { FuelPrintRow } from "@/lib/format";
+
+export type CompanyExpenseReport = {
+  funding: Transaction[];
+  expenses: Transaction[];
+  totalFunding: number;
+  totalExpenses: number;
+  remaining: number;
+  rows: PrintReportRow[];
+  note: string;
+};
+
+export function companyExpenseReport(
+  rows: Transaction[],
+  opts: { from?: string; to?: string; company?: string; wallets?: WalletKey[] } = {},
+): CompanyExpenseReport {
+  const walletSet = opts.wallets && opts.wallets.length ? new Set<WalletKey>(opts.wallets) : null;
+  const inScope = rows.filter((t) => {
+    if (opts.from && t.date < opts.from) return false;
+    if (opts.to && t.date > opts.to) return false;
+    if (opts.company === "__none__") {
+      if (t.company) return false;
+    } else if (opts.company && opts.company !== "__all__" && t.company !== opts.company) return false;
+    return true;
+  });
+
+  const funding = byDateAsc(
+    inScope.filter((t) => isExpenseFunding(t) && (!walletSet || walletSet.has(t.toWallet))),
+  );
+  const expenses = byDateAsc(
+    inScope.filter((t) => _isExpense(t) && (!walletSet || walletSet.has(t.fromWallet))),
+  );
+
+  const totalFunding = funding.reduce((a, t) => a + t.amount, 0);
+  const totalExpenses = expenses.reduce((a, t) => a + t.amount, 0);
+
+  const rowsOut: PrintReportRow[] = byDateAsc([...funding, ...expenses]).map((t) => {
+    const funded = isExpenseFunding(t);
+    return {
+      date: t.date,
+      company: companyOf(t),
+      particulars: funded
+        ? `Expense funding received — ${WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet}`
+        : [t.purposeCategory, particularsOf(t)].filter(Boolean).join(" · "),
+      amount: t.amount,
+      moneyIn: funded ? t.amount : 0,
+      moneyOut: funded ? 0 : t.amount,
+      wallet: WALLET_BY_KEY[funded ? t.toWallet : t.fromWallet]?.name ?? "—",
+    };
+  });
+
+  return {
+    funding,
+    expenses,
+    totalFunding,
+    totalExpenses,
+    remaining: totalFunding - totalExpenses,
+    rows: rowsOut,
+    note: COMPANY_EXPENSE_EXCLUSION_NOTE,
+  };
+}
+
+export function toCompanyExpenseCsvRows(r: CompanyExpenseReport): Record<string, unknown>[] {
+  return r.rows.map((x) => ({
+    Date: x.date,
+    Company: x.company,
+    "Particulars / Purpose": x.particulars,
+    "Money In": x.moneyIn || "",
+    "Money Out": x.moneyOut || "",
+    "Payment Wallet": x.wallet,
+  }));
+}
+
+// ---------- Wallet / card statement with a running balance ----------
+export function toBalanceLedgerRows(
+  rows: Transaction[],
+  wallet: WalletKey,
+  opening: number,
+  openingDate?: string,
+): PrintReportRow[] {
+  let balance = opening;
+  const out: PrintReportRow[] = [
+    {
+      date: openingDate ?? (rows.length ? byDateAsc(rows)[0].date : ""),
+      company: "—",
+      particulars: "Opening Balance",
+      amount: opening,
+      moneyIn: opening > 0 ? opening : 0,
+      moneyOut: opening < 0 ? -opening : 0,
+      balance: opening,
+      wallet: WALLET_BY_KEY[wallet]?.name ?? wallet,
+    },
+  ];
+  for (const r of toLedgerPrintRows(rows, wallet)) {
+    balance += (r.moneyIn ?? 0) - (r.moneyOut ?? 0);
+    out.push({ ...r, balance });
+  }
+  return out;
+}
+
+// ---------- Fuel / vehicle reporting ----------
+export const isFuelTransaction = (t: Transaction) =>
+  t.type === "Fuel Expense" || t.purposeCategory === "Fuel";
+
+export type FuelFilters = {
+  from?: string;
+  to?: string;
+  company?: string;
+  vehicle?: string;
+  plateNumber?: string;
+  driver?: string;
+  wallet?: WalletKey | "";
+};
+
+export function fuelTransactions(rows: Transaction[], f: FuelFilters): Transaction[] {
+  const like = (a?: string, b?: string) =>
+    !b || (a ?? "").toLowerCase().includes(b.toLowerCase());
+  return byDateAsc(
+    rows.filter((t) => {
+      if (!isFuelTransaction(t)) return false;
+      if (t.status === "Cancelled") return false;
+      if (f.from && t.date < f.from) return false;
+      if (f.to && t.date > f.to) return false;
+      if (f.company === "__none__") {
+        if (t.company) return false;
+      } else if (f.company && f.company !== "__all__" && t.company !== f.company) return false;
+      if (!like(t.vehicle, f.vehicle)) return false;
+      if (!like(t.plateNumber, f.plateNumber)) return false;
+      if (!like(t.driver, f.driver)) return false;
+      if (f.wallet && t.fromWallet !== f.wallet) return false;
+      return true;
+    }),
+  );
+}
+
+export const fuelKm = (t: Transaction) =>
+  t.kmAfter != null && t.kmBefore != null ? Math.max(0, t.kmAfter - t.kmBefore) : undefined;
+
+export function toFuelPrintRows(rows: Transaction[]): FuelPrintRow[] {
+  return rows.map((t) => ({
+    date: t.date,
+    day: dayOfWeek(t.date),
+    company: companyOf(t),
+    vehicle: t.vehicle ?? "—",
+    plateNumber: t.plateNumber ?? "—",
+    odometer: t.kmAfter ?? t.kmBefore ?? undefined,
+    km: fuelKm(t),
+    driver: t.driver ?? "—",
+    amount: t.amount,
+    wallet: WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
+  }));
+}
+
+export function toFuelCsvRows(rows: Transaction[]): Record<string, unknown>[] {
+  return toFuelPrintRows(rows).map((r) => ({
+    Date: r.date,
+    Day: r.day,
+    Company: r.company,
+    Vehicle: r.vehicle,
+    "Number Plate": r.plateNumber,
+    Odometer: r.odometer ?? "",
+    KM: r.km ?? "",
+    Driver: r.driver,
+    "Amount (QAR)": r.amount,
+    "Payment Wallet": r.wallet,
+  }));
+}
