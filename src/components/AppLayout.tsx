@@ -1,7 +1,8 @@
+import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
-  Fuel, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import {
+  Fuel,
   LayoutDashboard,
+
   Wallet,
   Coffee,
   CreditCard,
