@@ -94,7 +94,7 @@ function FuelPage() {
         description="Every fuel transaction with day, vehicle, number plate, odometer, kilometres and driver."
         action={
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => exportExcel(toFuelCsvRows(rows), "fuel-report.csv")}>
+            <Button size="sm" variant="outline" onClick={() => exportExcel("fuel-report.xls", toFuelCsvRows(rows), "Fuel & Vehicle Report")}>
               <FileSpreadsheet className="h-4 w-4" /> Excel
             </Button>
             <Button size="sm" onClick={print}>
@@ -153,9 +153,9 @@ function FuelPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-        <StatCard label="Fuel transactions" value={rows.length} format="plain" />
+        <StatCard label="Fuel transactions" value={rows.length} format="raw" />
         <StatCard label="Total fuel expense" value={totalAmount} tone="warning" />
-        <StatCard label="Total kilometres" value={totalKm} format="plain" tone="info" />
+        <StatCard label="Total kilometres" value={totalKm} format="raw" tone="info" />
         <StatCard label="Cost per km" value={perLitreKm} />
       </div>
 
