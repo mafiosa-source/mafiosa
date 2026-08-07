@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/select";
 import { Printer, FileSpreadsheet } from "lucide-react";
 import { useFinance } from "@/lib/finance-store";
-import { COMPANIES, COMPANY_LABEL, WALLET_BY_KEY } from "@/lib/finance-types";
+import { COMPANIES, COMPANY_LABEL, WALLET_BY_KEY, DRIVERS, vehicleLabel, vehiclesForCompany } from "@/lib/finance-types";
+import type { Company } from "@/lib/finance-types";
 import { fuelTransactions, toFuelPrintRows, toFuelCsvRows, fuelKm } from "@/lib/report-filters";
 import { qar, num, today, dayOfWeek, printFuelReport, exportExcel } from "@/lib/format";
 
@@ -46,14 +47,28 @@ function FuelPage() {
   const [driver, setDriver] = useState("__all__");
 
   const all = useMemo(() => fuelTransactions(s.transactions, {}), [s.transactions]);
-  const vehicles = useMemo(
-    () => Array.from(new Set(all.map((t) => t.vehicle).filter(Boolean) as string[])).sort(),
-    [all],
+  const registryVehicles = useMemo(
+    () => vehiclesForCompany(company === "__all__" || company === "__none__" ? undefined : (company as Company)),
+    [company],
   );
-  const drivers = useMemo(
-    () => Array.from(new Set(all.map((t) => t.driver).filter(Boolean) as string[])).sort(),
-    [all],
-  );
+  const vehicles = useMemo(() => {
+    const registry = registryVehicles.map(vehicleLabel);
+    const seen = new Set(registry);
+    const derived = all
+      .filter((t) =>
+        company === "__all__" ? true : company === "__none__" ? !t.company : t.company === company,
+      )
+      .map((t) => [t.vehicle, t.plateNumber].filter(Boolean).join(" ").trim())
+      .filter((v) => v && !seen.has(v));
+    return [...registry, ...Array.from(new Set(derived)).sort()];
+  }, [all, company, registryVehicles]);
+  const drivers = useMemo(() => {
+    const base = [...DRIVERS] as string[];
+    const derived = Array.from(
+      new Set(all.map((t) => t.driver).filter((d): d is string => !!d && !base.includes(d))),
+    ).sort();
+    return [...base, ...derived];
+  }, [all]);
 
   const rows = useMemo(
     () =>
@@ -61,10 +76,15 @@ function FuelPage() {
         from,
         to,
         company,
-        vehicle: vehicle === "__all__" ? undefined : vehicle,
+        vehicle:
+          vehicle === "__all__"
+            ? undefined
+            : (registryVehicles.find((v) => vehicleLabel(v) === vehicle)?.name ?? vehicle),
+        plateNumber:
+          vehicle === "__all__" ? undefined : registryVehicles.find((v) => vehicleLabel(v) === vehicle)?.plate,
         driver: driver === "__all__" ? undefined : driver,
       }),
-    [s.transactions, from, to, company, vehicle, driver],
+    [s.transactions, from, to, company, vehicle, driver, registryVehicles],
   );
 
   const totalAmount = rows.reduce((a, t) => a + t.amount, 0);
@@ -115,7 +135,13 @@ function FuelPage() {
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs">Company</Label>
-          <Select value={company} onValueChange={setCompany}>
+          <Select
+            value={company}
+            onValueChange={(v) => {
+              setCompany(v);
+              setVehicle("__all__");
+            }}
+          >
             <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="__all__">All companies</SelectItem>
