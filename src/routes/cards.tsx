@@ -128,7 +128,9 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
         { label: "Actual Expenses (Money Out)", value: qar(recon.expenses) },
         { label: "Closing Balance", value: qar(recon.closing) },
         { label: "Card Limit", value: qar(limit) },
-        { label: "Used (Limit − Available)", value: qar(Math.max(0, limit - recon.closing)) },
+        { label: "Used (spent on card)", value: qar(used) },
+        { label: "Balance Remaining (Limit − Used)", value: qar(remaining) },
+
       ],
       note: "Card top-ups are internal transfers of existing expense funds, not company expenses. Only actual card spending is a company expense.",
     });
