@@ -167,18 +167,11 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
             />
           </div>
 
-          <div className="space-y-0.5 text-xs">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Used (spent on card)</span>
-              <span className="tabular font-medium text-rose-600">{qar(used)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Limit − Used</span>
-              <span className="tabular font-medium">
-                {qar(limit)} − {qar(used)} = {qar(remaining)}
-              </span>
-            </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">Used</span>
+            <span className="tabular font-medium text-rose-600">{qar(used)}</span>
           </div>
+
 
 
           <div className="rounded-md border bg-muted/30 p-2 space-y-1">
