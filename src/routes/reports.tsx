@@ -22,15 +22,17 @@ import {
   companyExpenseClosingRows,
   toExpenseClosingPrintRows,
   toExpenseClosingCsvRows,
+  companyExpenseReport,
+  toCompanyExpenseCsvRows,
 } from "@/lib/report-filters";
 import { COMPANY_EXPENSE_WALLETS, cardReconciliation } from "@/lib/wallet-rules";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
     meta: [
-      { title: "Reports · AHG Finance Core" },
+      { title: "Reports · Alhakeem Expenses ERP" },
       { name: "description", content: "Reports generated live from the master ledger." },
-      { property: "og:title", content: "Reports · AHG Finance Core" },
+      { property: "og:title", content: "Reports · Alhakeem Expenses ERP" },
       { property: "og:description", content: "Printable accounting reports generated live from Master Transactions." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -91,6 +93,17 @@ function ReportsPage() {
     [s.transactions, from, to, company, closingWallets, classification],
   );
   const closingTotal = closingRows.reduce((a, t) => a + t.amount, 0);
+
+  /**
+   * Company Expenses universe — strictly separated money.
+   * Money In counts ONLY expense funding (e.g. from Mr Hassan); housemaid salary
+   * and holding money, candidate / POLO / visa money, internal transfers, card
+   * top-ups and pass-through company money are never included.
+   */
+  const expenseReport = useMemo(
+    () => companyExpenseReport(s.transactions, { from: from || undefined, to: to || undefined, company }),
+    [s.transactions, from, to, company],
+  );
 
   const printClosing = () =>
     printAccountingReport({
@@ -223,20 +236,24 @@ function ReportsPage() {
     },
     {
       title: "Company Expenses",
-      desc: "All Company Expense transactions.",
+      desc: "Expense funding received vs genuine company expenses. Housemaid, candidate, transfer and pass-through money excluded.",
       csv: () =>
-        exportCsv(
-          `company-expenses-${today()}.csv`,
-          sortByDateDesc(scoped.filter((t) => t.classification === "Company Expense")) as unknown as Record<string, unknown>[],
-        ),
+        exportCsv(`company-expenses-${today()}.csv`, toCompanyExpenseCsvRows(expenseReport)),
       print: () =>
         printAccountingReport({
           title: "Company Expenses Report",
           ...meta,
           columns: "inout",
-          rows: toPrintRows(scoped.filter((t) => t.classification === "Company Expense")),
+          rows: expenseReport.rows,
+          summary: [
+            { label: "Total Expense Funding Received", value: qar(expenseReport.totalFunding) },
+            { label: "Total Company Expenses", value: qar(expenseReport.totalExpenses) },
+            { label: "Remaining Expense Funds", value: qar(expenseReport.remaining) },
+          ],
+          note: expenseReport.note,
         }),
     },
+
     {
       title: "CBQ Transfers",
       desc: "Movements involving CBQ or company accounts.",
@@ -390,6 +407,35 @@ function ReportsPage() {
           </span>
         </div>
       </div>
+
+      <Card className="mb-5">
+        <CardHeader>
+          <CardTitle className="text-base">Company Expense Funds</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="rounded-md border bg-muted/30 p-3">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Total Expense Funding Received
+              </div>
+              <div className="text-lg font-semibold tabular text-emerald-600">{qar(expenseReport.totalFunding)}</div>
+            </div>
+            <div className="rounded-md border bg-muted/30 p-3">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Total Company Expenses</div>
+              <div className="text-lg font-semibold tabular text-amber-600">{qar(expenseReport.totalExpenses)}</div>
+            </div>
+            <div className="rounded-md border bg-muted/30 p-3">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Remaining Expense Funds</div>
+              <div
+                className={`text-lg font-semibold tabular ${expenseReport.remaining < 0 ? "text-rose-600" : ""}`}
+              >
+                {qar(expenseReport.remaining)}
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">{expenseReport.note}</p>
+        </CardContent>
+      </Card>
 
       <Card className="mb-5 border-primary/40">
         <CardHeader>

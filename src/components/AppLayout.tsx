@@ -1,6 +1,8 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
+  Fuel,
   LayoutDashboard,
+
   Wallet,
   Coffee,
   CreditCard,
@@ -32,6 +34,7 @@ const nav = [
   { to: "/petty-cash", label: "Office Petty Cash", icon: Wallet },
   { to: "/du-monde", label: "Du Monde Petty Cash", icon: Coffee },
   { to: "/cards", label: "Company Cards", icon: CreditCard },
+  { to: "/fuel", label: "Fuel & Vehicles", icon: Fuel },
   { to: "/transfers", label: "CBQ Transfers", icon: ArrowLeftRight },
   { to: "/reconciliation", label: "Reconciliation", icon: ClipboardCheck },
   { to: "/months", label: "Month Management", icon: CalendarRange },
@@ -45,7 +48,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
     <div className="flex min-h-screen bg-background">
       <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col">
         <div className="px-5 py-5 border-b border-sidebar-border">
-          <div className="text-xs uppercase tracking-widest text-sidebar-foreground/60">AHG Finance Core</div>
+          <div className="text-xs uppercase tracking-widest text-sidebar-foreground/60">Alhakeem Expenses ERP</div>
           <div className="mt-1 text-base font-semibold">Operations Center</div>
         </div>
         <nav className="flex-1 overflow-y-auto py-3">

@@ -1,5 +1,5 @@
 // ============================================================
-// AHG Finance Core – Phase 2
+// Alhakeem Expenses ERP – Phase 2
 // Single source of truth: one Master Transactions table.
 // Every screen is a filtered view over `transactions`.
 // ============================================================
@@ -301,6 +301,8 @@ export type Transaction = {
   // Salary linkage
   parentTxnId?: string; // Salary Release → Salary Holding
   createdBy?: string;
+  /** Audit: operator who last edited the record. */
+  lastEditedBy?: string;
   createdAt: string;
   updatedAt: string;
 };

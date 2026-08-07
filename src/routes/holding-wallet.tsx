@@ -19,13 +19,13 @@ import { qar, exportCsv, printAccountingReport, today } from "@/lib/format";
 export const Route = createFileRoute("/holding-wallet")({
   head: () => ({
     meta: [
-      { title: "Housemaid Holding Wallet · AHG Finance Core" },
+      { title: "Housemaid Holding Wallet · Alhakeem Expenses ERP" },
       {
         name: "description",
         content:
           "Sponsor money held on behalf of each housemaid — running balance, releases and carry-forward reconciliation.",
       },
-      { property: "og:title", content: "Housemaid Holding Wallet · AHG Finance Core" },
+      { property: "og:title", content: "Housemaid Holding Wallet · Alhakeem Expenses ERP" },
       {
         property: "og:description",
         content: "Track sponsor money held per housemaid, separate from company operating funds.",

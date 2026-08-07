@@ -8,7 +8,7 @@ import { qar } from "@/lib/format";
 export const Route = createFileRoute("/reconciliation")({
   head: () => ({
     meta: [
-      { title: "Reconciliation · AHG Finance Core" },
+      { title: "Reconciliation · Alhakeem Expenses ERP" },
       { name: "description", content: "Live wallet balances derived from Master Transactions." },
     ],
   }),

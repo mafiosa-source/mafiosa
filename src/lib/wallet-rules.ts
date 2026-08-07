@@ -128,14 +128,26 @@ export function walletMoneyInTypes(wallet: WalletKey): MovementType[] {
 /** Friendly label for a wallet statement line. */
 export function movementLabel(t: Transaction, wallet?: WalletKey): string {
   const mt = movementType(t);
-  if (wallet && CARD_WALLETS.includes(wallet) && mt === "Top Up Balance" && t.toWallet === wallet) {
-    return "Top Up Balance";
+  const fromName = WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet;
+  const toName = WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet;
+  const internal = t.fromWallet !== "external" && t.toWallet !== "external";
+  const custom = t.purpose || t.description;
+
+  // Internal movement seen from the receiving wallet → Money In "Top Up from X"
+  if (wallet && internal && t.toWallet === wallet) {
+    if (CARD_WALLETS.includes(wallet) || mt === "Top Up Balance") return `Top Up from ${fromName}`;
+    if (mt === "Internal Transfer" || mt === "Deposit") return custom || `Transfer from ${fromName}`;
   }
-  if (mt === "Top Up Balance" && wallet && t.fromWallet === wallet) {
-    return `Top Up ${WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet}`;
+  // Internal movement seen from the paying wallet → Money Out "Transfer to X"
+  if (wallet && internal && t.fromWallet === wallet) {
+    if (CARD_WALLETS.includes(t.toWallet)) return `Transfer to ${toName}`;
+    if (mt === "Internal Transfer" || mt === "Withdrawal" || mt === "Top Up Balance") {
+      return custom || `Transfer to ${toName}`;
+    }
   }
-  return t.purpose || t.description || t.purposeCategory || mt;
+  return custom || t.purposeCategory || mt;
 }
+
 
 // ---------- Financial categories (report filter) ----------
 export type FinancialCategory =
@@ -347,3 +359,106 @@ export function cardReconciliation(
 
 /** Company of a transaction, for reporting. */
 export const companyKey = (t: Transaction): Company | undefined => t.company;
+
+// ============================================================
+// Money buckets — strict separation between kinds of money.
+//
+// The ERP keeps five completely independent accounting universes.
+// Reports never mix them unless the user asks for an all-transactions report.
+//   COMPANY EXPENSES   money that funds and pays company expenses
+//   HOUSEMAID HOLDING  salary / holding money belonging to housemaids
+//   OTHER HOLDING      candidate, sponsor, POLO, visa and other third-party money
+//   INTERNAL TRANSFERS movement between our own wallets (incl. card top-ups)
+//   PASS-THROUGH       money recorded on FAST/DANET/BROKER/SKILL that is not expense funding
+// ============================================================
+
+export type MoneyBucket =
+  | "Company Expenses"
+  | "Housemaid Holding"
+  | "Other Holding"
+  | "Internal Transfers"
+  | "Pass-Through";
+
+/** Wallets that hold housemaid money. Never part of company expense reporting. */
+export const HOUSEMAID_WALLETS: WalletKey[] = ["salary-wallet", "housemaid-holding"];
+
+const HOUSEMAID_TXN_TYPES: TxnType[] = [
+  "Salary Holding",
+  "Salary Release",
+  "Housemaid Holding",
+  "Holding Release",
+];
+
+const HOUSEMAID_MOVEMENTS: MovementType[] = [
+  "Salary Received",
+  "Salary Released",
+  "Holding Received",
+  "Holding Released",
+];
+
+/**
+ * Housemaid salary / holding money: received for a housemaid, held, then released.
+ * This whole flow belongs to the Housemaid modules only.
+ */
+export function isHousemaidMoney(t: Transaction): boolean {
+  if (HOUSEMAID_WALLETS.includes(t.fromWallet) || HOUSEMAID_WALLETS.includes(t.toWallet)) return true;
+  if (HOUSEMAID_TXN_TYPES.includes(t.type)) return true;
+  if (HOUSEMAID_MOVEMENTS.includes(movementType(t))) return true;
+  return false;
+}
+
+/** Candidate / sponsor / POLO / visa money held for a third party. */
+export function isOtherHeldMoney(t: Transaction): boolean {
+  if (isHousemaidMoney(t)) return false;
+  if (t.classification === "Sponsor Expense") return true;
+  const mt = movementType(t);
+  return mt === "Candidate Money Received" || mt === "Candidate Money Released";
+}
+
+/** Movement between two of our own wallets — never an expense, never funding. */
+export function isInternalTransfer(t: Transaction): boolean {
+  if (isHousemaidMoney(t) || isOtherHeldMoney(t)) return false;
+  return t.fromWallet !== "external" && t.toWallet !== "external";
+}
+
+/** Wallets that actually pay company expenses and therefore receive expense funding. */
+export const EXPENSE_FUNDING_WALLETS: WalletKey[] = [...PETTY_WALLETS, ...CARD_WALLETS];
+/** Wallets money may be funded from (the owner or an outside source). */
+const FUNDING_SOURCE_WALLETS: WalletKey[] = ["hassan", "external"];
+
+const explicitFunding = (t: Transaction) => /expense\s*funding/.test(text(t));
+
+/**
+ * EXPENSE FUNDING — the only thing allowed to increase Company Expenses "Money In".
+ * Money received from Mr Hassan (or an outside source) specifically to fund
+ * company expenses. Everything else is excluded: housemaid salary and holding
+ * money, candidate / POLO / visa money, internal transfers, card top-ups and
+ * money merely passing through FAST / DANET / BROKER / SKILL.
+ */
+export function isExpenseFunding(t: Transaction): boolean {
+  if (t.status === "Cancelled" || t.status === "Refunded") return false;
+  if (isHousemaidMoney(t) || isOtherHeldMoney(t)) return false;
+  if (looksLikeOpeningBalance(t)) return false;
+  if (explicitFunding(t)) return true;
+  if (!EXPENSE_FUNDING_WALLETS.includes(t.toWallet)) return false;
+  if (!FUNDING_SOURCE_WALLETS.includes(t.fromWallet)) return false;
+  return true;
+}
+
+/** The single bucket a transaction belongs to. */
+export function moneyBucket(t: Transaction): MoneyBucket {
+  if (isHousemaidMoney(t)) return "Housemaid Holding";
+  if (isOtherHeldMoney(t)) return "Other Holding";
+  if (isExpenseFunding(t)) return "Company Expenses";
+  if (isInternalTransfer(t)) return "Internal Transfers";
+  if (isCompanyOperatingExpense(t)) return "Company Expenses";
+  return "Pass-Through";
+}
+
+/** True only for transactions that belong in the Company Expenses report. */
+export function inCompanyExpenseUniverse(t: Transaction): boolean {
+  return isExpenseFunding(t) || isCompanyOperatingExpense(t);
+}
+
+export const COMPANY_EXPENSE_EXCLUSION_NOTE =
+  "Housemaid salary and holding money, candidate / third-party funds, internal wallet transfers, card top-ups and pass-through transactions are excluded from these figures.";

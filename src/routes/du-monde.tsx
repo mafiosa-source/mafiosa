@@ -12,7 +12,7 @@ import { useState } from "react";
 export const Route = createFileRoute("/du-monde")({
   head: () => ({
     meta: [
-      { title: "Du Monde Petty Cash · AHG Finance Core" },
+      { title: "Du Monde Petty Cash · Alhakeem Expenses ERP" },
       { name: "description", content: "Du Monde factory catering petty cash." },
     ],
   }),

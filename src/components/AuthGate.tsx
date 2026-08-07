@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { setReportUser } from "@/lib/format";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck } from "lucide-react";
 import {
@@ -11,6 +12,7 @@ import {
   importLocalBackupToCloud,
   readLocalBackup,
   setCloudUser,
+  setCurrentUserLabel,
   useFinance,
 } from "@/lib/finance-store";
 
@@ -51,7 +53,7 @@ function SignInScreen() {
       >
         <div className="mb-6">
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-            <ShieldCheck className="h-4 w-4" /> AHG Finance Core
+            <ShieldCheck className="h-4 w-4" /> Alhakeem Expenses ERP
           </div>
           <h1 className="mt-2 text-xl font-semibold text-foreground">
             {mode === "signin" ? "Administrator sign in" : "Create administrator account"}
@@ -166,7 +168,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const userId = session?.user?.id ?? null;
+    const label = session?.user?.email ?? (userId ? "Signed-in user" : null);
     setCloudUser(userId);
+    setCurrentUserLabel(label);
+    setReportUser(label);
     if (!userId) {
       setLoaded(false);
       return;

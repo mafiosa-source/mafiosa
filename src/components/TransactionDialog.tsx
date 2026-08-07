@@ -17,7 +17,7 @@ import type {
   PaymentMethod, Status, WalletKey, CardCategory,
 } from "@/lib/finance-types";
 import { addTransaction, updateTransaction, isVoucherNumberTaken, nextVoucherNumber, findMatchingHoldings, getState } from "@/lib/finance-store";
-import { today } from "@/lib/format";
+import { today, dayOfWeek } from "@/lib/format";
 import { toast } from "sonner";
 
 type Draft = Partial<Transaction>;
@@ -52,7 +52,7 @@ export function TransactionDialog({
 
   const isVoucher = draft.type === "Receipt Voucher" || draft.type === "Payment Voucher";
   const isLimitCard = draft.fromWallet === "limit-card" || draft.toWallet === "limit-card";
-  const isFuel = draft.type === "Fuel Expense";
+  const isFuel = draft.type === "Fuel Expense" || draft.purposeCategory === "Fuel";
   const isSalaryRelease = draft.type === "Salary Release";
 
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
@@ -68,6 +68,9 @@ export function TransactionDialog({
     if (!draft.fromWallet || !draft.toWallet) return toast.error("Choose wallets");
     if (draft.fromWallet === draft.toWallet) return toast.error("From and To wallets must differ");
     if (isVoucher && !draft.company) return toast.error("Select company");
+    if (isFuel && (!draft.vehicle || !draft.plateNumber || !draft.driver || draft.kmBefore == null || draft.kmAfter == null)) {
+      return toast.error("Fuel entries require vehicle, number plate, driver and odometer readings");
+    }
     if (isVoucher && draft.company === "AHG") return toast.error("AHG cannot use vouchers");
     if (isVoucher && draft.voucherNumber && isVoucherNumberTaken(draft.voucherNumber, editing?.id)) {
       return toast.error("Voucher number already used");
@@ -230,14 +233,29 @@ export function TransactionDialog({
 
             {isFuel && (
               <>
-                <F label="Driver"><Input value={draft.driver ?? ""} onChange={(e) => patch({ driver: e.target.value })} /></F>
-                <F label="Vehicle"><Input value={draft.vehicle ?? ""} onChange={(e) => patch({ vehicle: e.target.value })} /></F>
-                <F label="Plate number"><Input value={draft.plateNumber ?? ""} onChange={(e) => patch({ plateNumber: e.target.value })} /></F>
+                <F label="Day (auto)">
+                  <Input value={dayOfWeek(draft.date ?? today())} readOnly className="bg-muted/40" />
+                </F>
+                <F label="Driver *"><Input required value={draft.driver ?? ""} onChange={(e) => patch({ driver: e.target.value })} /></F>
+                <F label="Vehicle *"><Input required value={draft.vehicle ?? ""} onChange={(e) => patch({ vehicle: e.target.value })} /></F>
+                <F label="Number plate *"><Input required value={draft.plateNumber ?? ""} onChange={(e) => patch({ plateNumber: e.target.value })} /></F>
                 <F label="Station"><Input value={draft.station ?? ""} onChange={(e) => patch({ station: e.target.value })} /></F>
-                <F label="KM before"><Input type="number" value={draft.kmBefore ?? ""} onChange={(e) => patch({ kmBefore: Number(e.target.value) })} /></F>
-                <F label="KM after"><Input type="number" value={draft.kmAfter ?? ""} onChange={(e) => patch({ kmAfter: Number(e.target.value) })} /></F>
+                <F label="Odometer / KM before *"><Input required type="number" value={draft.kmBefore ?? ""} onChange={(e) => patch({ kmBefore: Number(e.target.value) })} /></F>
+                <F label="Odometer / KM after *"><Input required type="number" value={draft.kmAfter ?? ""} onChange={(e) => patch({ kmAfter: Number(e.target.value) })} /></F>
+                <F label="Kilometres travelled (auto)">
+                  <Input
+                    readOnly
+                    className="bg-muted/40"
+                    value={
+                      draft.kmAfter != null && draft.kmBefore != null
+                        ? String(Math.max(0, Number(draft.kmAfter) - Number(draft.kmBefore)))
+                        : ""
+                    }
+                  />
+                </F>
               </>
             )}
+
 
             {isSalaryRelease && (
               <F label="Linked holding ID (optional)">
