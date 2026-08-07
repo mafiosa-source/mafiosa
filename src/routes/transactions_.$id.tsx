@@ -82,7 +82,10 @@ function TransactionSummaryPage() {
         <Row label="Attachment" value={t.attachment ?? "—"} />
         <Row label="Notes" value={t.description ?? "—"} />
         <Row label="Recorded" value={new Date(t.createdAt).toLocaleString()} />
+        <Row label="Entered by" value={t.createdBy || "—"} />
         <Row label="Last updated" value={new Date(t.updatedAt).toLocaleString()} />
+        <Row label="Last edited by" value={t.lastEditedBy || "—"} />
+
       </div>
     </AppLayout>
   );
