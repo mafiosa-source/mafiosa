@@ -230,14 +230,29 @@ export function TransactionDialog({
 
             {isFuel && (
               <>
-                <F label="Driver"><Input value={draft.driver ?? ""} onChange={(e) => patch({ driver: e.target.value })} /></F>
-                <F label="Vehicle"><Input value={draft.vehicle ?? ""} onChange={(e) => patch({ vehicle: e.target.value })} /></F>
-                <F label="Plate number"><Input value={draft.plateNumber ?? ""} onChange={(e) => patch({ plateNumber: e.target.value })} /></F>
+                <F label="Day (auto)">
+                  <Input value={dayOfWeek(draft.date ?? today())} readOnly className="bg-muted/40" />
+                </F>
+                <F label="Driver *"><Input required value={draft.driver ?? ""} onChange={(e) => patch({ driver: e.target.value })} /></F>
+                <F label="Vehicle *"><Input required value={draft.vehicle ?? ""} onChange={(e) => patch({ vehicle: e.target.value })} /></F>
+                <F label="Number plate *"><Input required value={draft.plateNumber ?? ""} onChange={(e) => patch({ plateNumber: e.target.value })} /></F>
                 <F label="Station"><Input value={draft.station ?? ""} onChange={(e) => patch({ station: e.target.value })} /></F>
-                <F label="KM before"><Input type="number" value={draft.kmBefore ?? ""} onChange={(e) => patch({ kmBefore: Number(e.target.value) })} /></F>
-                <F label="KM after"><Input type="number" value={draft.kmAfter ?? ""} onChange={(e) => patch({ kmAfter: Number(e.target.value) })} /></F>
+                <F label="Odometer / KM before *"><Input required type="number" value={draft.kmBefore ?? ""} onChange={(e) => patch({ kmBefore: Number(e.target.value) })} /></F>
+                <F label="Odometer / KM after *"><Input required type="number" value={draft.kmAfter ?? ""} onChange={(e) => patch({ kmAfter: Number(e.target.value) })} /></F>
+                <F label="Kilometres travelled (auto)">
+                  <Input
+                    readOnly
+                    className="bg-muted/40"
+                    value={
+                      draft.kmAfter != null && draft.kmBefore != null
+                        ? String(Math.max(0, Number(draft.kmAfter) - Number(draft.kmBefore)))
+                        : ""
+                    }
+                  />
+                </F>
               </>
             )}
+
 
             {isSalaryRelease && (
               <F label="Linked holding ID (optional)">
