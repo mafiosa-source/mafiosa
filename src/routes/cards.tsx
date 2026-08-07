@@ -15,6 +15,8 @@ import type { WalletKey } from "@/lib/finance-types";
 import { qar, printAccountingReport, today } from "@/lib/format";
 import { cardReconciliation } from "@/lib/wallet-rules";
 import { toBalanceLedgerRows } from "@/lib/report-filters";
+import { PeriodSelect } from "@/components/PeriodSelect";
+import { currentMonthPeriod } from "@/lib/period";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/cards")({
@@ -35,8 +37,9 @@ const monthStart = () => `${today().slice(0, 7)}-01`;
 
 function CardsPage() {
   const s = useFinance();
-  const [from, setFrom] = useState(monthStart());
-  const [to, setTo] = useState(today());
+  const [period, setPeriod] = useState(currentMonthPeriod);
+  const from = period.from;
+  const to = period.to;
 
   const cardRows = useMemo(
     () => s.transactions.filter((t) => CARD_WALLETS.includes(t.fromWallet) || CARD_WALLETS.includes(t.toWallet)),
@@ -56,17 +59,12 @@ function CardsPage() {
         }
       />
 
-      <div className="mb-5 rounded-lg border bg-card p-4 flex flex-wrap items-end gap-3">
-        <div className="space-y-1.5">
-          <Label className="text-xs">Statement from</Label>
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-9 w-[160px]" />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs">Statement to</Label>
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-9 w-[160px]" />
-        </div>
-        <p className="text-xs text-muted-foreground max-w-md">
-          Statements below follow this period. Opening balance is everything before the start date.
+      <div className="mb-5 rounded-lg border bg-card p-4 space-y-2">
+        <PeriodSelect period={period} onChange={setPeriod} />
+        <p className="text-xs text-muted-foreground max-w-2xl">
+          Statements follow this period and default to the current month. Opening balance is everything before the start
+          date. Money moved from petty cash into a card is Money In on the card and Money Out on petty cash — it is never
+          a new company expense.
         </p>
       </div>
 
