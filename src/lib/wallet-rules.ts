@@ -128,14 +128,26 @@ export function walletMoneyInTypes(wallet: WalletKey): MovementType[] {
 /** Friendly label for a wallet statement line. */
 export function movementLabel(t: Transaction, wallet?: WalletKey): string {
   const mt = movementType(t);
-  if (wallet && CARD_WALLETS.includes(wallet) && mt === "Top Up Balance" && t.toWallet === wallet) {
-    return "Top Up Balance";
+  const fromName = WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet;
+  const toName = WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet;
+  const internal = t.fromWallet !== "external" && t.toWallet !== "external";
+  const custom = t.purpose || t.description;
+
+  // Internal movement seen from the receiving wallet → Money In "Top Up from X"
+  if (wallet && internal && t.toWallet === wallet) {
+    if (CARD_WALLETS.includes(wallet) || mt === "Top Up Balance") return `Top Up from ${fromName}`;
+    if (mt === "Internal Transfer" || mt === "Deposit") return custom || `Transfer from ${fromName}`;
   }
-  if (mt === "Top Up Balance" && wallet && t.fromWallet === wallet) {
-    return `Top Up ${WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet}`;
+  // Internal movement seen from the paying wallet → Money Out "Transfer to X"
+  if (wallet && internal && t.fromWallet === wallet) {
+    if (CARD_WALLETS.includes(t.toWallet)) return `Transfer to ${toName}`;
+    if (mt === "Internal Transfer" || mt === "Withdrawal" || mt === "Top Up Balance") {
+      return custom || `Transfer to ${toName}`;
+    }
   }
-  return t.purpose || t.description || t.purposeCategory || mt;
+  return custom || t.purposeCategory || mt;
 }
+
 
 // ---------- Financial categories (report filter) ----------
 export type FinancialCategory =
