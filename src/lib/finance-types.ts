@@ -21,6 +21,33 @@ export const COMPANY_LABEL: Record<Company, string> = {
 // It does NOT use Receipt Vouchers or Payment Vouchers.
 export const VOUCHER_COMPANIES: Company[] = ["FAST", "BROKER", "SKILL", "DANET", "FACTORY", "QUALITY", "ALSABH"];
 
+// ---------- Vehicles & drivers (fuel tracking) ----------
+export const DRIVERS = ["SHREERAM", "JABAR", "ALEEM", "OTHER"] as const;
+
+export type Vehicle = { name: string; plate: string };
+
+/** Vehicles registered under each company. Extend gradually as more are added. */
+export const VEHICLES_BY_COMPANY: Partial<Record<Company, Vehicle[]>> = {
+  FAST: [
+    { name: "NISSAN PICKUP", plate: "124242" },
+    { name: "NISSAN PICKUP", plate: "131613" },
+  ],
+  BROKER: [
+    { name: "URVAN BUS", plate: "121515" },
+    { name: "CADILLAC", plate: "61715" },
+  ],
+  AHG: [{ name: "TOYOTA PICKUP", plate: "11811" }],
+};
+
+export const vehicleLabel = (v: Vehicle) => `${v.name} ${v.plate}`;
+
+export function vehiclesForCompany(company?: Company): Vehicle[] {
+  if (company) return VEHICLES_BY_COMPANY[company] ?? [];
+  return Object.values(VEHICLES_BY_COMPANY).flat();
+}
+
+
+
 
 // ---------- Wallets ----------
 export type WalletKey =
