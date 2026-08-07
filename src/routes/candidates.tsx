@@ -140,6 +140,15 @@ function CandidatesPage() {
                     </div>
                   </div>
 
+                  {c.companyExpense > 0 && (
+                    <div className="text-xs rounded bg-muted/50 px-2 py-1 text-muted-foreground">
+                      Company expense (already paid by company):{" "}
+                      <span className="text-foreground font-medium tabular">
+                        {qar(c.companyExpense)}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="text-xs flex items-center justify-between border-t pt-2">
                     <span className="text-muted-foreground">
                       Location:{" "}
@@ -174,9 +183,10 @@ function CandidatesPage() {
           </DialogHeader>
           {active && (
             <div className="space-y-3">
-              <div className="grid grid-cols-4 gap-2 text-xs">
+              <div className="grid grid-cols-5 gap-2 text-xs">
                 <SummaryStat label="Received" value={active.received} tone="text-emerald-600" />
                 <SummaryStat label="Utilized" value={active.utilized} tone="text-rose-600" />
+                <SummaryStat label="Company expense" value={active.companyExpense} tone="text-muted-foreground" />
                 <SummaryStat label="Refunded" value={active.refunded} tone="text-blue-600" />
                 <SummaryStat label="Remaining" value={active.balance} tone="font-semibold" />
               </div>
