@@ -216,13 +216,12 @@ export function toExpenseClosingCsvRows(rows: Transaction[]): Record<string, unk
 // Everything else (housemaid money, third-party holdings, internal
 // transfers, card top-ups, pass-through) is excluded entirely.
 // ============================================================
-import {
-  isCompanyOperatingExpense as _isExpense,
-  isExpenseFunding,
-  COMPANY_EXPENSE_EXCLUSION_NOTE,
-} from "@/lib/wallet-rules";
+import { isExpenseFunding, COMPANY_EXPENSE_EXCLUSION_NOTE } from "@/lib/wallet-rules";
 import { dayOfWeek } from "@/lib/format";
 import type { FuelPrintRow } from "@/lib/format";
+
+const _isExpense = isCompanyOperatingExpense;
+
 
 export type CompanyExpenseReport = {
   funding: Transaction[];
