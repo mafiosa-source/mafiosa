@@ -242,9 +242,52 @@ export function TransactionDialog({
                 <F label="Day (auto)">
                   <Input value={dayOfWeek(draft.date ?? today())} readOnly className="bg-muted/40" />
                 </F>
-                <F label="Driver *"><Input required value={draft.driver ?? ""} onChange={(e) => patch({ driver: e.target.value })} /></F>
-                <F label="Vehicle *"><Input required value={draft.vehicle ?? ""} onChange={(e) => patch({ vehicle: e.target.value })} /></F>
+                <F label="Driver *">
+                  <Sel
+                    value={driverIsOther ? "OTHER" : (draft.driver ?? "")}
+                    onChange={(v) => {
+                      if (v === "OTHER") {
+                        setDriverOther(true);
+                        patch({ driver: "" });
+                      } else {
+                        setDriverOther(false);
+                        patch({ driver: v });
+                      }
+                    }}
+                    options={DRIVERS as unknown as string[]}
+                  />
+                </F>
+                {driverIsOther && (
+                  <F label="Driver name *">
+                    <Input required value={draft.driver ?? ""} onChange={(e) => patch({ driver: e.target.value })} />
+                  </F>
+                )}
+                <F label="Vehicle *">
+                  {companyVehicles.length > 0 ? (
+                    <Sel
+                      value={
+                        draft.vehicle && companyVehicles.some((v) => vehicleLabel(v) === `${draft.vehicle} ${draft.plateNumber ?? ""}`.trim())
+                          ? `${draft.vehicle} ${draft.plateNumber ?? ""}`.trim()
+                          : draft.vehicle
+                            ? "OTHER"
+                            : ""
+                      }
+                      onChange={(v) => {
+                        if (v === "OTHER") {
+                          patch({ vehicle: "", plateNumber: "" });
+                          return;
+                        }
+                        const found = companyVehicles.find((x) => vehicleLabel(x) === v);
+                        if (found) patch({ vehicle: found.name, plateNumber: found.plate });
+                      }}
+                      options={[...companyVehicles.map(vehicleLabel), "OTHER"]}
+                    />
+                  ) : (
+                    <Input required value={draft.vehicle ?? ""} onChange={(e) => patch({ vehicle: e.target.value })} />
+                  )}
+                </F>
                 <F label="Number plate *"><Input required value={draft.plateNumber ?? ""} onChange={(e) => patch({ plateNumber: e.target.value })} /></F>
+
                 <F label="Station"><Input value={draft.station ?? ""} onChange={(e) => patch({ station: e.target.value })} /></F>
                 <F label="Odometer / KM before *"><Input required type="number" value={draft.kmBefore ?? ""} onChange={(e) => patch({ kmBefore: Number(e.target.value) })} /></F>
                 <F label="Odometer / KM after *"><Input required type="number" value={draft.kmAfter ?? ""} onChange={(e) => patch({ kmAfter: Number(e.target.value) })} /></F>
