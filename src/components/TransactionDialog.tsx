@@ -180,10 +180,16 @@ export function TransactionDialog({
               </>
             )}
             {!isVoucher && (
-              <F label="Company (optional)">
-                <Sel value={draft.company ?? ""} onChange={(v) => patch({ company: v === "__none" ? undefined : (v as Company) })} options={COMPANIES} allowEmpty />
-              </F>
+              <>
+                <F label="Company (optional)">
+                  <Sel value={draft.company ?? ""} onChange={(v) => patch({ company: v === "__none" ? undefined : (v as Company) })} options={COMPANIES} allowEmpty />
+                </F>
+                <F label="Is this a company expense or a sponsor expense?">
+                  <Sel value={draft.classification} onChange={(v) => patch({ classification: v as Classification })} options={CLASSIFICATIONS} />
+                </F>
+              </>
             )}
+
 
             <F label="Amount (QAR)">
               <Input type="number" step="0.01" value={draft.amount ?? ""} onChange={(e) => patch({ amount: Number(e.target.value) })} required />
