@@ -497,6 +497,8 @@ export type CandidateLedgerEntry = {
   company?: Company;
   received: number;
   utilized: number;
+  /** Outgoing payments classified as Company Expense — already borne by the company, never a candidate debt. */
+  companyExpense: number;
   refunded: number;
   adjustments: number;
   balance: number;
@@ -538,6 +540,7 @@ export function candidateLedger(s: FinanceState): CandidateLedgerEntry[] {
         company: seed.company,
         received: 0,
         utilized: 0,
+        companyExpense: 0,
         refunded: 0,
         adjustments: 0,
         balance: 0,
@@ -567,7 +570,11 @@ export function candidateLedger(s: FinanceState): CandidateLedgerEntry[] {
       if (t.date > cur.lastDate) cur.lastDate = t.date;
     } else if (isOutgoingForCandidate(t)) {
       const cur = ensure(key, t);
-      if (t.type === "Adjustment") {
+      if (t.classification === "Company Expense") {
+        // Company-borne cost: tracked for the timeline only, never reduces candidate holdings.
+        cur.companyExpense += t.amount;
+        cur.payments.push(t);
+      } else if (t.type === "Adjustment") {
         cur.adjustments -= t.amount;
       } else if (t.status === "Refunded") {
         cur.refunded += t.amount;
@@ -582,10 +589,13 @@ export function candidateLedger(s: FinanceState): CandidateLedgerEntry[] {
   }
 
   for (const cur of map.values()) {
-    cur.balance = cur.received - cur.utilized - cur.refunded + cur.adjustments;
+    // Company expenses are already paid by the company, so a candidate can never go negative.
+    cur.balance = Math.max(0, cur.received - cur.utilized - cur.refunded + cur.adjustments);
     cur.timeline.sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1));
 
-    if (cur.received > 0 && cur.refunded >= cur.received - 0.001 && cur.utilized === 0) {
+    if (cur.received <= 0.001 && cur.companyExpense > 0) {
+      cur.status = "Closed";
+    } else if (cur.received > 0 && cur.refunded >= cur.received - 0.001 && cur.utilized === 0) {
       cur.status = "Refunded";
     } else if (cur.balance <= 0.001) {
       cur.status = "Closed";
