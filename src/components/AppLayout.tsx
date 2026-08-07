@@ -1,4 +1,5 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import {
+  Fuel, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Wallet,
@@ -32,6 +33,7 @@ const nav = [
   { to: "/petty-cash", label: "Office Petty Cash", icon: Wallet },
   { to: "/du-monde", label: "Du Monde Petty Cash", icon: Coffee },
   { to: "/cards", label: "Company Cards", icon: CreditCard },
+  { to: "/fuel", label: "Fuel & Vehicles", icon: Fuel },
   { to: "/transfers", label: "CBQ Transfers", icon: ArrowLeftRight },
   { to: "/reconciliation", label: "Reconciliation", icon: ClipboardCheck },
   { to: "/months", label: "Month Management", icon: CalendarRange },
