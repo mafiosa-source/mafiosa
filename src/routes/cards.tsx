@@ -94,10 +94,13 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
 
   const opening = s.openingBalances[wallet] ?? 0;
   const live = walletBalance(s, wallet);
-  const available = live.balance;
-  const used = Math.max(0, limit - available);
+  // Used = actual card spending, net of any repayments / top-ups back onto the card.
+  const used = Math.max(0, live.outflow - live.inflow);
+  // Balance remaining on the card = limit − used (e.g. limit 5,000 − used 50 = 4,950).
+  const remaining = Math.max(0, limit - used);
   const pct = limit > 0 ? Math.min(100, Math.max(0, (used / limit) * 100)) : 0;
   const recon = cardReconciliation(rows, wallet, limit, opening, { start: from || undefined, end: to || undefined });
+
 
   const periodRows = useMemo(
     () => rows.filter((t) => (!from || t.date >= from) && (!to || t.date <= to)),
@@ -125,7 +128,9 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
         { label: "Actual Expenses (Money Out)", value: qar(recon.expenses) },
         { label: "Closing Balance", value: qar(recon.closing) },
         { label: "Card Limit", value: qar(limit) },
-        { label: "Used (Limit − Available)", value: qar(Math.max(0, limit - recon.closing)) },
+        { label: "Used (spent on card)", value: qar(used) },
+        { label: "Balance Remaining (Limit − Used)", value: qar(remaining) },
+
       ],
       note: "Card top-ups are internal transfers of existing expense funds, not company expenses. Only actual card spending is a company expense.",
     });
@@ -145,12 +150,12 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
 
           <div className="flex items-end justify-between gap-3">
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Limit</div>
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Card limit</div>
               <div className="text-sm font-medium tabular">{qar(limit)}</div>
             </div>
             <div className="text-right">
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Available</div>
-              <div className="text-xl font-semibold tabular text-emerald-600">{qar(available)}</div>
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Balance remaining</div>
+              <div className="text-xl font-semibold tabular text-emerald-600">{qar(remaining)}</div>
             </div>
           </div>
 
@@ -162,10 +167,19 @@ function CardTile({ wallet, from, to }: { wallet: WalletKey; from: string; to: s
             />
           </div>
 
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Used</span>
-            <span className="tabular font-medium">{qar(used)}</span>
+          <div className="space-y-0.5 text-xs">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Used (spent on card)</span>
+              <span className="tabular font-medium text-rose-600">{qar(used)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Limit − Used</span>
+              <span className="tabular font-medium">
+                {qar(limit)} − {qar(used)} = {qar(remaining)}
+              </span>
+            </div>
           </div>
+
 
           <div className="rounded-md border bg-muted/30 p-2 space-y-1">
             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Period activity</div>
