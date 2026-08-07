@@ -423,27 +423,44 @@ export function isInternalTransfer(t: Transaction): boolean {
 
 /** Wallets that actually pay company expenses and therefore receive expense funding. */
 export const EXPENSE_FUNDING_WALLETS: WalletKey[] = [...PETTY_WALLETS, ...CARD_WALLETS];
-/** Wallets money may be funded from (the owner or an outside source). */
-const FUNDING_SOURCE_WALLETS: WalletKey[] = ["hassan", "external"];
+/**
+ * Wallets money may be funded from: the owner (Mr Hassan), an outside source,
+ * Du Monde catering money handed into the expense system, or the bank /
+ * company accounts. Office Petty Cash and the cards are excluded as sources —
+ * money moving between those is an internal transfer (a card top-up), and the
+ * funding was already recognised when it first entered the expense system.
+ */
+const FUNDING_SOURCE_WALLETS: WalletKey[] = [
+  "hassan",
+  "external",
+  "dumonde-petty",
+  "cbq",
+  ...COMPANY_ACCOUNT_WALLETS,
+];
 
 const explicitFunding = (t: Transaction) => /expense\s*funding/.test(text(t));
 
 /**
- * EXPENSE FUNDING — the only thing allowed to increase Company Expenses "Money In".
- * Money received from Mr Hassan (or an outside source) specifically to fund
- * company expenses. Everything else is excluded: housemaid salary and holding
- * money, candidate / POLO / visa money, internal transfers, card top-ups and
- * money merely passing through FAST / DANET / BROKER / SKILL.
+ * EXPENSE FUNDING — money received to fund company expenses, recognised as
+ * Money In on the Company Expenses report (e.g. Mr Hassan → Office Petty Cash,
+ * Du Monde → Office Petty Cash). Excluded: housemaid salary and holding money,
+ * candidate / POLO / visa money, and internal transfers such as
+ * Office Petty Cash → Maryam Card, which are Money In on the receiving wallet's
+ * own report but never new company expense funding.
  */
 export function isExpenseFunding(t: Transaction): boolean {
   if (t.status === "Cancelled" || t.status === "Refunded") return false;
   if (isHousemaidMoney(t) || isOtherHeldMoney(t)) return false;
-  if (looksLikeOpeningBalance(t)) return false;
+  // Money from Mr Hassan is always expense funding, even when the operator
+  // wrote "opening balance" in the purpose field.
+  if (looksLikeOpeningBalance(t) && t.fromWallet !== "hassan") return false;
+  if (CARD_WALLETS.includes(t.fromWallet)) return false;
   if (explicitFunding(t)) return true;
   if (!EXPENSE_FUNDING_WALLETS.includes(t.toWallet)) return false;
   if (!FUNDING_SOURCE_WALLETS.includes(t.fromWallet)) return false;
   return true;
 }
+
 
 /** The single bucket a transaction belongs to. */
 export function moneyBucket(t: Transaction): MoneyBucket {

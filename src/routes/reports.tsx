@@ -26,6 +26,8 @@ import {
   toCompanyExpenseCsvRows,
 } from "@/lib/report-filters";
 import { COMPANY_EXPENSE_WALLETS, cardReconciliation } from "@/lib/wallet-rules";
+import { PeriodSelect } from "@/components/PeriodSelect";
+import { currentMonthPeriod } from "@/lib/period";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
@@ -58,8 +60,9 @@ function toWalletRows(rows: Transaction[], wallet: WalletKey): PrintReportRow[] 
 
 function ReportsPage() {
   const s = useFinance();
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [period, setPeriod] = useState(currentMonthPeriod);
+  const from = period.from;
+  const to = period.to;
   const [company, setCompany] = useState(ALL);
   const [closingWallets, setClosingWallets] = useState<WalletKey[]>(COMPANY_EXPENSE_WALLETS);
   const [classification, setClassification] = useState("Company Expense");
@@ -378,17 +381,13 @@ function ReportsPage() {
 
   return (
     <AppLayout>
-      <PageHeader title="Reports" description="All reports are generated live from Master Transactions." />
+      <PageHeader
+        title="Reports"
+        description="All reports are generated live from Master Transactions. The period defaults to the current month — choose Previous Month, a custom range or All Time to include earlier history."
+      />
 
       <div className="mb-5 rounded-lg border bg-card p-4 flex flex-wrap items-end gap-3">
-        <div className="space-y-1.5">
-          <Label className="text-xs">From</Label>
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-9 w-[160px]" />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs">To</Label>
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-9 w-[160px]" />
-        </div>
+        <PeriodSelect period={period} onChange={setPeriod} />
         <div className="space-y-1.5">
           <Label className="text-xs">Company</Label>
           <Select value={company} onValueChange={setCompany}>
