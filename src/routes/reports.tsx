@@ -223,20 +223,24 @@ function ReportsPage() {
     },
     {
       title: "Company Expenses",
-      desc: "All Company Expense transactions.",
+      desc: "Expense funding received vs genuine company expenses. Housemaid, candidate, transfer and pass-through money excluded.",
       csv: () =>
-        exportCsv(
-          `company-expenses-${today()}.csv`,
-          sortByDateDesc(scoped.filter((t) => t.classification === "Company Expense")) as unknown as Record<string, unknown>[],
-        ),
+        exportCsv(`company-expenses-${today()}.csv`, toCompanyExpenseCsvRows(expenseReport)),
       print: () =>
         printAccountingReport({
           title: "Company Expenses Report",
           ...meta,
           columns: "inout",
-          rows: toPrintRows(scoped.filter((t) => t.classification === "Company Expense")),
+          rows: expenseReport.rows,
+          summary: [
+            { label: "Total Expense Funding Received", value: qar(expenseReport.totalFunding) },
+            { label: "Total Company Expenses", value: qar(expenseReport.totalExpenses) },
+            { label: "Remaining Expense Funds", value: qar(expenseReport.remaining) },
+          ],
+          note: expenseReport.note,
         }),
     },
+
     {
       title: "CBQ Transfers",
       desc: "Movements involving CBQ or company accounts.",
