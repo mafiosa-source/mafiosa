@@ -971,7 +971,7 @@ export function housemaidProfile(s: FinanceState, name: string): HousemaidProfil
     name: timeline[0]?.candidate?.trim() || name,
     key: housemaidKey(name),
     company: [...timeline].reverse().find((t) => t.company)?.company,
-    sponsor: [...timeline].reverse().find((t) => t.sponsor)?.sponsor,
+    sponsor: mostRecentSponsor(timeline),
     passport: [...timeline].reverse().find((t) => t.passport)?.passport,
     nationality: undefined,
     received,
