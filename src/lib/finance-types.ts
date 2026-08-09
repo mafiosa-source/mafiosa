@@ -26,17 +26,30 @@ export const DRIVERS = ["SHREERAM", "JABAR", "ALEEM", "OTHER"] as const;
 
 export type Vehicle = { name: string; plate: string };
 
-/** Vehicles registered under each company. Extend gradually as more are added. */
+/** Vehicles registered under each company. Plate uniquely identifies a vehicle. */
 export const VEHICLES_BY_COMPANY: Partial<Record<Company, Vehicle[]>> = {
+  AHG: [
+    { name: "ISUZU TRUCK", plate: "181318" },
+    { name: "HYUNDAI PICKUP", plate: "253089" },
+    { name: "TOYOTA PICKUP", plate: "11811" },
+    { name: "NISSAN CIVILIAN", plate: "93621" },
+  ],
+  SKILL: [
+    { name: "MITSUBISHI BUS", plate: "78578" },
+    { name: "TOYOTA HILUX", plate: "31519" },
+  ],
   FAST: [
-    { name: "NISSAN PICKUP", plate: "124242" },
     { name: "NISSAN PICKUP", plate: "131613" },
+    { name: "NISSAN PICKUP", plate: "124242" },
   ],
   BROKER: [
-    { name: "URVAN BUS", plate: "121515" },
+    { name: "URVAN BUS", plate: "121215" },
     { name: "CADILLAC", plate: "61715" },
   ],
-  AHG: [{ name: "TOYOTA PICKUP", plate: "11811" }],
+  DANET: [
+    { name: "TOYOTA COROLLA", plate: "315509" },
+    { name: "LEXUS", plate: "270025" },
+  ],
 };
 
 export const vehicleLabel = (v: Vehicle) => `${v.name} ${v.plate}`;
