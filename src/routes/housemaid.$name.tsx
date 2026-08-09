@@ -89,7 +89,7 @@ function HousemaidProfilePage() {
       title: `Housemaid Statement — ${p.name}`,
       subtitle: [
         p.company ? `Company: ${COMPANY_LABEL[p.company]}` : null,
-        p.sponsor ? `Sponsor: ${p.sponsor}` : null,
+        `Most Recent Sponsor: ${p.sponsor ?? "No Sponsor Linked"}`,
         p.passport ? `Passport: ${p.passport}` : null,
       ].filter(Boolean).join("  ·  "),
       from: from || undefined,
