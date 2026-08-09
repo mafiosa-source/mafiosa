@@ -957,6 +957,23 @@ export type HousemaidProfile = {
   outgoing: Transaction[];
 };
 
+/**
+ * Most recent sponsor linked to a housemaid, decided purely from transaction
+ * history: latest valid date, tie-broken by creation timestamp. Historical
+ * records are never modified. Returns undefined when no sponsor was ever linked.
+ */
+export function mostRecentSponsor(timeline: Transaction[]): string | undefined {
+  const candidates = timeline.filter((t) => t.sponsor?.trim() && t.date);
+  if (candidates.length === 0) return undefined;
+  const best = candidates.reduce((a, b) => {
+    if (b.date !== a.date) return b.date > a.date ? b : a;
+    const at = Date.parse(a.createdAt ?? "") || 0;
+    const bt = Date.parse(b.createdAt ?? "") || 0;
+    return bt >= at ? b : a;
+  });
+  return best.sponsor?.trim();
+}
+
 export function housemaidProfile(s: FinanceState, name: string): HousemaidProfile {
   const timeline = housemaidTransactions(s, name);
   const active = timeline.filter(isActive);
