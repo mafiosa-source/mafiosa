@@ -154,7 +154,12 @@ function HousemaidProfilePage() {
 
       <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         {p.company ? <Badge variant="secondary">{COMPANY_LABEL[p.company]}</Badge> : null}
-        {p.sponsor ? <span>Sponsor: <span className="text-foreground">{p.sponsor}</span></span> : null}
+        <span>
+          Most Recent Sponsor:{" "}
+          <span className={p.sponsor ? "text-foreground font-medium" : "italic"}>
+            {p.sponsor ?? "No Sponsor Linked"}
+          </span>
+        </span>
         {p.passport ? <span>Passport: <span className="font-mono text-foreground">{p.passport}</span></span> : null}
         <span>{p.timeline.length} linked transaction(s)</span>
       </div>
