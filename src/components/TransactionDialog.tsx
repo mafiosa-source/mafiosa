@@ -303,6 +303,14 @@ export function TransactionDialog({
                     onChange={(e) => patch({ kmAfter: e.target.value === "" ? undefined : Number(e.target.value) })}
                   />
                 </F>
+                <F label="KM reading">
+                  <Input
+                    type="number"
+                    value={draft.kmReading ?? ""}
+                    onChange={(e) => patch({ kmReading: e.target.value === "" ? undefined : Number(e.target.value) })}
+                  />
+                </F>
+
 
               </>
             )}
