@@ -16,7 +16,16 @@ import { Printer, FileSpreadsheet } from "lucide-react";
 import { useFinance } from "@/lib/finance-store";
 import { COMPANIES, COMPANY_LABEL, WALLET_BY_KEY, DRIVERS, vehicleLabel, vehiclesForCompany } from "@/lib/finance-types";
 import type { Company } from "@/lib/finance-types";
-import { fuelTransactions, toFuelPrintRows, toFuelCsvRows, fuelKmMap, fuelOdometer } from "@/lib/report-filters";
+import {
+  fuelTransactions,
+  toFuelPrintRows,
+  toFuelCsvRows,
+  fuelManualKm,
+  fuelOdometer,
+  fuelAuditMap,
+  needsFuelReview,
+  type FuelAuditFilter,
+} from "@/lib/report-filters";
 import { qar, num, today, dayOfWeek, printFuelReport, exportExcel } from "@/lib/format";
 
 export const Route = createFileRoute("/fuel")({
@@ -36,6 +45,22 @@ export const Route = createFileRoute("/fuel")({
   component: FuelPage,
 });
 
+const AUDIT_CLASS: Record<string, string> = {
+  ok: "bg-[color:var(--success)]/15 text-[color:var(--success)]",
+  review: "bg-[color:var(--warning)]/15 text-[color:var(--warning)]",
+  discrepancy: "bg-destructive/15 text-destructive",
+  "odometer-error": "bg-destructive/15 text-destructive",
+  "no-previous": "bg-muted text-muted-foreground",
+};
+
+const AUDIT_DOT: Record<string, string> = {
+  ok: "🟢",
+  review: "🟡",
+  discrepancy: "🔴 ⚠",
+  "odometer-error": "🔴 ⚠",
+  "no-previous": "⚪",
+};
+
 const monthStart = () => `${today().slice(0, 7)}-01`;
 
 function FuelPage() {
@@ -45,6 +70,7 @@ function FuelPage() {
   const [company, setCompany] = useState("__all__");
   const [vehicle, setVehicle] = useState("__all__");
   const [driver, setDriver] = useState("__all__");
+  const [auditFilter, setAuditFilter] = useState<FuelAuditFilter>("all");
 
   const all = useMemo(() => fuelTransactions(s.transactions, {}), [s.transactions]);
   const registryVehicles = useMemo(
@@ -70,7 +96,9 @@ function FuelPage() {
     return [...base, ...derived];
   }, [all]);
 
-  const rows = useMemo(
+  const audit = useMemo(() => fuelAuditMap(all), [all]);
+
+  const baseRows = useMemo(
     () =>
       fuelTransactions(s.transactions, {
         from,
@@ -87,9 +115,17 @@ function FuelPage() {
     [s.transactions, from, to, company, vehicle, driver, registryVehicles],
   );
 
-  const kmMap = useMemo(() => fuelKmMap(rows), [rows]);
+  const flagged = useMemo(() => baseRows.filter((t) => needsFuelReview(audit.get(t.id))), [baseRows, audit]);
+  const rows = useMemo(
+    () =>
+      auditFilter === "all"
+        ? baseRows
+        : baseRows.filter((t) => audit.get(t.id)?.status === auditFilter),
+    [baseRows, audit, auditFilter],
+  );
+
   const totalAmount = rows.reduce((a, t) => a + t.amount, 0);
-  const totalKm = rows.reduce((a, t) => a + (kmMap.get(t.id) ?? 0), 0);
+  const totalKm = rows.reduce((a, t) => a + (fuelManualKm(t) ?? 0), 0);
   const perLitreKm = totalKm > 0 ? totalAmount / totalKm : 0;
 
 
@@ -105,7 +141,7 @@ function FuelPage() {
       from,
       to,
       company: company === "__all__" ? undefined : company === "__none__" ? "No company" : COMPANY_LABEL[company as never],
-      rows: toFuelPrintRows(rows),
+      rows: toFuelPrintRows(rows, audit),
     });
   }
 
@@ -116,7 +152,7 @@ function FuelPage() {
         description="Every fuel transaction with day, vehicle, number plate, odometer, kilometres and driver."
         action={
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => exportExcel("fuel-report.xls", toFuelCsvRows(rows), "Fuel & Vehicle Report")}>
+            <Button size="sm" variant="outline" onClick={() => exportExcel("fuel-report.xls", toFuelCsvRows(rows, audit), "Fuel & Vehicle Report")}>
               <FileSpreadsheet className="h-4 w-4" /> Excel
             </Button>
             <Button size="sm" onClick={print}>
@@ -178,13 +214,39 @@ function FuelPage() {
             </SelectContent>
           </Select>
         </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Verification</Label>
+          <Select value={auditFilter} onValueChange={(v) => setAuditFilter(v as FuelAuditFilter)}>
+            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="ok">OK</SelectItem>
+              <SelectItem value="review">Review</SelectItem>
+              <SelectItem value="discrepancy">Discrepancy</SelectItem>
+              <SelectItem value="odometer-error">Odometer error</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
         <StatCard label="Fuel transactions" value={rows.length} format="raw" />
         <StatCard label="Total fuel expense" value={totalAmount} tone="warning" />
         <StatCard label="Total kilometres" value={totalKm} format="raw" tone="info" />
         <StatCard label="Cost per km" value={perLitreKm} />
+        <button
+          type="button"
+          onClick={() => setAuditFilter(auditFilter === "discrepancy" ? "all" : "discrepancy")}
+          className="text-left"
+          title="Show only transactions that need review"
+        >
+          <StatCard
+            label="Discrepancies"
+            value={flagged.length}
+            format="raw"
+            tone={flagged.length > 0 ? "danger" : "success"}
+          />
+        </button>
       </div>
 
       <div className="rounded-lg border bg-card overflow-x-auto">
@@ -198,6 +260,7 @@ function FuelPage() {
               <th className="px-3 py-2">Plate</th>
               <th className="px-3 py-2 text-right">Odometer</th>
               <th className="px-3 py-2 text-right">KM</th>
+              <th className="px-3 py-2">Discrepancy</th>
               <th className="px-3 py-2">Driver</th>
               <th className="px-3 py-2 text-right">Amount</th>
               <th className="px-3 py-2">Paid from</th>
@@ -206,28 +269,39 @@ function FuelPage() {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-3 py-8 text-center text-muted-foreground text-sm">
+                <td colSpan={11} className="px-3 py-8 text-center text-muted-foreground text-sm">
                   No fuel transactions for this selection.
                 </td>
               </tr>
             ) : (
-              rows.map((t) => (
-                <tr key={t.id} className="border-t">
-                  <td className="px-3 py-2 whitespace-nowrap">{t.date}</td>
-                  <td className="px-3 py-2">{dayOfWeek(t.date)}</td>
-                  <td className="px-3 py-2">{t.company ? COMPANY_LABEL[t.company] : "—"}</td>
-                  <td className="px-3 py-2">{t.vehicle || "—"}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{t.plateNumber || "—"}</td>
-                  <td className="px-3 py-2 text-right tabular">{fuelOdometer(t) != null ? num(fuelOdometer(t) as number) : "—"}</td>
-                  <td className="px-3 py-2 text-right tabular">{kmMap.get(t.id) != null ? num(kmMap.get(t.id) as number) : "—"}</td>
-
-                  <td className="px-3 py-2">{t.driver || "—"}</td>
-                  <td className="px-3 py-2 text-right tabular font-medium">{qar(t.amount)}</td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">
-                    {WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet}
-                  </td>
-                </tr>
-              ))
+              rows.map((t) => {
+                const a = audit.get(t.id);
+                const km = fuelManualKm(t);
+                return (
+                  <tr key={t.id} className="border-t">
+                    <td className="px-3 py-2 whitespace-nowrap">{t.date}</td>
+                    <td className="px-3 py-2">{dayOfWeek(t.date)}</td>
+                    <td className="px-3 py-2">{t.company ? COMPANY_LABEL[t.company] : "—"}</td>
+                    <td className="px-3 py-2">{t.vehicle || "—"}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{t.plateNumber || "—"}</td>
+                    <td className="px-3 py-2 text-right tabular">{fuelOdometer(t) != null ? num(fuelOdometer(t) as number) : "—"}</td>
+                    <td className="px-3 py-2 text-right tabular">{km != null ? num(km) : "—"}</td>
+                    <td className="px-3 py-2">
+                      <span
+                        title={a?.detail ?? ""}
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${AUDIT_CLASS[a?.status ?? "no-previous"]}`}
+                      >
+                        {AUDIT_DOT[a?.status ?? "no-previous"]} {a?.label ?? "No previous reading"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">{t.driver || "—"}</td>
+                    <td className="px-3 py-2 text-right tabular font-medium">{qar(t.amount)}</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">
+                      {WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
           {rows.length > 0 && (
@@ -236,11 +310,13 @@ function FuelPage() {
                 <td className="px-3 py-2" colSpan={6}>Grand Total</td>
                 <td className="px-3 py-2 text-right tabular">{num(totalKm)}</td>
                 <td />
+                <td />
                 <td className="px-3 py-2 text-right tabular">{qar(totalAmount)}</td>
                 <td />
               </tr>
             </tfoot>
           )}
+
         </table>
       </div>
     </AppLayout>
