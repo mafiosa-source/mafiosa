@@ -16,7 +16,16 @@ import { Printer, FileSpreadsheet } from "lucide-react";
 import { useFinance } from "@/lib/finance-store";
 import { COMPANIES, COMPANY_LABEL, WALLET_BY_KEY, DRIVERS, vehicleLabel, vehiclesForCompany } from "@/lib/finance-types";
 import type { Company } from "@/lib/finance-types";
-import { fuelTransactions, toFuelPrintRows, toFuelCsvRows, fuelKmMap, fuelOdometer } from "@/lib/report-filters";
+import {
+  fuelTransactions,
+  toFuelPrintRows,
+  toFuelCsvRows,
+  fuelManualKm,
+  fuelOdometer,
+  fuelAuditMap,
+  needsFuelReview,
+  type FuelAuditFilter,
+} from "@/lib/report-filters";
 import { qar, num, today, dayOfWeek, printFuelReport, exportExcel } from "@/lib/format";
 
 export const Route = createFileRoute("/fuel")({
@@ -45,6 +54,7 @@ function FuelPage() {
   const [company, setCompany] = useState("__all__");
   const [vehicle, setVehicle] = useState("__all__");
   const [driver, setDriver] = useState("__all__");
+  const [auditFilter, setAuditFilter] = useState<FuelAuditFilter>("all");
 
   const all = useMemo(() => fuelTransactions(s.transactions, {}), [s.transactions]);
   const registryVehicles = useMemo(
@@ -70,7 +80,9 @@ function FuelPage() {
     return [...base, ...derived];
   }, [all]);
 
-  const rows = useMemo(
+  const audit = useMemo(() => fuelAuditMap(all), [all]);
+
+  const baseRows = useMemo(
     () =>
       fuelTransactions(s.transactions, {
         from,
@@ -87,9 +99,17 @@ function FuelPage() {
     [s.transactions, from, to, company, vehicle, driver, registryVehicles],
   );
 
-  const kmMap = useMemo(() => fuelKmMap(rows), [rows]);
+  const flagged = useMemo(() => baseRows.filter((t) => needsFuelReview(audit.get(t.id))), [baseRows, audit]);
+  const rows = useMemo(
+    () =>
+      auditFilter === "all"
+        ? baseRows
+        : baseRows.filter((t) => audit.get(t.id)?.status === auditFilter),
+    [baseRows, audit, auditFilter],
+  );
+
   const totalAmount = rows.reduce((a, t) => a + t.amount, 0);
-  const totalKm = rows.reduce((a, t) => a + (kmMap.get(t.id) ?? 0), 0);
+  const totalKm = rows.reduce((a, t) => a + (fuelManualKm(t) ?? 0), 0);
   const perLitreKm = totalKm > 0 ? totalAmount / totalKm : 0;
 
 
@@ -105,7 +125,7 @@ function FuelPage() {
       from,
       to,
       company: company === "__all__" ? undefined : company === "__none__" ? "No company" : COMPANY_LABEL[company as never],
-      rows: toFuelPrintRows(rows),
+      rows: toFuelPrintRows(rows, audit),
     });
   }
 
@@ -116,7 +136,7 @@ function FuelPage() {
         description="Every fuel transaction with day, vehicle, number plate, odometer, kilometres and driver."
         action={
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => exportExcel("fuel-report.xls", toFuelCsvRows(rows), "Fuel & Vehicle Report")}>
+            <Button size="sm" variant="outline" onClick={() => exportExcel("fuel-report.xls", toFuelCsvRows(rows, audit), "Fuel & Vehicle Report")}>
               <FileSpreadsheet className="h-4 w-4" /> Excel
             </Button>
             <Button size="sm" onClick={print}>
