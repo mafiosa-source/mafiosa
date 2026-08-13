@@ -73,9 +73,10 @@ export function TransactionDialog({
     if (!draft.fromWallet || !draft.toWallet) return toast.error("Choose wallets");
     if (draft.fromWallet === draft.toWallet) return toast.error("From and To wallets must differ");
     if (isVoucher && !draft.company) return toast.error("Select company");
-    if (isFuel && (!draft.vehicle || !draft.plateNumber || !draft.driver || draft.kmBefore == null || draft.kmAfter == null)) {
-      return toast.error("Fuel entries require vehicle, number plate, driver and odometer readings");
+    if (isFuel && (!draft.vehicle || !draft.plateNumber || !draft.driver || draft.kmAfter == null)) {
+      return toast.error("Fuel entries require vehicle, number plate, driver and the odometer reading");
     }
+
     if (isVoucher && draft.company === "AHG") return toast.error("AHG cannot use vouchers");
     if (isVoucher && draft.voucherNumber && isVoucherNumberTaken(draft.voucherNumber, editing?.id)) {
       return toast.error("Voucher number already used");
