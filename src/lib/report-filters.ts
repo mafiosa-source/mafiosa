@@ -360,35 +360,114 @@ export function fuelTransactions(rows: Transaction[], f: FuelFilters): Transacti
 export const fuelOdometer = (t: Transaction) => t.kmAfter ?? t.kmBefore ?? undefined;
 
 /**
- * Kilometres travelled. Legacy rows carry both before/after readings.
- * New rows store a single odometer reading, so KM is the gap to the
- * previous reading of the same vehicle (by plate).
+ * OFFICIAL KM = the value the user typed. Never derived from odometer gaps.
+ * Legacy rows that only carry before/after readings keep their recorded span.
  */
+export const fuelManualKm = (t: Transaction): number | undefined =>
+  t.kmReading != null
+    ? t.kmReading
+    : t.kmBefore != null && t.kmAfter != null
+      ? t.kmAfter - t.kmBefore
+      : undefined;
+
 export function fuelKmMap(rows: Transaction[]): Map<string, number | undefined> {
   const map = new Map<string, number | undefined>();
+  for (const t of rows) map.set(t.id, fuelManualKm(t));
+  return map;
+}
+
+export const fuelKm = fuelManualKm;
+
+// ---------- Odometer verification (audit only — never changes KM) ----------
+export type FuelAuditStatus = "ok" | "review" | "discrepancy" | "odometer-error" | "no-previous";
+
+export type FuelAudit = {
+  status: FuelAuditStatus;
+  label: string;
+  detail: string;
+  expectedKm?: number;
+  manualKm?: number;
+  diff?: number;
+};
+
+export const FUEL_AUDIT_FILTERS = ["all", "ok", "review", "discrepancy", "odometer-error"] as const;
+export type FuelAuditFilter = (typeof FUEL_AUDIT_FILTERS)[number];
+
+/** Statuses that the user should look at. */
+export const needsFuelReview = (a?: FuelAudit) =>
+  !!a && (a.status === "review" || a.status === "discrepancy" || a.status === "odometer-error");
+
+/**
+ * Silently compares the manual KM against the odometer difference per vehicle.
+ * Pass the full fuel history so previous readings are found even when filtered.
+ */
+export function fuelAuditMap(rows: Transaction[]): Map<string, FuelAudit> {
+  const map = new Map<string, FuelAudit>();
   const last = new Map<string, number>();
   for (const t of byDateAsc(rows)) {
-    const odo = fuelOdometer(t);
     const key = t.plateNumber ?? t.vehicle ?? "";
-    if (t.kmReading != null) {
-      map.set(t.id, t.kmReading);
-    } else if (t.kmBefore != null && t.kmAfter != null) {
-      map.set(t.id, Math.max(0, t.kmAfter - t.kmBefore));
-    } else if (odo != null && last.has(key)) {
-      map.set(t.id, Math.max(0, odo - (last.get(key) as number)));
+    const odo = fuelOdometer(t);
+    const manual = fuelManualKm(t);
+    const prev = last.get(key);
+
+    if (odo == null || prev == null || manual == null) {
+      map.set(t.id, {
+        status: "no-previous",
+        label: "No previous reading",
+        detail:
+          odo == null
+            ? "No odometer reading recorded for this transaction."
+            : manual == null
+              ? "No KM recorded for this transaction."
+              : "This is the first odometer reading for this vehicle, so no comparison is possible.",
+        manualKm: manual,
+      });
+    } else if (odo < prev) {
+      map.set(t.id, {
+        status: "odometer-error",
+        label: "Odometer reading error",
+        detail: `Current odometer reading (${odo}) is lower than the previous reading (${prev}). Please verify the entry.`,
+        manualKm: manual,
+      });
     } else {
-      map.set(t.id, undefined);
+      const expected = odo - prev;
+      const diff = manual - expected;
+      const abs = Math.abs(diff);
+      if (abs <= 2) {
+        map.set(t.id, {
+          status: "ok",
+          label: "OK",
+          detail: `Manual KM matches the odometer difference (${expected} KM).`,
+          expectedKm: expected,
+          manualKm: manual,
+          diff,
+        });
+      } else if (abs <= 10) {
+        map.set(t.id, {
+          status: "review",
+          label: `Review: ${abs} KM difference`,
+          detail: `Expected ${expected} KM from the odometer, ${manual} KM was entered.`,
+          expectedKm: expected,
+          manualKm: manual,
+          diff,
+        });
+      } else {
+        map.set(t.id, {
+          status: "discrepancy",
+          label: `⚠ Discrepancy: ${abs} KM ${diff > 0 ? "higher" : "lower"} than expected`,
+          detail: `Expected ${expected} KM from the odometer, ${manual} KM was entered.`,
+          expectedKm: expected,
+          manualKm: manual,
+          diff,
+        });
+      }
     }
     if (odo != null) last.set(key, odo);
   }
   return map;
 }
 
-export const fuelKm = (t: Transaction) =>
-  t.kmAfter != null && t.kmBefore != null ? Math.max(0, t.kmAfter - t.kmBefore) : undefined;
-
-export function toFuelPrintRows(rows: Transaction[]): FuelPrintRow[] {
-  const km = fuelKmMap(rows);
+export function toFuelPrintRows(rows: Transaction[], audit?: Map<string, FuelAudit>): FuelPrintRow[] {
   return rows.map((t) => ({
     date: t.date,
     day: dayOfWeek(t.date),
@@ -396,7 +475,8 @@ export function toFuelPrintRows(rows: Transaction[]): FuelPrintRow[] {
     vehicle: t.vehicle ?? "—",
     plateNumber: t.plateNumber ?? "—",
     odometer: fuelOdometer(t),
-    km: km.get(t.id),
+    km: fuelManualKm(t),
+    discrepancy: audit?.get(t.id)?.label ?? "",
     driver: t.driver ?? "—",
     amount: t.amount,
     wallet: WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
@@ -404,8 +484,8 @@ export function toFuelPrintRows(rows: Transaction[]): FuelPrintRow[] {
 }
 
 
-export function toFuelCsvRows(rows: Transaction[]): Record<string, unknown>[] {
-  return toFuelPrintRows(rows).map((r) => ({
+export function toFuelCsvRows(rows: Transaction[], audit?: Map<string, FuelAudit>): Record<string, unknown>[] {
+  return toFuelPrintRows(rows, audit).map((r) => ({
     Date: r.date,
     Day: r.day,
     Company: r.company,
@@ -413,6 +493,7 @@ export function toFuelCsvRows(rows: Transaction[]): Record<string, unknown>[] {
     "Number Plate": r.plateNumber,
     Odometer: r.odometer ?? "",
     KM: r.km ?? "",
+    Discrepancy: r.discrepancy ?? "",
     Driver: r.driver,
     "Amount (QAR)": r.amount,
     "Payment Wallet": r.wallet,
