@@ -264,6 +264,7 @@ export type FuelPrintRow = {
   plateNumber: string;
   odometer?: number;
   km?: number;
+  discrepancy?: string;
   driver: string;
   amount: number;
   wallet: string;
@@ -292,11 +293,12 @@ export function printFuelReport(opts: {
 <td>${esc(r.company)}</td><td>${esc(r.vehicle)}</td><td>${esc(r.plateNumber)}</td>
 <td class="r">${r.odometer == null ? "" : nf(r.odometer)}</td>
 <td class="r">${r.km == null ? "" : nf(r.km)}</td>
+<td>${esc(r.discrepancy ?? "")}</td>
 <td>${esc(r.driver)}</td><td class="r">${nf(r.amount)}</td><td>${esc(r.wallet)}</td>
 </tr>`,
         )
         .join("")
-    : `<tr><td colspan="11" class="c muted">No fuel transactions for the selected filters.</td></tr>`;
+    : `<tr><td colspan="12" class="c muted">No fuel transactions for the selected filters.</td></tr>`;
 
   const html = `<!doctype html><html><head><meta charset="utf-8" /><title>${esc(title)}</title>
 <style>
@@ -325,14 +327,14 @@ ${subtitle ? `<div>${esc(subtitle)}</div>` : ""}</div>
 </div>
 <table>
 <thead><tr><th class="c">#</th><th>Date</th><th>Day</th><th>Company</th><th>Vehicle</th>
-<th>Number Plate</th><th class="r">Odometer</th><th class="r">KM</th><th>Driver</th>
+<th>Number Plate</th><th class="r">Odometer</th><th class="r">KM</th><th>Discrepancy</th><th>Driver</th>
 <th class="r">Amount (QAR)</th><th>Payment Wallet</th></tr></thead>
 <tbody>${body}</tbody>
 <tfoot>
-<tr><td colspan="6" class="r">TOTALS</td><td></td><td class="r">${nf(totalKm)}</td><td></td><td class="r">${nf(totalAmount)}</td><td></td></tr>
-<tr><td colspan="6" class="r">TOTAL FUEL EXPENSE</td><td colspan="5" class="r">${nf(totalAmount)}</td></tr>
-<tr><td colspan="6" class="r">TOTAL KM</td><td colspan="5" class="r">${nf(totalKm)}</td></tr>
-<tr><td colspan="6" class="r">NUMBER OF FUEL TRANSACTIONS</td><td colspan="5" class="r">${rows.length}</td></tr>
+<tr><td colspan="6" class="r">TOTALS</td><td></td><td class="r">${nf(totalKm)}</td><td></td><td></td><td class="r">${nf(totalAmount)}</td><td></td></tr>
+<tr><td colspan="6" class="r">TOTAL FUEL EXPENSE</td><td colspan="6" class="r">${nf(totalAmount)}</td></tr>
+<tr><td colspan="6" class="r">TOTAL KM (AS ENTERED)</td><td colspan="6" class="r">${nf(totalKm)}</td></tr>
+<tr><td colspan="6" class="r">NUMBER OF FUEL TRANSACTIONS</td><td colspan="6" class="r">${rows.length}</td></tr>
 </tfoot>
 </table>
 </body></html>`;
