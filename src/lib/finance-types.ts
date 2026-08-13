@@ -338,6 +338,8 @@ export type Transaction = {
   station?: string;
   kmBefore?: number;
   kmAfter?: number;
+  /** Kilometres travelled, entered manually at the time of the transaction. */
+  kmReading?: number;
   // Salary linkage
   parentTxnId?: string; // Salary Release → Salary Holding
   createdBy?: string;

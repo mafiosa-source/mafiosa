@@ -208,6 +208,7 @@ export type Database = {
           id: string
           km_after: number | null
           km_before: number | null
+          km_reading: number | null
           last_edited_by: string | null
           parent_txn_id: string | null
           passport: string | null
@@ -245,6 +246,7 @@ export type Database = {
           id?: string
           km_after?: number | null
           km_before?: number | null
+          km_reading?: number | null
           last_edited_by?: string | null
           parent_txn_id?: string | null
           passport?: string | null
@@ -282,6 +284,7 @@ export type Database = {
           id?: string
           km_after?: number | null
           km_before?: number | null
+          km_reading?: number | null
           last_edited_by?: string | null
           parent_txn_id?: string | null
           passport?: string | null

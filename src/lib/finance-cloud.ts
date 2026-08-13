@@ -46,6 +46,7 @@ export function rowToTransaction(r: Row): Transaction {
     station: (r.station as string) ?? undefined,
     kmBefore: r.km_before == null ? undefined : Number(r.km_before),
     kmAfter: r.km_after == null ? undefined : Number(r.km_after),
+    kmReading: r.km_reading == null ? undefined : Number(r.km_reading),
     parentTxnId: (r.parent_txn_id as string) ?? undefined,
     createdBy: (r.created_by as string) ?? undefined,
     lastEditedBy: (r.last_edited_by as string) ?? undefined,
@@ -88,6 +89,7 @@ export function transactionToRow(t: Partial<Transaction>): Row {
   set("station", t.station);
   set("km_before", t.kmBefore);
   set("km_after", t.kmAfter);
+  set("km_reading", t.kmReading);
   set("parent_txn_id", t.parentTxnId);
   set("created_by", t.createdBy);
   set("last_edited_by", t.lastEditedBy);

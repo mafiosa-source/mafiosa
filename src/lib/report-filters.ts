@@ -370,7 +370,9 @@ export function fuelKmMap(rows: Transaction[]): Map<string, number | undefined> 
   for (const t of byDateAsc(rows)) {
     const odo = fuelOdometer(t);
     const key = t.plateNumber ?? t.vehicle ?? "";
-    if (t.kmBefore != null && t.kmAfter != null) {
+    if (t.kmReading != null) {
+      map.set(t.id, t.kmReading);
+    } else if (t.kmBefore != null && t.kmAfter != null) {
       map.set(t.id, Math.max(0, t.kmAfter - t.kmBefore));
     } else if (odo != null && last.has(key)) {
       map.set(t.id, Math.max(0, odo - (last.get(key) as number)));
