@@ -294,19 +294,15 @@ export function TransactionDialog({
                 <F label="Number plate *"><Input required value={draft.plateNumber ?? ""} onChange={(e) => patch({ plateNumber: e.target.value })} /></F>
 
                 <F label="Station"><Input value={draft.station ?? ""} onChange={(e) => patch({ station: e.target.value })} /></F>
-                <F label="Odometer / KM before *"><Input required type="number" value={draft.kmBefore ?? ""} onChange={(e) => patch({ kmBefore: Number(e.target.value) })} /></F>
-                <F label="Odometer / KM after *"><Input required type="number" value={draft.kmAfter ?? ""} onChange={(e) => patch({ kmAfter: Number(e.target.value) })} /></F>
-                <F label="Kilometres travelled (auto)">
+                <F label="Odometer reading *">
                   <Input
-                    readOnly
-                    className="bg-muted/40"
-                    value={
-                      draft.kmAfter != null && draft.kmBefore != null
-                        ? String(Math.max(0, Number(draft.kmAfter) - Number(draft.kmBefore)))
-                        : ""
-                    }
+                    required
+                    type="number"
+                    value={draft.kmAfter ?? ""}
+                    onChange={(e) => patch({ kmAfter: e.target.value === "" ? undefined : Number(e.target.value) })}
                   />
                 </F>
+
               </>
             )}
 
