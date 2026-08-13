@@ -87,9 +87,11 @@ function FuelPage() {
     [s.transactions, from, to, company, vehicle, driver, registryVehicles],
   );
 
+  const kmMap = useMemo(() => fuelKmMap(rows), [rows]);
   const totalAmount = rows.reduce((a, t) => a + t.amount, 0);
-  const totalKm = rows.reduce((a, t) => a + (fuelKm(t) ?? 0), 0);
+  const totalKm = rows.reduce((a, t) => a + (kmMap.get(t.id) ?? 0), 0);
   const perLitreKm = totalKm > 0 ? totalAmount / totalKm : 0;
+
 
   function print() {
     printFuelReport({
