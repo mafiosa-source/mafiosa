@@ -16,7 +16,7 @@ import { Printer, FileSpreadsheet } from "lucide-react";
 import { useFinance } from "@/lib/finance-store";
 import { COMPANIES, COMPANY_LABEL, WALLET_BY_KEY, DRIVERS, vehicleLabel, vehiclesForCompany } from "@/lib/finance-types";
 import type { Company } from "@/lib/finance-types";
-import { fuelTransactions, toFuelPrintRows, toFuelCsvRows, fuelKm } from "@/lib/report-filters";
+import { fuelTransactions, toFuelPrintRows, toFuelCsvRows, fuelKmMap, fuelOdometer } from "@/lib/report-filters";
 import { qar, num, today, dayOfWeek, printFuelReport, exportExcel } from "@/lib/format";
 
 export const Route = createFileRoute("/fuel")({
@@ -87,9 +87,11 @@ function FuelPage() {
     [s.transactions, from, to, company, vehicle, driver, registryVehicles],
   );
 
+  const kmMap = useMemo(() => fuelKmMap(rows), [rows]);
   const totalAmount = rows.reduce((a, t) => a + t.amount, 0);
-  const totalKm = rows.reduce((a, t) => a + (fuelKm(t) ?? 0), 0);
+  const totalKm = rows.reduce((a, t) => a + (kmMap.get(t.id) ?? 0), 0);
   const perLitreKm = totalKm > 0 ? totalAmount / totalKm : 0;
+
 
   function print() {
     printFuelReport({
@@ -216,8 +218,9 @@ function FuelPage() {
                   <td className="px-3 py-2">{t.company ? COMPANY_LABEL[t.company] : "—"}</td>
                   <td className="px-3 py-2">{t.vehicle || "—"}</td>
                   <td className="px-3 py-2 font-mono text-xs">{t.plateNumber || "—"}</td>
-                  <td className="px-3 py-2 text-right tabular">{t.kmAfter != null ? num(t.kmAfter) : "—"}</td>
-                  <td className="px-3 py-2 text-right tabular">{fuelKm(t) != null ? num(fuelKm(t) as number) : "—"}</td>
+                  <td className="px-3 py-2 text-right tabular">{fuelOdometer(t) != null ? num(fuelOdometer(t) as number) : "—"}</td>
+                  <td className="px-3 py-2 text-right tabular">{kmMap.get(t.id) != null ? num(kmMap.get(t.id) as number) : "—"}</td>
+
                   <td className="px-3 py-2">{t.driver || "—"}</td>
                   <td className="px-3 py-2 text-right tabular font-medium">{qar(t.amount)}</td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">

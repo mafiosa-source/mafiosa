@@ -356,23 +356,51 @@ export function fuelTransactions(rows: Transaction[], f: FuelFilters): Transacti
   );
 }
 
+/** Odometer reading recorded at the time of the transaction. */
+export const fuelOdometer = (t: Transaction) => t.kmAfter ?? t.kmBefore ?? undefined;
+
+/**
+ * Kilometres travelled. Legacy rows carry both before/after readings.
+ * New rows store a single odometer reading, so KM is the gap to the
+ * previous reading of the same vehicle (by plate).
+ */
+export function fuelKmMap(rows: Transaction[]): Map<string, number | undefined> {
+  const map = new Map<string, number | undefined>();
+  const last = new Map<string, number>();
+  for (const t of byDateAsc(rows)) {
+    const odo = fuelOdometer(t);
+    const key = t.plateNumber ?? t.vehicle ?? "";
+    if (t.kmBefore != null && t.kmAfter != null) {
+      map.set(t.id, Math.max(0, t.kmAfter - t.kmBefore));
+    } else if (odo != null && last.has(key)) {
+      map.set(t.id, Math.max(0, odo - (last.get(key) as number)));
+    } else {
+      map.set(t.id, undefined);
+    }
+    if (odo != null) last.set(key, odo);
+  }
+  return map;
+}
+
 export const fuelKm = (t: Transaction) =>
   t.kmAfter != null && t.kmBefore != null ? Math.max(0, t.kmAfter - t.kmBefore) : undefined;
 
 export function toFuelPrintRows(rows: Transaction[]): FuelPrintRow[] {
+  const km = fuelKmMap(rows);
   return rows.map((t) => ({
     date: t.date,
     day: dayOfWeek(t.date),
     company: companyOf(t),
     vehicle: t.vehicle ?? "—",
     plateNumber: t.plateNumber ?? "—",
-    odometer: t.kmAfter ?? t.kmBefore ?? undefined,
-    km: fuelKm(t),
+    odometer: fuelOdometer(t),
+    km: km.get(t.id),
     driver: t.driver ?? "—",
     amount: t.amount,
     wallet: WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
   }));
 }
+
 
 export function toFuelCsvRows(rows: Transaction[]): Record<string, unknown>[] {
   return toFuelPrintRows(rows).map((r) => ({
