@@ -16,7 +16,7 @@ import { Printer, FileSpreadsheet } from "lucide-react";
 import { useFinance } from "@/lib/finance-store";
 import { COMPANIES, COMPANY_LABEL, WALLET_BY_KEY, DRIVERS, vehicleLabel, vehiclesForCompany } from "@/lib/finance-types";
 import type { Company } from "@/lib/finance-types";
-import { fuelTransactions, toFuelPrintRows, toFuelCsvRows, fuelKm } from "@/lib/report-filters";
+import { fuelTransactions, toFuelPrintRows, toFuelCsvRows, fuelKmMap, fuelOdometer } from "@/lib/report-filters";
 import { qar, num, today, dayOfWeek, printFuelReport, exportExcel } from "@/lib/format";
 
 export const Route = createFileRoute("/fuel")({
