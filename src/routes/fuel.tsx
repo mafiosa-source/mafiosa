@@ -45,6 +45,22 @@ export const Route = createFileRoute("/fuel")({
   component: FuelPage,
 });
 
+const AUDIT_CLASS: Record<string, string> = {
+  ok: "bg-[color:var(--success)]/15 text-[color:var(--success)]",
+  review: "bg-[color:var(--warning)]/15 text-[color:var(--warning)]",
+  discrepancy: "bg-destructive/15 text-destructive",
+  "odometer-error": "bg-destructive/15 text-destructive",
+  "no-previous": "bg-muted text-muted-foreground",
+};
+
+const AUDIT_DOT: Record<string, string> = {
+  ok: "🟢",
+  review: "🟡",
+  discrepancy: "🔴 ⚠",
+  "odometer-error": "🔴 ⚠",
+  "no-previous": "⚪",
+};
+
 const monthStart = () => `${today().slice(0, 7)}-01`;
 
 function FuelPage() {
