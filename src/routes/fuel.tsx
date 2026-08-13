@@ -218,8 +218,9 @@ function FuelPage() {
                   <td className="px-3 py-2">{t.company ? COMPANY_LABEL[t.company] : "—"}</td>
                   <td className="px-3 py-2">{t.vehicle || "—"}</td>
                   <td className="px-3 py-2 font-mono text-xs">{t.plateNumber || "—"}</td>
-                  <td className="px-3 py-2 text-right tabular">{t.kmAfter != null ? num(t.kmAfter) : "—"}</td>
-                  <td className="px-3 py-2 text-right tabular">{fuelKm(t) != null ? num(fuelKm(t) as number) : "—"}</td>
+                  <td className="px-3 py-2 text-right tabular">{fuelOdometer(t) != null ? num(fuelOdometer(t) as number) : "—"}</td>
+                  <td className="px-3 py-2 text-right tabular">{kmMap.get(t.id) != null ? num(kmMap.get(t.id) as number) : "—"}</td>
+
                   <td className="px-3 py-2">{t.driver || "—"}</td>
                   <td className="px-3 py-2 text-right tabular font-medium">{qar(t.amount)}</td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">
