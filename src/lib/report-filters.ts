@@ -517,7 +517,6 @@ export function toFuelPrintRows(rows: Transaction[], audit?: Map<string, FuelAud
       plateNumber: t.plateNumber ?? "—",
       odometer: fuelOdometer(t),
       km: fuelDisplayKm(t, a),
-      baseline: fuelIsBaseline(t, a),
       discrepancy: a?.label ?? "",
       driver: t.driver ?? "—",
       amount: t.amount,
