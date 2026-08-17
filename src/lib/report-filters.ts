@@ -431,6 +431,7 @@ export function fuelAuditMap(rows: Transaction[]): Map<string, FuelAudit> {
         manualKm: manual,
         previousOdometer: prev?.odo,
         previousDate: prev?.date,
+        firstForVehicle: prev == null,
       });
     } else if (odo < prev.odo) {
       map.set(t.id, {
