@@ -378,6 +378,23 @@ export function fuelKmMap(rows: Transaction[]): Map<string, number | undefined> 
 
 export const fuelKm = fuelManualKm;
 
+/**
+ * KM value to DISPLAY in reports. Prefers the user-entered KM. When no KM was
+ * entered and this is the first dated entry for the vehicle (no previous reading
+ * to compare against), the current odometer reading is shown as the baseline.
+ * These baseline readings are display-only and excluded from KM totals.
+ */
+export const fuelDisplayKm = (t: Transaction, audit?: FuelAudit): number | undefined => {
+  const manual = fuelManualKm(t);
+  if (manual != null) return manual;
+  if (audit?.firstForVehicle) return fuelOdometer(t);
+  return undefined;
+};
+
+/** True when this row's displayed KM is a first-entry baseline reading. */
+export const fuelIsBaseline = (t: Transaction, audit?: FuelAudit): boolean =>
+  audit?.firstForVehicle === true && fuelManualKm(t) == null && fuelOdometer(t) != null;
+
 // ---------- Odometer verification (audit only — never changes KM) ----------
 export type FuelAuditStatus = "ok" | "review" | "discrepancy" | "odometer-error" | "no-previous";
 
