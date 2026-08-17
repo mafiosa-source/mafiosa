@@ -391,6 +391,8 @@ export type FuelAudit = {
   /** Odometer of the immediately previous dated entry for the same vehicle. */
   previousOdometer?: number;
   previousDate?: string;
+  /** True when this is the first dated entry for the vehicle (no previous reading exists). */
+  firstForVehicle?: boolean;
 };
 
 export const FUEL_AUDIT_FILTERS = ["all", "ok", "review", "discrepancy", "odometer-error"] as const;
