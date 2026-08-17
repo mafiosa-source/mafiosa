@@ -388,6 +388,9 @@ export type FuelAudit = {
   expectedKm?: number;
   manualKm?: number;
   diff?: number;
+  /** Odometer of the immediately previous dated entry for the same vehicle. */
+  previousOdometer?: number;
+  previousDate?: string;
 };
 
 export const FUEL_AUDIT_FILTERS = ["all", "ok", "review", "discrepancy", "odometer-error"] as const;
@@ -398,12 +401,15 @@ export const needsFuelReview = (a?: FuelAudit) =>
   !!a && (a.status === "review" || a.status === "discrepancy" || a.status === "odometer-error");
 
 /**
- * Silently compares the manual KM against the odometer difference per vehicle.
+ * Compares the entered KM against the odometer gap versus the immediately
+ * previous dated entry for the same vehicle. Entries are always read in date
+ * order, so the most recent date carries the current readings. Values entered
+ * by the user are never changed or recalculated — this is tagging only.
  * Pass the full fuel history so previous readings are found even when filtered.
  */
 export function fuelAuditMap(rows: Transaction[]): Map<string, FuelAudit> {
   const map = new Map<string, FuelAudit>();
-  const last = new Map<string, number>();
+  const last = new Map<string, { odo: number; date: string }>();
   for (const t of byDateAsc(rows)) {
     const key = t.plateNumber ?? t.vehicle ?? "";
     const odo = fuelOdometer(t);
@@ -421,48 +427,71 @@ export function fuelAuditMap(rows: Transaction[]): Map<string, FuelAudit> {
               ? "No KM recorded for this transaction."
               : "This is the first odometer reading for this vehicle, so no comparison is possible.",
         manualKm: manual,
+        previousOdometer: prev?.odo,
+        previousDate: prev?.date,
       });
-    } else if (odo < prev) {
+    } else if (odo < prev.odo) {
       map.set(t.id, {
         status: "odometer-error",
         label: "Odometer reading error",
-        detail: `Current odometer reading (${odo}) is lower than the previous reading (${prev}). Please verify the entry.`,
+        detail: `Current odometer reading (${odo}) is lower than the previous reading (${prev.odo} on ${prev.date}). Please verify the entry.`,
         manualKm: manual,
+        previousOdometer: prev.odo,
+        previousDate: prev.date,
       });
     } else {
-      const expected = odo - prev;
+      const expected = odo - prev.odo;
       const diff = manual - expected;
       const abs = Math.abs(diff);
+      const base = {
+        expectedKm: expected,
+        manualKm: manual,
+        diff,
+        previousOdometer: prev.odo,
+        previousDate: prev.date,
+      };
       if (abs <= 2) {
         map.set(t.id, {
           status: "ok",
           label: "OK",
-          detail: `Manual KM matches the odometer difference (${expected} KM).`,
-          expectedKm: expected,
-          manualKm: manual,
-          diff,
+          detail: `Entered KM matches the odometer gap since ${prev.date} (${expected} KM).`,
+          ...base,
         });
       } else if (abs <= 10) {
         map.set(t.id, {
           status: "review",
           label: `Review: ${abs} KM difference`,
-          detail: `Expected ${expected} KM from the odometer, ${manual} KM was entered.`,
-          expectedKm: expected,
-          manualKm: manual,
-          diff,
+          detail: `Odometer gap since ${prev.date} is ${expected} KM, ${manual} KM was entered.`,
+          ...base,
         });
       } else {
         map.set(t.id, {
           status: "discrepancy",
           label: `⚠ Discrepancy: ${abs} KM ${diff > 0 ? "higher" : "lower"} than expected`,
-          detail: `Expected ${expected} KM from the odometer, ${manual} KM was entered.`,
-          expectedKm: expected,
-          manualKm: manual,
-          diff,
+          detail: `Odometer gap since ${prev.date} is ${expected} KM, ${manual} KM was entered.`,
+          ...base,
         });
       }
     }
-    if (odo != null) last.set(key, odo);
+    if (odo != null) last.set(key, { odo, date: t.date });
+  }
+  return map;
+}
+
+/** Current readings per vehicle: the values from the most recent dated entry. */
+export function fuelLatestReadings(
+  rows: Transaction[],
+): Map<string, { date: string; odometer?: number; km?: number; vehicle?: string }> {
+  const map = new Map<string, { date: string; odometer?: number; km?: number; vehicle?: string }>();
+  for (const t of byDateAsc(rows.filter(isFuelTransaction))) {
+    const key = t.plateNumber ?? t.vehicle ?? "";
+    if (!key) continue;
+    map.set(key, {
+      date: t.date,
+      odometer: fuelOdometer(t),
+      km: fuelManualKm(t),
+      vehicle: t.vehicle,
+    });
   }
   return map;
 }
