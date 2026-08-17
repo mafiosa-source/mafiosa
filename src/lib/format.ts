@@ -288,6 +288,7 @@ export function printFuelReport(opts: {
   const generated = new Date().toLocaleString("en-GB", { hour12: false });
   const range = from || to ? `${from || "Beginning"} to ${to || "Date"}` : "All dates";
 
+  const hasBaseline = rows.some((r) => r.baseline);
   const body = rows.length
     ? rows
         .map(
@@ -295,7 +296,7 @@ export function printFuelReport(opts: {
 <td class="c">${i + 1}</td><td class="nw">${esc(r.date)}</td><td>${esc(r.day)}</td>
 <td>${esc(r.company)}</td><td>${esc(r.vehicle)}</td><td>${esc(r.plateNumber)}</td>
 <td class="r">${r.odometer == null ? "" : nf(r.odometer)}</td>
-<td class="r">${r.km == null ? "" : nf(r.km)}</td>
+<td class="r${r.baseline ? " muted" : ""}">${r.km == null ? "" : nf(r.km)}</td>
 <td>${esc(r.discrepancy ?? "")}</td>
 <td>${esc(r.driver)}</td><td class="r">${nf(r.amount)}</td><td>${esc(r.wallet)}</td>
 </tr>`,
