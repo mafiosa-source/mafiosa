@@ -388,6 +388,9 @@ export type FuelAudit = {
   expectedKm?: number;
   manualKm?: number;
   diff?: number;
+  /** Odometer of the immediately previous dated entry for the same vehicle. */
+  previousOdometer?: number;
+  previousDate?: string;
 };
 
 export const FUEL_AUDIT_FILTERS = ["all", "ok", "review", "discrepancy", "odometer-error"] as const;
