@@ -283,7 +283,8 @@ export function printFuelReport(opts: {
   if (typeof window === "undefined") return;
   const { title, subtitle, from, to, company, rows } = opts;
   const totalAmount = rows.reduce((a, r) => a + (r.amount || 0), 0);
-  const totalKm = rows.reduce((a, r) => a + (r.km || 0), 0);
+  // Baseline readings (first odometer entry per vehicle) are displayed but not counted as travelled KM.
+  const totalKm = rows.reduce((a, r) => a + (r.baseline ? 0 : r.km || 0), 0);
   const generated = new Date().toLocaleString("en-GB", { hour12: false });
   const range = from || to ? `${from || "Beginning"} to ${to || "Date"}` : "All dates";
 
