@@ -21,8 +21,10 @@ import {
   toFuelPrintRows,
   toFuelCsvRows,
   fuelManualKm,
+  fuelDisplayKm,
   fuelOdometer,
   fuelAuditMap,
+  fuelIsBaseline,
   needsFuelReview,
   type FuelAuditFilter,
 } from "@/lib/report-filters";
