@@ -517,19 +517,23 @@ export function fuelLatestReadings(
 }
 
 export function toFuelPrintRows(rows: Transaction[], audit?: Map<string, FuelAudit>): FuelPrintRow[] {
-  return rows.map((t) => ({
-    date: t.date,
-    day: dayOfWeek(t.date),
-    company: companyOf(t),
-    vehicle: t.vehicle ?? "—",
-    plateNumber: t.plateNumber ?? "—",
-    odometer: fuelOdometer(t),
-    km: fuelManualKm(t),
-    discrepancy: audit?.get(t.id)?.label ?? "",
-    driver: t.driver ?? "—",
-    amount: t.amount,
-    wallet: WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
-  }));
+  return rows.map((t) => {
+    const a = audit?.get(t.id);
+    return {
+      date: t.date,
+      day: dayOfWeek(t.date),
+      company: companyOf(t),
+      vehicle: t.vehicle ?? "—",
+      plateNumber: t.plateNumber ?? "—",
+      odometer: fuelOdometer(t),
+      km: fuelDisplayKm(t, a),
+      baseline: fuelIsBaseline(t, a),
+      discrepancy: a?.label ?? "",
+      driver: t.driver ?? "—",
+      amount: t.amount,
+      wallet: WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
+    };
+  });
 }
 
 
