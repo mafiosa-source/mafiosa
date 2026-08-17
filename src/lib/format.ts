@@ -341,6 +341,7 @@ ${subtitle ? `<div>${esc(subtitle)}</div>` : ""}</div>
 <tr><td colspan="6" class="r">NUMBER OF FUEL TRANSACTIONS</td><td colspan="6" class="r">${rows.length}</td></tr>
 </tfoot>
 </table>
+${hasBaseline ? `<div class="audit">* The first odometer reading for each vehicle is shown in the KM column as a baseline (no previous entry to compare against). These baseline readings are displayed but not included in the KM total.</div>` : ""}
 </body></html>`;
 
   const win = window.open("", "_blank", "width=1100,height=800");
