@@ -21,8 +21,10 @@ import {
   toFuelPrintRows,
   toFuelCsvRows,
   fuelManualKm,
+  fuelDisplayKm,
   fuelOdometer,
   fuelAuditMap,
+  fuelIsBaseline,
   needsFuelReview,
   type FuelAuditFilter,
 } from "@/lib/report-filters";
@@ -276,7 +278,8 @@ function FuelPage() {
             ) : (
               rows.map((t) => {
                 const a = audit.get(t.id);
-                const km = fuelManualKm(t);
+                const km = fuelDisplayKm(t, a);
+                const baseline = fuelIsBaseline(t, a);
                 return (
                   <tr key={t.id} className="border-t">
                     <td className="px-3 py-2 whitespace-nowrap">{t.date}</td>
@@ -285,7 +288,13 @@ function FuelPage() {
                     <td className="px-3 py-2">{t.vehicle || "—"}</td>
                     <td className="px-3 py-2 font-mono text-xs">{t.plateNumber || "—"}</td>
                     <td className="px-3 py-2 text-right tabular">{fuelOdometer(t) != null ? num(fuelOdometer(t) as number) : "—"}</td>
-                    <td className="px-3 py-2 text-right tabular">{km != null ? num(km) : "—"}</td>
+                    <td className="px-3 py-2 text-right tabular" title={baseline ? "Baseline reading — first entry for this vehicle, not counted in the KM total." : undefined}>
+                      {km != null ? (
+                        <span className={baseline ? "italic text-muted-foreground" : ""}>{num(km)}</span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td className="px-3 py-2">
                       <span
                         title={a?.detail ?? ""}

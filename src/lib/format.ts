@@ -268,6 +268,8 @@ export type FuelPrintRow = {
   driver: string;
   amount: number;
   wallet: string;
+  /** First odometer reading for this vehicle — shown in KM as a baseline, not added to totals. */
+  baseline?: boolean;
 };
 
 export function printFuelReport(opts: {
@@ -281,10 +283,12 @@ export function printFuelReport(opts: {
   if (typeof window === "undefined") return;
   const { title, subtitle, from, to, company, rows } = opts;
   const totalAmount = rows.reduce((a, r) => a + (r.amount || 0), 0);
-  const totalKm = rows.reduce((a, r) => a + (r.km || 0), 0);
+  // Baseline readings (first odometer entry per vehicle) are displayed but not counted as travelled KM.
+  const totalKm = rows.reduce((a, r) => a + (r.baseline ? 0 : r.km || 0), 0);
   const generated = new Date().toLocaleString("en-GB", { hour12: false });
   const range = from || to ? `${from || "Beginning"} to ${to || "Date"}` : "All dates";
 
+  const hasBaseline = rows.some((r) => r.baseline);
   const body = rows.length
     ? rows
         .map(
@@ -292,7 +296,7 @@ export function printFuelReport(opts: {
 <td class="c">${i + 1}</td><td class="nw">${esc(r.date)}</td><td>${esc(r.day)}</td>
 <td>${esc(r.company)}</td><td>${esc(r.vehicle)}</td><td>${esc(r.plateNumber)}</td>
 <td class="r">${r.odometer == null ? "" : nf(r.odometer)}</td>
-<td class="r">${r.km == null ? "" : nf(r.km)}</td>
+<td class="r${r.baseline ? " muted" : ""}">${r.km == null ? "" : nf(r.km)}</td>
 <td>${esc(r.discrepancy ?? "")}</td>
 <td>${esc(r.driver)}</td><td class="r">${nf(r.amount)}</td><td>${esc(r.wallet)}</td>
 </tr>`,
@@ -337,6 +341,7 @@ ${subtitle ? `<div>${esc(subtitle)}</div>` : ""}</div>
 <tr><td colspan="6" class="r">NUMBER OF FUEL TRANSACTIONS</td><td colspan="6" class="r">${rows.length}</td></tr>
 </tfoot>
 </table>
+${hasBaseline ? `<div class="audit">* The first odometer reading for each vehicle is shown in the KM column as a baseline (no previous entry to compare against). These baseline readings are displayed but not included in the KM total.</div>` : ""}
 </body></html>`;
 
   const win = window.open("", "_blank", "width=1100,height=800");

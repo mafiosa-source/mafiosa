@@ -378,6 +378,23 @@ export function fuelKmMap(rows: Transaction[]): Map<string, number | undefined> 
 
 export const fuelKm = fuelManualKm;
 
+/**
+ * KM value to DISPLAY in reports. Prefers the user-entered KM. When no KM was
+ * entered and this is the first dated entry for the vehicle (no previous reading
+ * to compare against), the current odometer reading is shown as the baseline.
+ * These baseline readings are display-only and excluded from KM totals.
+ */
+export const fuelDisplayKm = (t: Transaction, audit?: FuelAudit): number | undefined => {
+  const manual = fuelManualKm(t);
+  if (manual != null) return manual;
+  if (audit?.firstForVehicle) return fuelOdometer(t);
+  return undefined;
+};
+
+/** True when this row's displayed KM is a first-entry baseline reading. */
+export const fuelIsBaseline = (t: Transaction, audit?: FuelAudit): boolean =>
+  audit?.firstForVehicle === true && fuelManualKm(t) == null && fuelOdometer(t) != null;
+
 // ---------- Odometer verification (audit only — never changes KM) ----------
 export type FuelAuditStatus = "ok" | "review" | "discrepancy" | "odometer-error" | "no-previous";
 
@@ -391,6 +408,8 @@ export type FuelAudit = {
   /** Odometer of the immediately previous dated entry for the same vehicle. */
   previousOdometer?: number;
   previousDate?: string;
+  /** True when this is the first dated entry for the vehicle (no previous reading exists). */
+  firstForVehicle?: boolean;
 };
 
 export const FUEL_AUDIT_FILTERS = ["all", "ok", "review", "discrepancy", "odometer-error"] as const;
@@ -429,6 +448,7 @@ export function fuelAuditMap(rows: Transaction[]): Map<string, FuelAudit> {
         manualKm: manual,
         previousOdometer: prev?.odo,
         previousDate: prev?.date,
+        firstForVehicle: prev == null,
       });
     } else if (odo < prev.odo) {
       map.set(t.id, {
@@ -497,19 +517,23 @@ export function fuelLatestReadings(
 }
 
 export function toFuelPrintRows(rows: Transaction[], audit?: Map<string, FuelAudit>): FuelPrintRow[] {
-  return rows.map((t) => ({
-    date: t.date,
-    day: dayOfWeek(t.date),
-    company: companyOf(t),
-    vehicle: t.vehicle ?? "—",
-    plateNumber: t.plateNumber ?? "—",
-    odometer: fuelOdometer(t),
-    km: fuelManualKm(t),
-    discrepancy: audit?.get(t.id)?.label ?? "",
-    driver: t.driver ?? "—",
-    amount: t.amount,
-    wallet: WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
-  }));
+  return rows.map((t) => {
+    const a = audit?.get(t.id);
+    return {
+      date: t.date,
+      day: dayOfWeek(t.date),
+      company: companyOf(t),
+      vehicle: t.vehicle ?? "—",
+      plateNumber: t.plateNumber ?? "—",
+      odometer: fuelOdometer(t),
+      km: fuelDisplayKm(t, a),
+      baseline: fuelIsBaseline(t, a),
+      discrepancy: a?.label ?? "",
+      driver: t.driver ?? "—",
+      amount: t.amount,
+      wallet: WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
+    };
+  });
 }
 
 
