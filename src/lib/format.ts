@@ -268,6 +268,8 @@ export type FuelPrintRow = {
   driver: string;
   amount: number;
   wallet: string;
+  /** First odometer reading for this vehicle — shown in KM as a baseline, not added to totals. */
+  baseline?: boolean;
 };
 
 export function printFuelReport(opts: {
