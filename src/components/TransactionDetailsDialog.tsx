@@ -79,9 +79,10 @@ export function TransactionDetailsDialog({
           <Row label="Current location" value={t.currentLocation ? (WALLET_BY_KEY[t.currentLocation]?.name ?? t.currentLocation) : "—"} />
           <Row label="Notes" value={t.description ?? "—"} />
           {t.vehicle ? <Row label="Vehicle" value={t.vehicle} /> : null}
-          {t.plate ? <Row label="Plate" value={t.plate} /> : null}
+          {t.plateNumber ? <Row label="Plate" value={t.plateNumber} /> : null}
           {t.driver ? <Row label="Driver" value={t.driver} /> : null}
-          {t.odometerReading != null ? <Row label="Odometer" value={String(t.odometerReading)} /> : null}
+          {t.station ? <Row label="Station" value={t.station} /> : null}
+          {(t.kmAfter ?? t.kmBefore) != null ? <Row label="Odometer" value={String(t.kmAfter ?? t.kmBefore)} /> : null}
           {t.kmReading != null ? <Row label="KM reading" value={String(t.kmReading)} /> : null}
           <Row label="Recorded" value={new Date(t.createdAt).toLocaleString()} />
           <Row label="Entered by" value={t.createdBy || "—"} />
