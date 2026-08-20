@@ -76,14 +76,14 @@ export function TransactionDetailsDialog({
         <DialogFooter className="mt-4">
           <TransactionDialog
             editing={t}
-            onSaved={() => setOpen(false)}
+            onSaved={() => onOpenChange(false)}
             trigger={
               <Button size="sm">
                 <Pencil className="h-4 w-4" /> Edit
               </Button>
             }
           />
-          <Button size="sm" variant="outline" onClick={() => setOpen(false)}>
+          <Button size="sm" variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
         </DialogFooter>
