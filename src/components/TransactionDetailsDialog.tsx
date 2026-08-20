@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,38 +15,22 @@ import { qar } from "@/lib/format";
 import { TransactionDialog } from "./TransactionDialog";
 
 /**
- * Read-only Transaction Details modal.
- * Opened by clicking a transaction row. The row's edit icon still opens
- * the Edit Voucher dialog directly; this modal offers its own Edit button.
+ * Read-only Transaction Details modal, opened by clicking a transaction row.
+ * Controlled by the parent via `open` / `onOpenChange`.
  */
 export function TransactionDetailsDialog({
   transaction,
-  trigger,
+  open,
+  onOpenChange,
 }: {
   transaction: Transaction;
-  trigger?: ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
   const t = transaction;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      {trigger ? (
-        <span
-          onClick={() => setOpen(true)}
-          className="contents"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setOpen(true);
-            }
-          }}
-        >
-          {trigger}
-        </span>
-      ) : null}
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Transaction Details</DialogTitle>
