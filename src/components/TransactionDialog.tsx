@@ -107,6 +107,7 @@ export function TransactionDialog({
       station: draft.station,
       kmBefore: draft.kmBefore ? Number(draft.kmBefore) : undefined,
       kmAfter: draft.kmAfter ? Number(draft.kmAfter) : undefined,
+      kmReading: draft.kmReading == null || draft.kmReading === ("" as unknown as number) ? undefined : Number(draft.kmReading),
       parentTxnId: draft.parentTxnId,
       currentLocation: draft.toWallet as WalletKey,
     };
