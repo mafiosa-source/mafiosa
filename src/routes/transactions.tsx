@@ -15,7 +15,7 @@ export const Route = createFileRoute("/transactions")({
   }),
   head: () => ({
     meta: [
-      { title: "All Transactions · Alhakeem Expenses ERP" },
+      { title: "All Transactions · Alhakeem Group ERP" },
       { name: "description", content: "The master ledger. Every movement of money in one place." },
     ],
   }),

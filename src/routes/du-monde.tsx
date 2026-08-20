@@ -16,7 +16,7 @@ import { useMemo, useState } from "react";
 export const Route = createFileRoute("/du-monde")({
   head: () => ({
     meta: [
-      { title: "Du Monde Petty Cash · Alhakeem Expenses ERP" },
+      { title: "Du Monde Petty Cash · Alhakeem Group ERP" },
       { name: "description", content: "Du Monde factory catering petty cash." },
     ],
   }),

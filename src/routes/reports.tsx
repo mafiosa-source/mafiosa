@@ -32,9 +32,9 @@ import { currentMonthPeriod } from "@/lib/period";
 export const Route = createFileRoute("/reports")({
   head: () => ({
     meta: [
-      { title: "Reports · Alhakeem Expenses ERP" },
+      { title: "Reports · Alhakeem Group ERP" },
       { name: "description", content: "Reports generated live from the master ledger." },
-      { property: "og:title", content: "Reports · Alhakeem Expenses ERP" },
+      { property: "og:title", content: "Reports · Alhakeem Group ERP" },
       { property: "og:description", content: "Printable accounting reports generated live from Master Transactions." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

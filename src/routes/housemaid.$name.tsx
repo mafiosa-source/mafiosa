@@ -19,12 +19,12 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/housemaid/$name")({
   head: () => ({
     meta: [
-      { title: "Housemaid Financial Profile · Alhakeem Expenses ERP" },
+      { title: "Housemaid Financial Profile · Alhakeem Group ERP" },
       {
         name: "description",
         content: "Complete 360° financial history for one housemaid: salary, candidate money, visa, POLO and every expense.",
       },
-      { property: "og:title", content: "Housemaid Financial Profile · Alhakeem Expenses ERP" },
+      { property: "og:title", content: "Housemaid Financial Profile · Alhakeem Group ERP" },
       { property: "og:description", content: "One chronological statement of every riyal received and spent for a housemaid." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

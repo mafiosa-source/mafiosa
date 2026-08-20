@@ -16,9 +16,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/months_/$year/$month")({
   head: ({ params }) => ({
     meta: [
-      { title: `Month ${params.month}/${params.year} · Alhakeem Expenses ERP` },
+      { title: `Month ${params.month}/${params.year} · Alhakeem Group ERP` },
       { name: "description", content: "Monthly reconciliation, reports, transactions and closing status." },
-      { property: "og:title", content: `Month ${params.month}/${params.year} · Alhakeem Expenses ERP` },
+      { property: "og:title", content: `Month ${params.month}/${params.year} · Alhakeem Group ERP` },
       { property: "og:description", content: "Reconciliation summary and full transaction list for the month." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

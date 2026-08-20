@@ -21,9 +21,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/cards")({
   head: () => ({
     meta: [
-      { title: "Company Cards · Alhakeem Expenses ERP" },
+      { title: "Company Cards · Alhakeem Group ERP" },
       { name: "description", content: "Maryam, Yousef, Maha Petrol and Limit card ledger with month-end reconciliation." },
-      { property: "og:title", content: "Company Cards · Alhakeem Expenses ERP" },
+      { property: "og:title", content: "Company Cards · Alhakeem Group ERP" },
       { property: "og:description", content: "Card limits, available balance, usage and printable card statements." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
