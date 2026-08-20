@@ -377,6 +377,18 @@ export function TransactionsTable({
           )}
         </TableBody>
       </Table>
+
+      {detailsId ? (() => {
+        const t = rows.find((r) => r.id === detailsId);
+        if (!t) return null;
+        return (
+          <TransactionDetailsDialog
+            transaction={t}
+            open={!!detailsId}
+            onOpenChange={(o) => { if (!o) setDetailsId(null); }}
+          />
+        );
+      })() : null}
     </div>
   );
 }
