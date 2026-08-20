@@ -20,6 +20,7 @@ import { FINANCIAL_CATEGORIES, REPORT_PRESETS, matchesCategory, presetById } fro
 import { MultiSelect } from "./MultiSelect";
 import { HousemaidLink } from "./HousemaidLink";
 import { TransactionDialog } from "./TransactionDialog";
+import { TransactionDetailsDialog } from "./TransactionDetailsDialog";
 import { toast } from "sonner";
 
 const STATUS_TONE: Record<string, string> = {
