@@ -10,11 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { ReactNode } from "react";
 import {
   TXN_TYPES, COMPANIES, VOUCHER_COMPANIES, CLASSIFICATIONS, PURPOSE_CATEGORIES,
-  PAYMENT_METHODS, STATUSES, WALLETS, DRIVERS, vehicleLabel, vehiclesForCompany,
+  STATUSES, WALLETS, DRIVERS, vehicleLabel, vehiclesForCompany,
 } from "@/lib/finance-types";
 import type {
   Transaction, TxnType, Company, Classification, PurposeCategory,
-  PaymentMethod, Status, WalletKey, CardCategory,
+  Status, WalletKey, CardCategory,
 } from "@/lib/finance-types";
 import { addTransaction, updateTransaction, isVoucherNumberTaken, nextVoucherNumber, findMatchingHoldings, getState } from "@/lib/finance-store";
 import { today, dayOfWeek } from "@/lib/format";
@@ -201,9 +201,6 @@ export function TransactionDialog({
             <F label="Amount (QAR)">
               <Input type="number" step="0.01" value={draft.amount ?? ""} onChange={(e) => patch({ amount: Number(e.target.value) })} required />
             </F>
-            <F label="Payment method">
-              <Sel value={draft.paymentMethod} onChange={(v) => patch({ paymentMethod: v as PaymentMethod })} options={PAYMENT_METHODS} />
-            </F>
 
             <F label="From wallet">
               <WalletSel value={draft.fromWallet} onChange={(v) => patch({ fromWallet: v })} />
@@ -218,9 +215,6 @@ export function TransactionDialog({
             <F label="Sponsor / Party">
               <Input value={draft.sponsor ?? ""} onChange={(e) => patch({ sponsor: e.target.value })} />
             </F>
-            <F label="Passport number">
-              <Input value={draft.passport ?? ""} onChange={(e) => patch({ passport: e.target.value })} />
-            </F>
             <F label="Purpose category">
               <Sel value={draft.purposeCategory} onChange={(v) => patch({ purposeCategory: v as PurposeCategory })} options={PURPOSE_CATEGORIES} />
             </F>
@@ -229,12 +223,6 @@ export function TransactionDialog({
             </F>
             <F label="Status">
               <Sel value={draft.status} onChange={(v) => patch({ status: v as Status })} options={STATUSES} />
-            </F>
-            <F label="Reference number">
-              <Input value={draft.referenceNumber ?? ""} onChange={(e) => patch({ referenceNumber: e.target.value })} />
-            </F>
-            <F label="Attachment (URL/note)">
-              <Input value={draft.attachment ?? ""} onChange={(e) => patch({ attachment: e.target.value })} />
             </F>
 
             {isLimitCard && (

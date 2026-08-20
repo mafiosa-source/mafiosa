@@ -188,7 +188,7 @@ td.nw { white-space: nowrap; }
 .pf .pn::after { content: "Page " counter(page) " of " counter(pages); }
 </style></head><body>
 <div class="head">
-  <div class="org">Alhakeem Expenses ERP</div>
+  <div class="org">Alhakeem Group ERP</div>
   <h1>${esc(title)}</h1>
   ${subtitle ? `<div class="sub">${esc(subtitle)}</div>` : ""}
 </div>
@@ -242,7 +242,7 @@ ${
   }</tfoot>
 </table>
 ${note ? `<div class="note">${esc(note)}</div>` : ""}
-<div class="pf"><span>${esc(title)} · Alhakeem Expenses ERP · Generated ${esc(generated)}</span><span class="pn"></span></div>
+<div class="pf"><span>${esc(title)} · Alhakeem Group ERP · Generated ${esc(generated)}</span><span class="pn"></span></div>
 </body></html>`;
 
   const win = window.open("", "_blank", "width=1000,height=800");
@@ -318,7 +318,7 @@ td.nw { white-space: nowrap; }
 .muted { color: #777; padding: 12px 0; }
 .audit { margin-top: 10px; font-size: 9.5px; color: #666; }
 </style></head><body>
-<div class="head"><div class="org">Alhakeem Expenses ERP</div><h1>${esc(title)}</h1>
+<div class="head"><div class="org">Alhakeem Group ERP</div><h1>${esc(title)}</h1>
 ${subtitle ? `<div>${esc(subtitle)}</div>` : ""}</div>
 <div class="meta">
   <div><span>Period:</span> <b>${esc(range)}</b></div>

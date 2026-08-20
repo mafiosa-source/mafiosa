@@ -53,7 +53,7 @@ function SignInScreen() {
       >
         <div className="mb-6">
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-            <ShieldCheck className="h-4 w-4" /> Alhakeem Expenses ERP
+            <ShieldCheck className="h-4 w-4" /> Alhakeem Group ERP
           </div>
           <h1 className="mt-2 text-xl font-semibold text-foreground">
             {mode === "signin" ? "Administrator sign in" : "Create administrator account"}

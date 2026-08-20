@@ -32,12 +32,12 @@ import { qar, num, today, dayOfWeek, printFuelReport, exportExcel } from "@/lib/
 export const Route = createFileRoute("/fuel")({
   head: () => ({
     meta: [
-      { title: "Fuel & Vehicle Report · Alhakeem Expenses ERP" },
+      { title: "Fuel & Vehicle Report · Alhakeem Group ERP" },
       {
         name: "description",
         content: "Fuel expenses by vehicle, number plate, driver and company with odometer and kilometre totals.",
       },
-      { property: "og:title", content: "Fuel & Vehicle Report · Alhakeem Expenses ERP" },
+      { property: "og:title", content: "Fuel & Vehicle Report · Alhakeem Group ERP" },
       { property: "og:description", content: "Track fuel spending and kilometres per vehicle and driver." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

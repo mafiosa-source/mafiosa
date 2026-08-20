@@ -40,9 +40,9 @@ import { TransactionsTable } from "@/components/TransactionsTable";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Alhakeem Expenses ERP · Control Center" },
+      { title: "Alhakeem Group ERP · Control Center" },
       { name: "description", content: "Live position of every riyal across wallets, cards and held funds." },
-      { property: "og:title", content: "Alhakeem Expenses ERP · Control Center" },
+      { property: "og:title", content: "Alhakeem Group ERP · Control Center" },
       { property: "og:description", content: "Cash, bank, held funds and pending transfers in one control center." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -187,7 +187,7 @@ function Dashboard() {
   return (
     <AppLayout>
       <header className="mb-6">
-        <h1 className="text-[26px] font-semibold tracking-tight text-foreground">Alhakeem Expenses ERP</h1>
+        <h1 className="text-[26px] font-semibold tracking-tight text-foreground">Alhakeem Group ERP</h1>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <TransactionDialog

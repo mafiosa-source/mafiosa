@@ -1,5 +1,5 @@
 // ============================================================
-// Alhakeem Expenses ERP – Phase 2
+// Alhakeem Group ERP – Phase 2
 // Single source of truth: one Master Transactions table.
 // Every screen is a filtered view over `transactions`.
 // ============================================================

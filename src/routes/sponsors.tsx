@@ -10,7 +10,7 @@ import { useFinance } from "@/lib/finance-store";
 export const Route = createFileRoute("/sponsors")({
   head: () => ({
     meta: [
-      { title: "Sponsor Receivables · Alhakeem Expenses ERP" },
+      { title: "Sponsor Receivables · Alhakeem Group ERP" },
       { name: "description", content: "Receipt vouchers received from sponsors." },
     ],
   }),

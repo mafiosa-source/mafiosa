@@ -12,9 +12,9 @@ import { qar } from "@/lib/format";
 export const Route = createFileRoute("/reconciliation")({
   head: () => ({
     meta: [
-      { title: "Reconciliation · Alhakeem Expenses ERP" },
+      { title: "Reconciliation · Alhakeem Group ERP" },
       { name: "description", content: "Wallet reconciliation for the selected period, defaulting to the current month." },
-      { property: "og:title", content: "Reconciliation · Alhakeem Expenses ERP" },
+      { property: "og:title", content: "Reconciliation · Alhakeem Group ERP" },
       { property: "og:description", content: "Opening balance, period movements and closing position for every wallet." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
