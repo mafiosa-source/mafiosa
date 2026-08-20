@@ -323,13 +323,17 @@ export function TransactionsTable({
             </TableRow>
           ) : (
             filtered.map((t) => (
-              <TableRow key={t.id}>
+              <TableRow
+                key={t.id}
+                className="cursor-pointer transition-colors hover:bg-muted/50"
+                onClick={() => setDetailsId(t.id)}
+              >
                 <TableCell className="whitespace-nowrap">{t.date}</TableCell>
                 {showColumns.type !== false && <TableCell className="text-xs">{t.type}</TableCell>}
                 {showColumns.voucher && <TableCell className="font-mono text-xs">{t.voucherNumber ?? "—"}</TableCell>}
                 {showColumns.company && <TableCell>{t.company ? (COMPANY_LABEL[t.company] ?? t.company) : "—"}</TableCell>}
                 {showColumns.candidate && (
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="text-sm">
                       {t.candidate ? <HousemaidLink name={t.candidate} /> : "—"}
                     </div>
@@ -353,7 +357,7 @@ export function TransactionsTable({
                     <Badge variant="outline" className={STATUS_TONE[t.status] ?? ""}>{t.status}</Badge>
                   </TableCell>
                 )}
-                <TableCell className="text-right">
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-end gap-1">
                     <TransactionDialog
                       editing={t}
