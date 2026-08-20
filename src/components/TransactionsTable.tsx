@@ -69,6 +69,7 @@ export function TransactionsTable({
 }) {
   const startPreset = initialPreset ? presetById(initialPreset) : undefined;
 
+  const [detailsId, setDetailsId] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
