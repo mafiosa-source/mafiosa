@@ -25,6 +25,7 @@ import {
 } from "./finance-types";
 import type { FinanceState } from "./finance-store";
 import { salaryLedger, walletBalance, cardUsage, candidateHoldingTotal } from "./finance-store";
+import { fuelDescriptor } from "./report-filters";
 
 const active = (t: Transaction) => t.status !== "Cancelled" && t.status !== "Refunded";
 
@@ -96,10 +97,15 @@ export function walletLedger(
       date: t.date,
       company: t.company,
       particulars:
-        t.purpose ||
-        t.description ||
-        [t.type, t.candidate].filter(Boolean).join(" · ") ||
-        t.type,
+        [
+          fuelDescriptor(t),
+          t.purpose ||
+            t.description ||
+            [t.type, t.candidate].filter(Boolean).join(" · ") ||
+            t.type,
+        ]
+          .filter(Boolean)
+          .join(" · "),
       debit: delta > 0 ? delta : 0,
       credit: delta < 0 ? -delta : 0,
       running,
@@ -370,7 +376,9 @@ export function companyExpenseReport(
       serial: i + 1,
       date: t.date,
       company: t.company ? COMPANY_LABEL[t.company] : "—",
-      particulars: t.purpose || t.description || t.purposeCategory || t.type,
+      particulars: [fuelDescriptor(t), t.purpose || t.description || t.purposeCategory || t.type]
+        .filter(Boolean)
+        .join(" · "),
       wallet: WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet,
       amount: t.amount,
       txnId: t.id,
