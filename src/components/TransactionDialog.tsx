@@ -22,6 +22,17 @@ import { toast } from "sonner";
 
 type Draft = Partial<Transaction>;
 
+/** Automatic wallet defaults per transaction type (users can still override). */
+const DEFAULT_WALLETS: Partial<Record<TxnType, { fromWallet: WalletKey; toWallet: WalletKey }>> = {
+  "Petty Cash": { fromWallet: "office-petty", toWallet: "external" },
+  "Fuel Expense": { fromWallet: "maha-card", toWallet: "external" },
+  "Payment Voucher": { fromWallet: "office-petty", toWallet: "external" },
+  "Receipt Voucher": { fromWallet: "external", toWallet: "cbq" },
+  "Card Expense": { fromWallet: "maryam-card", toWallet: "external" },
+  "Salary Release": { fromWallet: "salary-wallet", toWallet: "external" },
+  "Holding Release": { fromWallet: "housemaid-holding", toWallet: "external" },
+};
+
 function newDraft(): Draft {
   return {
     date: today(),
