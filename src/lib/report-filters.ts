@@ -55,8 +55,27 @@ export const byDateAsc = (rows: Transaction[]) =>
     a.date === b.date ? (a.createdAt < b.createdAt ? -1 : 1) : a.date < b.date ? -1 : 1,
   );
 
-export const particularsOf = (t: Transaction, wallet?: WalletKey) =>
-  [movementLabel(t, wallet), t.candidate].filter(Boolean).join(" · ");
+/** "NISSAN PICKUP 124242 · Fuel" built from the vehicle fields on a fuel transaction. */
+export const fuelDescriptor = (t: Transaction): string | undefined => {
+  if (!isFuelTransaction(t)) return undefined;
+  const v = [t.vehicle, t.plateNumber].filter(Boolean).join(" ").trim();
+  return v ? `${v} · Fuel` : "Fuel";
+};
+
+export const particularsOf = (t: Transaction, wallet?: WalletKey) => {
+  const fuel = fuelDescriptor(t);
+  const label = movementLabel(t, wallet);
+  const parts = [label, t.candidate].filter(Boolean) as string[];
+  if (fuel) {
+    // Prepend vehicle + plate + Fuel, avoiding duplication when already typed in Purpose.
+    const has = (s: string) =>
+      parts.some((p) => p.toLowerCase().includes(s.toLowerCase()));
+    const veh = [t.vehicle, t.plateNumber].filter(Boolean).join(" ").trim();
+    if (!veh || !has(veh)) parts.unshift(fuel);
+  }
+  return parts.join(" · ");
+};
+
 
 export const walletPath = (t: Transaction) =>
   t.toWallet === "external"
