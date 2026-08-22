@@ -173,7 +173,8 @@ export function TransactionDialog({
             </F>
             <F label="Transaction type">
               <Sel value={draft.type} onChange={(v) => {
-                patch({ type: v as TxnType, voucherNumber: undefined });
+                const type = v as TxnType;
+                patch({ type, voucherNumber: undefined, ...(DEFAULT_WALLETS[type] ?? {}) });
               }} options={TXN_TYPES} />
             </F>
 
