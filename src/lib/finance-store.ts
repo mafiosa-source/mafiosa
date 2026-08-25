@@ -35,7 +35,7 @@ import {
   upsertCloudClosing,
 } from "./finance-cloud";
 import { logAudit } from "./audit-log";
-import { pushUndo } from "./undo-store";
+import { pushUndo, clearUndoHistory } from "./undo-store";
 
 
 
