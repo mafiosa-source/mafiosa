@@ -280,7 +280,7 @@ export function deleteTransaction(id: string) {
 }
 
 
-export function setOpeningBalance(wallet: WalletKey, value: number) {
+function silentOpeningBalance(wallet: WalletKey, value: number) {
   setState((s) => ({ openingBalances: { ...s.openingBalances, [wallet]: value } }));
   if (currentUserId) {
     upsertCloudOpeningBalance(wallet, value, currentUserId).catch((e) =>
@@ -288,6 +288,19 @@ export function setOpeningBalance(wallet: WalletKey, value: number) {
     );
   }
 }
+
+export function setOpeningBalance(wallet: WalletKey, value: number) {
+  const before = state.openingBalances[wallet] ?? 0;
+  silentOpeningBalance(wallet, value);
+  logAudit({ action: "update", entity: "opening_balance", entityId: wallet, label: `Opening balance ${wallet}`, before, after: value, actor: currentUserLabel });
+  pushUndo({
+    label: `Opening balance · ${WALLET_BY_KEY[wallet]?.name ?? wallet}`,
+    undo: () => silentOpeningBalance(wallet, before),
+    redo: () => silentOpeningBalance(wallet, value),
+    audit: { entity: "opening_balance", entityId: wallet, before, after: value },
+  });
+}
+
 
 /**
  * Target balance a wallet should be restored to at month end.
