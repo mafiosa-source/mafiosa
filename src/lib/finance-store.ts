@@ -25,6 +25,7 @@ import {
   fetchCloudState,
   insertCloudTransaction,
   insertCloudTransactions,
+  restoreCloudTransaction,
   updateCloudTransaction,
   upsertCloudOpeningBalance,
   upsertCloudWalletTarget,
@@ -33,6 +34,8 @@ import {
   insertCloudPayablePayment,
   upsertCloudClosing,
 } from "./finance-cloud";
+import { logAudit } from "./audit-log";
+import { pushUndo, clearUndoHistory } from "./undo-store";
 
 
 
@@ -81,6 +84,7 @@ export function setCloudUser(userId: string | null) {
   currentUserId = userId;
   if (!userId) {
     state = initial;
+    clearUndoHistory();
     notify();
   }
 }
@@ -189,6 +193,30 @@ export function isVoucherNumberTaken(number: string, excludeId?: string, company
 
 
 // ---------- Mutations ----------
+// Each mutation registers a reversible entry in the undo history and writes an
+// append-only audit record. Undo/redo re-use the silent* primitives below so
+// reversing an action never pushes a new history entry.
+
+function silentInsert(txn: Transaction) {
+  setState((s) =>
+    s.transactions.some((t) => t.id === txn.id)
+      ? { transactions: s.transactions.map((t) => (t.id === txn.id ? txn : t)) }
+      : { transactions: [txn, ...s.transactions] },
+  );
+  if (currentUserId) {
+    restoreCloudTransaction(txn, currentUserId).catch((e) => reportCloudError("restore", e));
+  }
+}
+
+function silentRemove(id: string) {
+  setState((s) => ({ transactions: s.transactions.filter((t) => t.id !== id) }));
+  deleteCloudTransaction(id).catch((e) => reportCloudError("delete", e));
+}
+
+function txnLabel(t: Transaction) {
+  return `${t.type}${t.voucherNumber ? ` · ${t.voucherNumber}` : ""} · QAR ${t.amount}`;
+}
+
 export function addTransaction(t: Omit<Transaction, "id" | "createdAt" | "updatedAt">): Transaction {
   const now = nowIso();
   const txn: Transaction = {
@@ -207,10 +235,18 @@ export function addTransaction(t: Omit<Transaction, "id" | "createdAt" | "update
   if (currentUserId) {
     insertCloudTransaction(txn, currentUserId).catch((e) => reportCloudError("save", e));
   }
+  logAudit({ action: "create", entity: "transaction", entityId: txn.id, label: txnLabel(txn), after: txn, actor: currentUserLabel });
+  pushUndo({
+    label: `Added ${txnLabel(txn)}`,
+    undo: () => silentRemove(txn.id),
+    redo: () => silentInsert(txn),
+    audit: { entity: "transaction", entityId: txn.id, after: txn },
+  });
   return txn;
 }
 
 export function updateTransaction(id: string, patch: Partial<Transaction>) {
+  const before = state.transactions.find((t) => t.id === id);
   const stamped: Partial<Transaction> = { ...patch, lastEditedBy: currentUserLabel || undefined };
   setState((s) => ({
     transactions: s.transactions.map((t) =>
@@ -218,14 +254,34 @@ export function updateTransaction(id: string, patch: Partial<Transaction>) {
     ),
   }));
   updateCloudTransaction(id, stamped).catch((e) => reportCloudError("update", e));
+  const after = state.transactions.find((t) => t.id === id);
+  if (!before || !after) return;
+  logAudit({ action: "update", entity: "transaction", entityId: id, label: txnLabel(after), before, after, actor: currentUserLabel });
+  pushUndo({
+    label: `Edited ${txnLabel(after)}`,
+    undo: () => silentInsert(before),
+    redo: () => silentInsert(after),
+    audit: { entity: "transaction", entityId: id, before, after },
+  });
 }
 
 export function deleteTransaction(id: string) {
+  const before = state.transactions.find((t) => t.id === id);
   setState((s) => ({ transactions: s.transactions.filter((t) => t.id !== id) }));
   deleteCloudTransaction(id).catch((e) => reportCloudError("delete", e));
+  if (!before) return;
+  // The full record is preserved in the audit trail and can be restored.
+  logAudit({ action: "delete", entity: "transaction", entityId: id, label: txnLabel(before), before, actor: currentUserLabel });
+  pushUndo({
+    label: `Deleted ${txnLabel(before)}`,
+    undo: () => silentInsert(before),
+    redo: () => silentRemove(id),
+    audit: { entity: "transaction", entityId: id, before },
+  });
 }
 
-export function setOpeningBalance(wallet: WalletKey, value: number) {
+
+function silentOpeningBalance(wallet: WalletKey, value: number) {
   setState((s) => ({ openingBalances: { ...s.openingBalances, [wallet]: value } }));
   if (currentUserId) {
     upsertCloudOpeningBalance(wallet, value, currentUserId).catch((e) =>
@@ -233,6 +289,19 @@ export function setOpeningBalance(wallet: WalletKey, value: number) {
     );
   }
 }
+
+export function setOpeningBalance(wallet: WalletKey, value: number) {
+  const before = state.openingBalances[wallet] ?? 0;
+  silentOpeningBalance(wallet, value);
+  logAudit({ action: "update", entity: "opening_balance", entityId: wallet, label: `Opening balance ${wallet}`, before, after: value, actor: currentUserLabel });
+  pushUndo({
+    label: `Opening balance · ${WALLET_BY_KEY[wallet]?.name ?? wallet}`,
+    undo: () => silentOpeningBalance(wallet, before),
+    redo: () => silentOpeningBalance(wallet, value),
+    audit: { entity: "opening_balance", entityId: wallet, before, after: value },
+  });
+}
+
 
 /**
  * Target balance a wallet should be restored to at month end.
@@ -244,7 +313,7 @@ export function walletTarget(s: FinanceState, wallet: WalletKey): number {
   return WALLET_BY_KEY[wallet]?.limit ?? 0;
 }
 
-export function setWalletTarget(wallet: WalletKey, value: number) {
+function silentWalletTarget(wallet: WalletKey, value: number) {
   setState((s) => ({ walletTargets: { ...s.walletTargets, [wallet]: value } }));
   if (currentUserId) {
     upsertCloudWalletTarget(wallet, value, currentUserId).catch((e) =>
@@ -252,6 +321,19 @@ export function setWalletTarget(wallet: WalletKey, value: number) {
     );
   }
 }
+
+export function setWalletTarget(wallet: WalletKey, value: number) {
+  const before = walletTarget(state, wallet);
+  silentWalletTarget(wallet, value);
+  logAudit({ action: "update", entity: "wallet_target", entityId: wallet, label: `Target balance ${wallet}`, before, after: value, actor: currentUserLabel });
+  pushUndo({
+    label: `Target balance · ${WALLET_BY_KEY[wallet]?.name ?? wallet}`,
+    undo: () => silentWalletTarget(wallet, before),
+    redo: () => silentWalletTarget(wallet, value),
+    audit: { entity: "wallet_target", entityId: wallet, before, after: value },
+  });
+}
+
 
 
 

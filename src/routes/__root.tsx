@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthGate } from "../components/AuthGate";
+import { UndoShortcuts } from "../components/UndoShortcuts";
 
 function NotFoundComponent() {
   return (
@@ -123,9 +124,11 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthGate>
         <Outlet />
+        <UndoShortcuts />
       </AuthGate>
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );
 }
+
 

@@ -232,6 +232,30 @@ export async function deleteCloudTransaction(id: string) {
   if (error) throw error;
 }
 
+/**
+ * Writes a complete transaction back (used by Undo / Redo).
+ * Unlike updateCloudTransaction this also clears fields that are absent from
+ * the restored snapshot, so previous values are restored exactly.
+ */
+const TXN_ROW_KEYS = [
+  "date", "type", "voucher_number", "company", "classification", "candidate", "sponsor",
+  "passport", "purpose", "purpose_category", "amount", "payment_method", "from_wallet",
+  "to_wallet", "current_location", "status", "description", "reference_number", "attachment",
+  "card_category", "payable_by", "payer_name", "driver", "vehicle", "plate_number", "station",
+  "km_before", "km_after", "km_reading", "parent_txn_id", "created_by", "last_edited_by",
+] as const;
+
+export async function restoreCloudTransaction(t: Transaction, userId: string) {
+  const partial = transactionToRow(t);
+  const row: Row = { id: t.id, user_id: userId };
+  for (const k of TXN_ROW_KEYS) row[k] = partial[k] ?? null;
+  const { error } = await supabase
+    .from("transactions")
+    .upsert(row as never, { onConflict: "id" });
+  if (error) throw error;
+}
+
+
 export async function upsertCloudOpeningBalance(
   wallet: WalletKey,
   amount: number,

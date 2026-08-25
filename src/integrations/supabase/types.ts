@@ -10,10 +10,49 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
+      action_audit: {
+        Row: {
+          action: string
+          actor: string | null
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          label: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          actor?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          label?: string | null
+          user_id?: string
+        }
+        Update: {
+          action?: string
+          actor?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          label?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       month_closings: {
         Row: {
           closed_at: string
