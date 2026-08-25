@@ -312,7 +312,7 @@ export function walletTarget(s: FinanceState, wallet: WalletKey): number {
   return WALLET_BY_KEY[wallet]?.limit ?? 0;
 }
 
-export function setWalletTarget(wallet: WalletKey, value: number) {
+function silentWalletTarget(wallet: WalletKey, value: number) {
   setState((s) => ({ walletTargets: { ...s.walletTargets, [wallet]: value } }));
   if (currentUserId) {
     upsertCloudWalletTarget(wallet, value, currentUserId).catch((e) =>
@@ -320,6 +320,19 @@ export function setWalletTarget(wallet: WalletKey, value: number) {
     );
   }
 }
+
+export function setWalletTarget(wallet: WalletKey, value: number) {
+  const before = walletTarget(state, wallet);
+  silentWalletTarget(wallet, value);
+  logAudit({ action: "update", entity: "wallet_target", entityId: wallet, label: `Target balance ${wallet}`, before, after: value, actor: currentUserLabel });
+  pushUndo({
+    label: `Target balance · ${WALLET_BY_KEY[wallet]?.name ?? wallet}`,
+    undo: () => silentWalletTarget(wallet, before),
+    redo: () => silentWalletTarget(wallet, value),
+    audit: { entity: "wallet_target", entityId: wallet, before, after: value },
+  });
+}
+
 
 
 
