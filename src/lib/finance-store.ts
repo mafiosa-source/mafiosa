@@ -84,6 +84,7 @@ export function setCloudUser(userId: string | null) {
   currentUserId = userId;
   if (!userId) {
     state = initial;
+    clearUndoHistory();
     notify();
   }
 }
