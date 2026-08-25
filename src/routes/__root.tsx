@@ -123,9 +123,11 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthGate>
         <Outlet />
+        <UndoShortcuts />
       </AuthGate>
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );
 }
+
 
