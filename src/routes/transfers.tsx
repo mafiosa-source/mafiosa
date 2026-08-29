@@ -67,7 +67,7 @@ function TransfersPage() {
     const list = s.transactions
       .filter(
         (t) =>
-          t.status !== "Void" &&
+          t.status === "Completed" &&
           ((t.toWallet === "cbq" && t.fromWallet !== "cbq") ||
             (t.fromWallet === "cbq" && t.toWallet !== "cbq")),
       )
