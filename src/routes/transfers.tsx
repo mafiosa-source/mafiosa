@@ -67,7 +67,7 @@ function TransfersPage() {
     const list = s.transactions
       .filter(
         (t) =>
-          t.status === "Completed" &&
+          t.status !== "Cancelled" && t.status !== "Refunded" &&
           ((t.toWallet === "cbq" && t.fromWallet !== "cbq") ||
             (t.fromWallet === "cbq" && t.toWallet !== "cbq")),
       )
