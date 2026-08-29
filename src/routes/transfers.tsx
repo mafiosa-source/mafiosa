@@ -49,7 +49,7 @@ export const Route = createFileRoute("/transfers")({
 function TransfersPage() {
   const s = useFinance();
   const { company: companyFilter } = Route.useSearch();
-  const [statementOpen, setStatementOpen] = useState(false);
+  const [statementWallet, setStatementWallet] = useState<WalletKey | null>(null);
   const rows = s.transactions.filter(
     (t) =>
       t.type === "Transfer" &&
@@ -61,15 +61,18 @@ function TransfersPage() {
   const companies: Exclude<Company, "AHG">[] = ["FAST", "BROKER", "SKILL", "DANET"];
   const cbq = walletBalance(s, "cbq");
 
-  // All transactions that make up the CBQ balance (same rule as walletBalance):
-  // any active transaction moving money into or out of CBQ, chronological.
-  const statementRows = useMemo(() => {
+  // All transactions that make up the selected wallet balance (same rule as
+  // walletBalance): any active transaction moving money into or out of the
+  // wallet, chronological.
+  const statement = useMemo(() => {
+    if (!statementWallet) return null;
+    const { opening, balance } = walletBalance(s, statementWallet);
     const list = s.transactions
       .filter(
         (t) =>
           t.status !== "Cancelled" && t.status !== "Refunded" &&
-          ((t.toWallet === "cbq" && t.fromWallet !== "cbq") ||
-            (t.fromWallet === "cbq" && t.toWallet !== "cbq")),
+          ((t.toWallet === statementWallet && t.fromWallet !== statementWallet) ||
+            (t.fromWallet === statementWallet && t.toWallet !== statementWallet)),
       )
       .slice()
       .sort(
@@ -77,17 +80,21 @@ function TransfersPage() {
           a.date.localeCompare(b.date) ||
           (a.createdAt ?? "").localeCompare(b.createdAt ?? ""),
       );
-    let running = cbq.opening;
-    return list.map((t) => {
-      const moneyIn = t.toWallet === "cbq" ? t.amount : 0;
-      const moneyOut = t.fromWallet === "cbq" ? t.amount : 0;
+    let running = opening;
+    const statementRows = list.map((t) => {
+      const moneyIn = t.toWallet === statementWallet ? t.amount : 0;
+      const moneyOut = t.fromWallet === statementWallet ? t.amount : 0;
       running += moneyIn - moneyOut;
       return { t, moneyIn, moneyOut, running };
     });
-  }, [s.transactions, cbq.opening]);
-
-  const totalIn = statementRows.reduce((a, r) => a + r.moneyIn, 0);
-  const totalOut = statementRows.reduce((a, r) => a + r.moneyOut, 0);
+    return {
+      opening,
+      balance,
+      rows: statementRows,
+      totalIn: statementRows.reduce((a, r) => a + r.moneyIn, 0),
+      totalOut: statementRows.reduce((a, r) => a + r.moneyOut, 0),
+    };
+  }, [s, statementWallet]);
 
   return (
     <AppLayout>
