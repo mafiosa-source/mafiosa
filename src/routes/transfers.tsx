@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Plus } from "lucide-react";
 import { useFinance, walletBalance, pendingCompanyTransfer } from "@/lib/finance-store";
-import type { Company } from "@/lib/finance-types";
+import type { Company, WalletKey } from "@/lib/finance-types";
 import {
   COMPANY_ACCOUNT_BY_COMPANY,
   COMPANY_ACCOUNT_WALLETS,
@@ -112,7 +112,7 @@ function TransfersPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         <button
           type="button"
-          onClick={() => setStatementOpen(true)}
+          onClick={() => setStatementWallet("cbq")}
           className="text-left rounded-lg transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
           title="View CBQ statement"
         >
@@ -125,14 +125,21 @@ function TransfersPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {companies.map((c) => {
-          const bal = walletBalance(s, COMPANY_ACCOUNT_BY_COMPANY[c] ?? "fast-acct").balance;
+          const wallet = COMPANY_ACCOUNT_BY_COMPANY[c] ?? "fast-acct";
+          const bal = walletBalance(s, wallet).balance;
           const pending = pendingCompanyTransfer(s, c);
           return (
-            <div key={c} className="rounded-lg border bg-card p-3">
+            <button
+              key={c}
+              type="button"
+              onClick={() => setStatementWallet(wallet)}
+              className="text-left rounded-lg border bg-card p-3 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              title={`View ${COMPANY_LABEL[c] ?? c} account statement`}
+            >
               <div className="text-xs text-muted-foreground">{c} account</div>
               <div className="text-lg font-semibold tabular">{bal.toFixed(2)}</div>
               <div className="text-xs text-rose-600 mt-1">Pending → CBQ: {pending.toFixed(2)}</div>
-            </div>
+            </button>
           );
         })}
       </div>
