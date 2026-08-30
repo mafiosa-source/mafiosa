@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           action: string
           actor: string | null
+          actor_name: string | null
           after_data: Json | null
           before_data: Json | null
           created_at: string
@@ -25,11 +26,13 @@ export type Database = {
           entity_id: string | null
           id: string
           label: string | null
+          module: string | null
           user_id: string
         }
         Insert: {
           action: string
           actor?: string | null
+          actor_name?: string | null
           after_data?: Json | null
           before_data?: Json | null
           created_at?: string
@@ -37,11 +40,13 @@ export type Database = {
           entity_id?: string | null
           id?: string
           label?: string | null
+          module?: string | null
           user_id?: string
         }
         Update: {
           action?: string
           actor?: string | null
+          actor_name?: string | null
           after_data?: Json | null
           before_data?: Json | null
           created_at?: string
@@ -49,7 +54,56 @@ export type Database = {
           entity_id?: string | null
           id?: string
           label?: string | null
+          module?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      app_users: {
+        Row: {
+          auth_user_id: string | null
+          created_at: string
+          full_access: boolean
+          id: string
+          last_login_at: string | null
+          login_email: string
+          must_change_password: boolean
+          name: string
+          name_key: string
+          permissions: Json
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          auth_user_id?: string | null
+          created_at?: string
+          full_access?: boolean
+          id?: string
+          last_login_at?: string | null
+          login_email: string
+          must_change_password?: boolean
+          name: string
+          name_key: string
+          permissions?: Json
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          auth_user_id?: string | null
+          created_at?: string
+          full_access?: boolean
+          id?: string
+          last_login_at?: string | null
+          login_email?: string
+          must_change_password?: boolean
+          name?: string
+          name_key?: string
+          permissions?: Json
+          role?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -241,6 +295,8 @@ export type Database = {
           created_by: string | null
           current_location: string | null
           date: string
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           driver: string | null
           from_wallet: string
@@ -279,6 +335,8 @@ export type Database = {
           created_by?: string | null
           current_location?: string | null
           date: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           driver?: string | null
           from_wallet: string
@@ -317,6 +375,8 @@ export type Database = {
           created_by?: string | null
           current_location?: string | null
           date?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           driver?: string | null
           from_wallet?: string
@@ -378,7 +438,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_app_admin: { Args: { _uid: string }; Returns: boolean }
+      is_app_member: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
