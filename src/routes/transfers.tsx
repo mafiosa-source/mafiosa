@@ -146,24 +146,26 @@ function TransfersPage() {
 
       <TransactionsTable rows={rows} exportName="cbq-transfers.csv" initialCompany={companyFilter} />
 
-      <Dialog open={statementOpen} onOpenChange={setStatementOpen}>
+      <Dialog open={!!statementWallet} onOpenChange={(o) => !o && setStatementWallet(null)}>
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>CBQ Statement</DialogTitle>
+            <DialogTitle>
+              {statementWallet ? `${WALLET_BY_KEY[statementWallet]?.name ?? statementWallet} Statement` : "Statement"}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="mb-4 flex flex-wrap gap-4 rounded-lg border bg-card p-4 text-sm">
             <span className="text-muted-foreground">
-              Opening balance <span className="tabular font-medium text-foreground">{qar(cbq.opening)}</span>
+              Opening balance <span className="tabular font-medium text-foreground">{qar(statement?.opening ?? 0)}</span>
             </span>
             <span className="text-muted-foreground">
-              Total in <span className="tabular font-medium text-[color:var(--success)]">{qar(totalIn)}</span>
+              Total in <span className="tabular font-medium text-[color:var(--success)]">{qar(statement?.totalIn ?? 0)}</span>
             </span>
             <span className="text-muted-foreground">
-              Total out <span className="tabular font-medium text-[color:var(--destructive)]">{qar(totalOut)}</span>
+              Total out <span className="tabular font-medium text-[color:var(--destructive)]">{qar(statement?.totalOut ?? 0)}</span>
             </span>
             <span className="ml-auto text-muted-foreground">
-              Current balance <span className="tabular font-semibold text-foreground">{qar(cbq.balance)}</span>
+              Current balance <span className="tabular font-semibold text-foreground">{qar(statement?.balance ?? 0)}</span>
             </span>
           </div>
 
