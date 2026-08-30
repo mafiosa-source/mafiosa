@@ -190,20 +190,20 @@ function TransfersPage() {
                   <TableCell className="italic text-muted-foreground">Opening balance</TableCell>
                   <TableCell className="text-right tabular text-muted-foreground">—</TableCell>
                   <TableCell className="text-right tabular text-muted-foreground">—</TableCell>
-                  <TableCell className="text-right tabular font-medium">{qar(cbq.opening)}</TableCell>
+                  <TableCell className="text-right tabular font-medium">{qar(statement?.opening ?? 0)}</TableCell>
                 </TableRow>
-                {statementRows.length === 0 ? (
+                {(statement?.rows ?? []).length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
-                      No CBQ movements recorded yet.
+                      No movements recorded yet.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  statementRows.map(({ t, moneyIn, moneyOut, running }) => (
+                  (statement?.rows ?? []).map(({ t, moneyIn, moneyOut, running }) => (
                     <TableRow key={t.id}>
                       <TableCell className="whitespace-nowrap">{t.date}</TableCell>
                       <TableCell>
-                        <HousemaidLink name={t.candidate} onNavigate={() => setStatementOpen(false)} />
+                        <HousemaidLink name={t.candidate} onNavigate={() => setStatementWallet(null)} />
                       </TableCell>
                       <TableCell>
                         {t.company ? (
@@ -216,7 +216,7 @@ function TransfersPage() {
                         <Link
                           to="/transactions/$id"
                           params={{ id: t.id }}
-                          onClick={() => setStatementOpen(false)}
+                          onClick={() => setStatementWallet(null)}
                           className="text-primary hover:underline"
                         >
                           {t.purpose || t.description || t.type}
