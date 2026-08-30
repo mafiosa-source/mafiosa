@@ -183,7 +183,7 @@ export const saveAppUser = createServerFn({ method: "POST" })
     if (data.fullAccess !== undefined) patch["full_access"] = data.fullAccess;
     if (data.role) patch["role"] = data.role;
     if (data.status) patch["status"] = data.status;
-    const { error } = await context.supabase.from("app_users").update(patch).eq("id", data.id);
+    const { error } = await context.supabase.from("app_users").update(patch as never).eq("id", data.id);
     if (error) throw error;
     return { ok: true as const };
   });
