@@ -988,6 +988,23 @@ export function housemaidDirection(t: Transaction): "in" | "out" {
   return "out";
 }
 
+/**
+ * External money direction for Housemaid / Worker funds only.
+ *
+ * Internal wallet-to-wallet movements (e.g. FAST Account -> Holding Wallet) are
+ * the same money changing place, so they return null and must never affect the
+ * Net Position. Only money that actually arrived from outside the group, or was
+ * actually released outside the group, counts.
+ *
+ * Example: External -> FAST -> Holding -> External = Net Position 0.
+ */
+export function housemaidExternalDirection(t: Transaction): "in" | "out" | null {
+  const fromExternal = t.fromWallet === "external";
+  const toExternal = t.toWallet === "external";
+  if (fromExternal === toExternal) return null; // internal transfer (or external->external)
+  return fromExternal ? "in" : "out";
+}
+
 /** Which module a transaction belongs to, for the unified timeline. */
 export function housemaidModule(t: Transaction): string {
   if (t.type === "Salary Holding" || t.type === "Salary Release") return "Salary";
@@ -1063,6 +1080,12 @@ export function housemaidProfile(s: FinanceState, name: string): HousemaidProfil
   const outgoing = active.filter((t) => housemaidDirection(t) === "out");
   const received = incoming.reduce((a, t) => a + t.amount, 0);
   const paid = outgoing.reduce((a, t) => a + t.amount, 0);
+  const externalIn = active
+    .filter((t) => housemaidExternalDirection(t) === "in")
+    .reduce((a, t) => a + t.amount, 0);
+  const externalOut = active
+    .filter((t) => housemaidExternalDirection(t) === "out")
+    .reduce((a, t) => a + t.amount, 0);
   const expenses = outgoing
     .filter((t) => t.toWallet === "external" && t.type !== "Salary Release")
     .reduce((a, t) => a + t.amount, 0);
@@ -1078,7 +1101,9 @@ export function housemaidProfile(s: FinanceState, name: string): HousemaidProfil
     expenses,
     salaryHeld: salaryBalanceFor(s, name),
     candidateHeld: candidateLedger(s).find((c) => housemaidKey(c.candidate) === housemaidKey(name))?.balance ?? 0,
-    outstanding: received - paid,
+    // Net Position counts external receipts less external releases only:
+    // internal wallet-to-wallet movements are the same money moving.
+    outstanding: externalIn - externalOut,
     timeline,
     incoming,
     outgoing,
