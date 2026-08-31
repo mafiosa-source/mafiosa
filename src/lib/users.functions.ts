@@ -65,6 +65,8 @@ export const requestAccess = createServerFn({ method: "POST" })
       full_access: false,
       status: "active",
       must_change_password: true,
+      temp_password: tempPassword,
+      temp_password_set_at: new Date().toISOString(),
     });
     if (error) {
       await supabaseAdmin.auth.admin.deleteUser(created.data.user.id);
@@ -162,6 +164,7 @@ export const listAppUsers = createServerFn({ method: "POST" })
       mustChangePassword: Boolean(r.must_change_password),
       createdAt: r.created_at as string,
       lastLoginAt: (r.last_login_at as string) ?? null,
+      tempPassword: ((r as { temp_password?: string | null }).temp_password ?? null),
     }));
   });
 
@@ -218,6 +221,8 @@ export const createAppUser = createServerFn({ method: "POST" })
       full_access: Boolean(data.fullAccess),
       status: "active",
       must_change_password: true,
+      temp_password: tempPassword,
+      temp_password_set_at: new Date().toISOString(),
     });
     if (error) {
       await supabaseAdmin.auth.admin.deleteUser(created.data.user.id);
@@ -245,6 +250,28 @@ export const resetUserPassword = createServerFn({ method: "POST" })
     const tempPassword = generateTempPassword();
     const { error } = await supabaseAdmin.auth.admin.updateUserById(authId, { password: tempPassword });
     if (error) throw error;
-    await supabaseAdmin.from("app_users").update({ must_change_password: true }).eq("id", data.id);
+    await supabaseAdmin
+      .from("app_users")
+      .update({
+        must_change_password: true,
+        temp_password: tempPassword,
+        temp_password_set_at: new Date().toISOString(),
+      } as never)
+      .eq("id", data.id);
     return { ok: true as const, tempPassword };
+  });
+
+/** Admin: hide a temporary password once it has been handed to the user. */
+export const clearTempPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { id: string }) => data)
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("is_app_admin", { _uid: context.userId });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { error } = await context.supabase
+      .from("app_users")
+      .update({ temp_password: null } as never)
+      .eq("id", data.id);
+    if (error) throw error;
+    return { ok: true as const };
   });

@@ -73,6 +73,8 @@ export type Database = {
           permissions: Json
           role: string
           status: string
+          temp_password: string | null
+          temp_password_set_at: string | null
           updated_at: string
         }
         Insert: {
@@ -88,6 +90,8 @@ export type Database = {
           permissions?: Json
           role?: string
           status?: string
+          temp_password?: string | null
+          temp_password_set_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -103,6 +107,8 @@ export type Database = {
           permissions?: Json
           role?: string
           status?: string
+          temp_password?: string | null
+          temp_password_set_at?: string | null
           updated_at?: string
         }
         Relationships: []
