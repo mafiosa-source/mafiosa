@@ -177,7 +177,7 @@ export type CloudState = {
 
 export async function fetchCloudState(): Promise<CloudState> {
   const [txnRes, obRes, wtRes, payRes, payPayRes, closeRes] = await Promise.all([
-    supabase.from("transactions").select("*").order("date", { ascending: false }),
+    supabase.from("transactions").select("*").is("deleted_at", null).order("date", { ascending: false }),
     supabase.from("opening_balances").select("*"),
     supabase.from("wallet_targets").select("*"),
     supabase.from("payables").select("*").order("date", { ascending: false }),
@@ -227,9 +227,43 @@ export async function updateCloudTransaction(id: string, patch: Partial<Transact
   if (error) throw error;
 }
 
-export async function deleteCloudTransaction(id: string) {
-  const { error } = await supabase.from("transactions").delete().eq("id", id);
+/**
+ * Soft delete: the financial record is never erased. It is flagged as deleted
+ * (with who deleted it) and filtered out of the live ledger, so the Admin
+ * Activity log can still show it and restore it.
+ */
+export async function deleteCloudTransaction(id: string, actor?: string) {
+  const { error } = await supabase
+    .from("transactions")
+    .update({ deleted_at: new Date().toISOString(), deleted_by: actor ?? null } as never)
+    .eq("id", id);
   if (error) throw error;
+}
+
+/** Clears the deleted flag, bringing the record back into the live ledger. */
+export async function undeleteCloudTransaction(id: string) {
+  const { error } = await supabase
+    .from("transactions")
+    .update({ deleted_at: null, deleted_by: null } as never)
+    .eq("id", id);
+  if (error) throw error;
+}
+
+/** Admin view: every soft-deleted transaction, most recently deleted first. */
+export async function fetchDeletedTransactions(): Promise<
+  { txn: Transaction; deletedAt: string; deletedBy?: string }[]
+> {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("*")
+    .not("deleted_at", "is", null)
+    .order("deleted_at", { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Row[]).map((r) => ({
+    txn: rowToTransaction(r),
+    deletedAt: String(r["deleted_at"]),
+    deletedBy: (r["deleted_by"] as string) ?? undefined,
+  }));
 }
 
 /**
@@ -249,6 +283,8 @@ export async function restoreCloudTransaction(t: Transaction, userId: string) {
   const partial = transactionToRow(t);
   const row: Row = { id: t.id, user_id: userId };
   for (const k of TXN_ROW_KEYS) row[k] = partial[k] ?? null;
+  row["deleted_at"] = null;
+  row["deleted_by"] = null;
   const { error } = await supabase
     .from("transactions")
     .upsert(row as never, { onConflict: "id" });

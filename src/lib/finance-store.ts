@@ -210,7 +210,7 @@ function silentInsert(txn: Transaction) {
 
 function silentRemove(id: string) {
   setState((s) => ({ transactions: s.transactions.filter((t) => t.id !== id) }));
-  deleteCloudTransaction(id).catch((e) => reportCloudError("delete", e));
+  deleteCloudTransaction(id, currentUserLabel || undefined).catch((e) => reportCloudError("delete", e));
 }
 
 function txnLabel(t: Transaction) {
@@ -268,7 +268,7 @@ export function updateTransaction(id: string, patch: Partial<Transaction>) {
 export function deleteTransaction(id: string) {
   const before = state.transactions.find((t) => t.id === id);
   setState((s) => ({ transactions: s.transactions.filter((t) => t.id !== id) }));
-  deleteCloudTransaction(id).catch((e) => reportCloudError("delete", e));
+  deleteCloudTransaction(id, currentUserLabel || undefined).catch((e) => reportCloudError("delete", e));
   if (!before) return;
   // The full record is preserved in the audit trail and can be restored.
   logAudit({ action: "delete", entity: "transaction", entityId: id, label: txnLabel(before), before, actor: currentUserLabel });
