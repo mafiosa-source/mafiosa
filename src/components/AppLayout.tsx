@@ -17,47 +17,58 @@ import {
   CalendarRange,
   LogOut,
   ChevronDown,
+  ShieldCheck,
+  History,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useAppUser } from "@/lib/app-user";
+import { moduleForPath, type ModuleKey } from "@/lib/permissions";
 
-const topLinks = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/transactions", label: "All Transactions", icon: ListOrdered },
-] as const;
+type NavItem = { to: string; label: string; icon: typeof Wallet; module: ModuleKey | "admin" };
 
-const groups = [
+const topLinks: NavItem[] = [
+  { to: "/", label: "Dashboard", icon: LayoutDashboard, module: "dashboard" },
+  { to: "/transactions", label: "All Transactions", icon: ListOrdered, module: "transactions" },
+];
+
+const groups: { label: string; items: NavItem[] }[] = [
   {
     label: "Cash, Bank & Cards",
     items: [
-      { to: "/petty-cash", label: "Office Petty Cash", icon: Wallet },
-      { to: "/du-monde", label: "Du Monde Petty Cash", icon: Coffee },
-      { to: "/cards", label: "Company Cards", icon: CreditCard },
-      { to: "/transfers", label: "CBQ Transfers", icon: ArrowLeftRight },
-      { to: "/fuel", label: "Fuel & Vehicles", icon: Fuel },
+      { to: "/petty-cash", label: "Office Petty Cash", icon: Wallet, module: "petty-cash" },
+      { to: "/du-monde", label: "Du Monde Petty Cash", icon: Coffee, module: "du-monde" },
+      { to: "/cards", label: "Company Cards", icon: CreditCard, module: "cards" },
+      { to: "/transfers", label: "CBQ Transfers", icon: ArrowLeftRight, module: "transfers" },
+      { to: "/fuel", label: "Fuel & Vehicles", icon: Fuel, module: "fuel" },
     ],
   },
   {
     label: "Held Funds & People",
     items: [
-      { to: "/candidates", label: "Candidate Holdings", icon: UsersRound },
-      { to: "/salaries", label: "Housemaid Salaries", icon: HandCoins },
-      { to: "/holding-wallet", label: "Housemaid Holding Wallet", icon: PiggyBank },
-      { to: "/sponsors", label: "Sponsor Receivables", icon: Banknote },
+      { to: "/candidates", label: "Candidate Holdings", icon: UsersRound, module: "candidates" },
+      { to: "/salaries", label: "Housemaid Salaries", icon: HandCoins, module: "salaries" },
+      { to: "/holding-wallet", label: "Housemaid Holding Wallet", icon: PiggyBank, module: "holding-wallet" },
+      { to: "/sponsors", label: "Sponsor Receivables", icon: Banknote, module: "sponsors" },
     ],
   },
   {
     label: "Vouchers, Closing & Reports",
     items: [
-      { to: "/vouchers", label: "Vouchers (RV/PV)", icon: ReceiptText },
-      { to: "/reconciliation", label: "Reconciliation", icon: ClipboardCheck },
-      { to: "/months", label: "Month Management", icon: CalendarRange },
-      { to: "/reports", label: "Reports", icon: FileBarChart2 },
+      { to: "/vouchers", label: "Vouchers (RV/PV)", icon: ReceiptText, module: "vouchers" },
+      { to: "/reconciliation", label: "Reconciliation", icon: ClipboardCheck, module: "reconciliation" },
+      { to: "/months", label: "Month Management", icon: CalendarRange, module: "months" },
+      { to: "/reports", label: "Reports", icon: FileBarChart2, module: "reports" },
     ],
   },
-] as const;
+];
+
+const adminItems: NavItem[] = [
+  { to: "/admin/users", label: "Users & Permissions", icon: ShieldCheck, module: "admin" },
+  { to: "/admin/activity", label: "Activity Log", icon: History, module: "admin" },
+];
 
 const isActivePath = (pathname: string, to: string) =>
   to === "/" ? pathname === "/" : pathname.startsWith(to);
@@ -86,7 +97,7 @@ function NavGroup({
   pathname,
 }: {
   label: string;
-  items: readonly { to: string; label: string; icon: typeof Wallet }[];
+  items: NavItem[];
   pathname: string;
 }) {
   const hasActive = items.some((i) => isActivePath(pathname, i.to));
@@ -109,7 +120,14 @@ function NavGroup({
       {open && (
         <div className="pb-1">
           {items.map((item) => (
-            <NavLink key={item.to} {...item} nested active={isActivePath(pathname, item.to)} />
+            <NavLink
+              key={item.to}
+              to={item.to}
+              label={item.label}
+              icon={item.icon}
+              nested
+              active={isActivePath(pathname, item.to)}
+            />
           ))}
         </div>
       )}
@@ -119,6 +137,12 @@ function NavGroup({
 
 export function AppLayout({ children }: { children?: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user, isAdmin, can } = useAppUser();
+  const visibleTop = topLinks.filter((i) => can(i.module));
+  const visibleGroups = groups
+    .map((g) => ({ ...g, items: g.items.filter((i) => can(i.module)) }))
+    .filter((g) => g.items.length > 0);
+  const allowed = can(moduleForPath(pathname));
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col">
@@ -127,15 +151,38 @@ export function AppLayout({ children }: { children?: ReactNode }) {
           <div className="mt-1 text-base font-semibold">Operations Center</div>
         </div>
         <nav className="flex-1 overflow-y-auto py-3 space-y-1">
-          {topLinks.map((item) => (
-            <NavLink key={item.to} {...item} active={isActivePath(pathname, item.to)} />
+          {visibleTop.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              label={item.label}
+              icon={item.icon}
+              active={isActivePath(pathname, item.to)}
+            />
           ))}
           <div className="my-2 border-t border-sidebar-border" />
-          {groups.map((g) => (
+          {visibleGroups.map((g) => (
             <NavGroup key={g.label} label={g.label} items={g.items} pathname={pathname} />
           ))}
+          {isAdmin ? (
+            <>
+              <div className="my-2 border-t border-sidebar-border" />
+              <NavGroup label="Administration" items={adminItems} pathname={pathname} />
+            </>
+          ) : null}
         </nav>
         <div className="px-5 py-4 border-t border-sidebar-border text-xs text-sidebar-foreground/50">
+          {user ? (
+            <div className="mb-3 flex items-center gap-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
+                {user.name.slice(0, 2).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium text-sidebar-foreground">{user.name}</div>
+                <div className="text-[11px] uppercase tracking-wide">{isAdmin ? "Administrator" : "User"}</div>
+              </div>
+            </div>
+          ) : null}
           <div>Phase 1 · Master ledger · Cloud database</div>
           <button
             type="button"
@@ -149,7 +196,18 @@ export function AppLayout({ children }: { children?: ReactNode }) {
         </div>
       </aside>
       <main className="flex-1 min-w-0">
-        <div className="mx-auto max-w-[1400px] px-6 py-6">{children ?? <Outlet />}</div>
+        <div className="mx-auto max-w-[1400px] px-6 py-6">
+          {allowed ? (
+            (children ?? <Outlet />)
+          ) : (
+            <div className="rounded-xl border bg-card p-10 text-center shadow-sm">
+              <h2 className="text-lg font-semibold text-foreground">No access to this section</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Your account does not have permission to open this module. Please ask the administrator.
+              </p>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
