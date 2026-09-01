@@ -1,6 +1,6 @@
 // Admin → Activity. Full audit trail with before → after values and deleted-record restore.
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
 import { Badge } from "@/components/ui/badge";
@@ -172,8 +172,8 @@ function AdminActivityPage() {
                 const changes = diffOf(r.before_data, r.after_data);
                 const expanded = open === r.id;
                 return (
-                  <>
-                    <TableRow key={r.id}>
+                  <Fragment key={r.id}>
+                    <TableRow>
                       <TableCell className="whitespace-nowrap text-sm">
                         {new Date(r.created_at).toLocaleString()}
                       </TableCell>
@@ -192,7 +192,7 @@ function AdminActivityPage() {
                       </TableCell>
                     </TableRow>
                     {expanded ? (
-                      <TableRow key={`${r.id}-diff`}>
+                      <TableRow>
                         <TableCell colSpan={6} className="bg-muted/40">
                           <div className="space-y-1 text-sm">
                             {changes.map((c) => (
@@ -207,7 +207,7 @@ function AdminActivityPage() {
                         </TableCell>
                       </TableRow>
                     ) : null}
-                  </>
+                  </Fragment>
                 );
               })
             )}
