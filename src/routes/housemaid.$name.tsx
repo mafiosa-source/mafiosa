@@ -61,14 +61,19 @@ function HousemaidProfilePage() {
   );
 
   // Running balance over the filtered statement.
+  // Internal wallet-to-wallet movements (neither side is External / Third Party)
+  // are the same money changing place: they stay visible in the row but never
+  // touch Money In, Money Out, the running Balance or the Net Position. Only
+  // money that actually arrived from, or was released to, the outside counts.
   const rows = useMemo(() => {
     let running = 0;
     return filtered.map((t) => {
-      const dir = housemaidDirection(t);
+      const internal = t.fromWallet !== "external" && t.toWallet !== "external";
+      const dir = internal ? null : housemaidDirection(t);
       const inAmt = dir === "in" ? t.amount : 0;
       const outAmt = dir === "out" ? t.amount : 0;
       running += inAmt - outAmt;
-      return { t, inAmt, outAmt, running };
+      return { t, internal, inAmt, outAmt, running };
     });
   }, [filtered]);
 
@@ -98,7 +103,9 @@ function HousemaidProfilePage() {
       rows: rows.map((r) => ({
         date: r.t.date,
         company: r.t.company ? COMPANY_LABEL[r.t.company] : "",
-        particulars: `${housemaidModule(r.t)} — ${r.t.purpose || r.t.description || r.t.type}`,
+        particulars: r.internal
+          ? `Internal Transfer (${qar(r.t.amount)})`
+          : `${housemaidModule(r.t)} — ${r.t.purpose || r.t.description || r.t.type}`,
         amount: r.t.amount,
         moneyIn: r.inAmt,
         moneyOut: r.outAmt,
@@ -122,7 +129,7 @@ function HousemaidProfilePage() {
         Module: housemaidModule(r.t),
         Type: r.t.type,
         Company: r.t.company ? COMPANY_LABEL[r.t.company] : "",
-        Particulars: r.t.purpose || r.t.description || "",
+        Particulars: r.internal ? `Internal Transfer (${qar(r.t.amount)})` : r.t.purpose || r.t.description || "",
         "Money In": r.inAmt || "",
         "Money Out": r.outAmt || "",
         Balance: r.running,
@@ -244,7 +251,11 @@ function HousemaidProfilePage() {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map(({ t, inAmt, outAmt, running }) => (
+              rows.map(({ t, internal, inAmt, outAmt, running }) => {
+                const particulars = internal
+                  ? `Internal Transfer (${qar(t.amount)})`
+                  : t.purpose || t.description || t.type;
+                return (
                 <TableRow key={t.id}>
                   <TableCell className="whitespace-nowrap">{t.date}</TableCell>
                   <TableCell>
@@ -252,23 +263,24 @@ function HousemaidProfilePage() {
                   </TableCell>
                   <TableCell className="max-w-[280px]">
                     <Link to="/transactions/$id" params={{ id: t.id }} className="text-primary hover:underline">
-                      {t.purpose || t.description || t.type}
+                      {particulars}
                     </Link>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet} → {WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet}
                   </TableCell>
                   <TableCell className="text-right tabular text-[color:var(--success)]">
-                    {inAmt ? qar(inAmt) : "—"}
+                    {internal ? "—" : inAmt ? qar(inAmt) : "—"}
                   </TableCell>
                   <TableCell className="text-right tabular text-[color:var(--destructive)]">
-                    {outAmt ? qar(outAmt) : "—"}
+                    {internal ? "—" : outAmt ? qar(outAmt) : "—"}
                   </TableCell>
                   <TableCell className={cn("text-right tabular font-medium", running < 0 && "text-[color:var(--destructive)]")}>
                     {qar(running)}
                   </TableCell>
                 </TableRow>
-              ))
+                );
+              })
             )}
           </TableBody>
         </Table>
