@@ -129,7 +129,7 @@ function HousemaidProfilePage() {
         Module: housemaidModule(r.t),
         Type: r.t.type,
         Company: r.t.company ? COMPANY_LABEL[r.t.company] : "",
-        Particulars: r.t.purpose || r.t.description || "",
+        Particulars: r.internal ? `Internal Transfer (${qar(r.t.amount)})` : r.t.purpose || r.t.description || "",
         "Money In": r.inAmt || "",
         "Money Out": r.outAmt || "",
         Balance: r.running,
