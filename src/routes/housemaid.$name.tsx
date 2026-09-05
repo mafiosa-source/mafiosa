@@ -103,7 +103,9 @@ function HousemaidProfilePage() {
       rows: rows.map((r) => ({
         date: r.t.date,
         company: r.t.company ? COMPANY_LABEL[r.t.company] : "",
-        particulars: `${housemaidModule(r.t)} — ${r.t.purpose || r.t.description || r.t.type}`,
+        particulars: r.internal
+          ? `Internal Transfer (${qar(r.t.amount)})`
+          : `${housemaidModule(r.t)} — ${r.t.purpose || r.t.description || r.t.type}`,
         amount: r.t.amount,
         moneyIn: r.inAmt,
         moneyOut: r.outAmt,
