@@ -16,7 +16,9 @@ export type ModuleKey =
   | "vouchers"
   | "reconciliation"
   | "months"
-  | "reports";
+  | "reports"
+  | "workers"
+  | "agents";
 
 export const MODULES: { key: ModuleKey; label: string; group: string }[] = [
   { key: "dashboard", label: "Dashboard", group: "General" },
@@ -34,6 +36,8 @@ export const MODULES: { key: ModuleKey; label: string; group: string }[] = [
   { key: "reconciliation", label: "Reconciliation", group: "Vouchers, Closing & Reports" },
   { key: "months", label: "Month Management", group: "Vouchers, Closing & Reports" },
   { key: "reports", label: "Reports", group: "Vouchers, Closing & Reports" },
+  { key: "workers", label: "CV / Workers", group: "CV Management" },
+  { key: "agents", label: "Agents", group: "CV Management" },
 ];
 
 export const MODULE_LABEL: Record<string, string> = MODULES.reduce(
@@ -58,6 +62,8 @@ const ROUTE_MODULES: { prefix: string; module: ModuleKey }[] = [
   { prefix: "/reconciliation", module: "reconciliation" },
   { prefix: "/months", module: "months" },
   { prefix: "/reports", module: "reports" },
+  { prefix: "/workers", module: "workers" },
+  { prefix: "/agents", module: "agents" },
 ];
 
 /** Routes that only the administrator may open. */

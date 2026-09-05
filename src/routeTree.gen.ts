@@ -24,12 +24,15 @@ import { Route as SponsorsRouteImport } from './routes/sponsors'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as VouchersRouteImport } from './routes/vouchers'
+import { Route as WorkersRouteImport } from './routes/workers'
+import { Route as Workers_newRouteImport } from './routes/workers_new'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
 import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
 import { Route as MonthsYearMonthRouteImport } from './routes/months_.$year.$month'
+import { Route as WorkersIdCvRouteImport } from './routes/workers_.$id.cv'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -106,6 +109,16 @@ const VouchersRoute = VouchersRouteImport.update({
   path: '/vouchers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkersRoute = WorkersRouteImport.update({
+  id: '/workers',
+  path: '/workers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Workers_newRoute = Workers_newRouteImport.update({
+  id: '/workers_new',
+  path: '/workers_new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminActivityRoute = AdminActivityRouteImport.update({
   id: '/admin/activity',
   path: '/admin/activity',
@@ -136,6 +149,11 @@ const MonthsYearMonthRoute = MonthsYearMonthRouteImport.update({
   path: '/months/$year/$month',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkersIdCvRoute = WorkersIdCvRouteImport.update({
+  id: '/workers_/$id/cv',
+  path: '/workers/$id/cv',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -153,12 +171,15 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof TransactionsRoute
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
+  '/workers': typeof WorkersRoute
+  '/workers_new': typeof Workers_newRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
+  '/workers/$id/cv': typeof WorkersIdCvRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -176,12 +197,15 @@ export interface FileRoutesByTo {
   '/transactions': typeof TransactionsRoute
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
+  '/workers': typeof WorkersRoute
+  '/workers_new': typeof Workers_newRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
+  '/workers/$id/cv': typeof WorkersIdCvRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -200,12 +224,15 @@ export interface FileRoutesById {
   '/transactions': typeof TransactionsRoute
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
+  '/workers': typeof WorkersRoute
+  '/workers_new': typeof Workers_newRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/salaries_/$name': typeof SalariesNameRoute
   '/transactions_/$id': typeof TransactionsIdRoute
   '/months_/$year/$month': typeof MonthsYearMonthRoute
+  '/workers_/$id/cv': typeof WorkersIdCvRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -225,12 +252,15 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/transfers'
     | '/vouchers'
+    | '/workers'
+    | '/workers_new'
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
     | '/salaries/$name'
     | '/transactions/$id'
     | '/months/$year/$month'
+    | '/workers/$id/cv'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -248,12 +278,15 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/transfers'
     | '/vouchers'
+    | '/workers'
+    | '/workers_new'
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
     | '/salaries/$name'
     | '/transactions/$id'
     | '/months/$year/$month'
+    | '/workers/$id/cv'
   id:
     | '__root__'
     | '/'
@@ -271,12 +304,15 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/transfers'
     | '/vouchers'
+    | '/workers'
+    | '/workers_new'
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
     | '/salaries_/$name'
     | '/transactions_/$id'
     | '/months_/$year/$month'
+    | '/workers_/$id/cv'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -295,12 +331,15 @@ export interface RootRouteChildren {
   TransactionsRoute: typeof TransactionsRoute
   TransfersRoute: typeof TransfersRoute
   VouchersRoute: typeof VouchersRoute
+  WorkersRoute: typeof WorkersRoute
+  Workers_newRoute: typeof Workers_newRoute
   AdminActivityRoute: typeof AdminActivityRoute
   AdminUsersRoute: typeof AdminUsersRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
   SalariesNameRoute: typeof SalariesNameRoute
   TransactionsIdRoute: typeof TransactionsIdRoute
   MonthsYearMonthRoute: typeof MonthsYearMonthRoute
+  WorkersIdCvRoute: typeof WorkersIdCvRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -410,6 +449,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VouchersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workers': {
+      id: '/workers'
+      path: '/workers'
+      fullPath: '/workers'
+      preLoaderRoute: typeof WorkersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workers_new': {
+      id: '/workers_new'
+      path: '/workers_new'
+      fullPath: '/workers_new'
+      preLoaderRoute: typeof Workers_newRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/activity': {
       id: '/admin/activity'
       path: '/admin/activity'
@@ -452,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonthsYearMonthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workers_/$id/cv': {
+      id: '/workers_/$id/cv'
+      path: '/workers/$id/cv'
+      fullPath: '/workers/$id/cv'
+      preLoaderRoute: typeof WorkersIdCvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -471,12 +531,15 @@ const rootRouteChildren: RootRouteChildren = {
   TransactionsRoute: TransactionsRoute,
   TransfersRoute: TransfersRoute,
   VouchersRoute: VouchersRoute,
+  WorkersRoute: WorkersRoute,
+  Workers_newRoute: Workers_newRoute,
   AdminActivityRoute: AdminActivityRoute,
   AdminUsersRoute: AdminUsersRoute,
   HousemaidNameRoute: HousemaidNameRoute,
   SalariesNameRoute: SalariesNameRoute,
   TransactionsIdRoute: TransactionsIdRoute,
   MonthsYearMonthRoute: MonthsYearMonthRoute,
+  WorkersIdCvRoute: WorkersIdCvRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

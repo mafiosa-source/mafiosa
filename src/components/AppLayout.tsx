@@ -19,6 +19,8 @@ import {
   ChevronDown,
   ShieldCheck,
   History,
+  UserCircle2,
+  Building2,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -61,6 +63,13 @@ const groups: { label: string; items: NavItem[] }[] = [
       { to: "/reconciliation", label: "Reconciliation", icon: ClipboardCheck, module: "reconciliation" },
       { to: "/months", label: "Month Management", icon: CalendarRange, module: "months" },
       { to: "/reports", label: "Reports", icon: FileBarChart2, module: "reports" },
+    ],
+  },
+  {
+    label: "CV Management",
+    items: [
+      { to: "/workers", label: "CV / Workers", icon: UserCircle2, module: "workers" },
+      { to: "/agents", label: "Agents", icon: Building2, module: "agents" },
     ],
   },
 ];
