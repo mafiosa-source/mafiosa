@@ -61,14 +61,19 @@ function HousemaidProfilePage() {
   );
 
   // Running balance over the filtered statement.
+  // Internal wallet-to-wallet movements (neither side is External / Third Party)
+  // are the same money changing place: they stay visible in the row but never
+  // touch Money In, Money Out, the running Balance or the Net Position. Only
+  // money that actually arrived from, or was released to, the outside counts.
   const rows = useMemo(() => {
     let running = 0;
     return filtered.map((t) => {
-      const dir = housemaidDirection(t);
+      const internal = t.fromWallet !== "external" && t.toWallet !== "external";
+      const dir = internal ? null : housemaidDirection(t);
       const inAmt = dir === "in" ? t.amount : 0;
       const outAmt = dir === "out" ? t.amount : 0;
       running += inAmt - outAmt;
-      return { t, inAmt, outAmt, running };
+      return { t, internal, inAmt, outAmt, running };
     });
   }, [filtered]);
 
