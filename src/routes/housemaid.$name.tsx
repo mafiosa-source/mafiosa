@@ -249,7 +249,11 @@ function HousemaidProfilePage() {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map(({ t, inAmt, outAmt, running }) => (
+              rows.map(({ t, internal, inAmt, outAmt, running }) => {
+                const particulars = internal
+                  ? `Internal Transfer (${qar(t.amount)})`
+                  : t.purpose || t.description || t.type;
+                return (
                 <TableRow key={t.id}>
                   <TableCell className="whitespace-nowrap">{t.date}</TableCell>
                   <TableCell>
@@ -257,23 +261,24 @@ function HousemaidProfilePage() {
                   </TableCell>
                   <TableCell className="max-w-[280px]">
                     <Link to="/transactions/$id" params={{ id: t.id }} className="text-primary hover:underline">
-                      {t.purpose || t.description || t.type}
+                      {particulars}
                     </Link>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {WALLET_BY_KEY[t.fromWallet]?.name ?? t.fromWallet} → {WALLET_BY_KEY[t.toWallet]?.name ?? t.toWallet}
                   </TableCell>
                   <TableCell className="text-right tabular text-[color:var(--success)]">
-                    {inAmt ? qar(inAmt) : "—"}
+                    {internal ? "—" : inAmt ? qar(inAmt) : "—"}
                   </TableCell>
                   <TableCell className="text-right tabular text-[color:var(--destructive)]">
-                    {outAmt ? qar(outAmt) : "—"}
+                    {internal ? "—" : outAmt ? qar(outAmt) : "—"}
                   </TableCell>
                   <TableCell className={cn("text-right tabular font-medium", running < 0 && "text-[color:var(--destructive)]")}>
                     {qar(running)}
                   </TableCell>
                 </TableRow>
-              ))
+                );
+              })
             )}
           </TableBody>
         </Table>
