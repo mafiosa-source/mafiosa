@@ -15,6 +15,13 @@
       "when": 1788154164456,
       "tag": "0001_app_users_temp_password",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788591467700,
+      "tag": "0002_create_candidate_profiles_and_secure_app_users",
+      "breakpoints": true
     }
   ]
 }

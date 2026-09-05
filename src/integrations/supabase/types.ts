@@ -113,6 +113,111 @@ export type Database = {
         }
         Relationships: []
       }
+      candidate_profiles: {
+        Row: {
+          address: string | null
+          arabic: string | null
+          children: string | null
+          civil_status: string | null
+          company: string | null
+          contact_number: string | null
+          contract_period: string | null
+          created_at: string
+          created_by: string | null
+          date_of_birth: string | null
+          education: string | null
+          english: string | null
+          full_name: string
+          height: string | null
+          id: string
+          last_edited_by: string | null
+          monthly_salary: string | null
+          name_key: string
+          nationality: string | null
+          passport_no: string | null
+          photo_url: string | null
+          place_of_birth: string | null
+          position_applied: string
+          previous_jobs: Json
+          reference_code: string | null
+          religion: string | null
+          remarks: string | null
+          skills: Json
+          sponsor: string | null
+          updated_at: string
+          user_id: string
+          weight: string | null
+        }
+        Insert: {
+          address?: string | null
+          arabic?: string | null
+          children?: string | null
+          civil_status?: string | null
+          company?: string | null
+          contact_number?: string | null
+          contract_period?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          education?: string | null
+          english?: string | null
+          full_name: string
+          height?: string | null
+          id?: string
+          last_edited_by?: string | null
+          monthly_salary?: string | null
+          name_key: string
+          nationality?: string | null
+          passport_no?: string | null
+          photo_url?: string | null
+          place_of_birth?: string | null
+          position_applied?: string
+          previous_jobs?: Json
+          reference_code?: string | null
+          religion?: string | null
+          remarks?: string | null
+          skills?: Json
+          sponsor?: string | null
+          updated_at?: string
+          user_id?: string
+          weight?: string | null
+        }
+        Update: {
+          address?: string | null
+          arabic?: string | null
+          children?: string | null
+          civil_status?: string | null
+          company?: string | null
+          contact_number?: string | null
+          contract_period?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          education?: string | null
+          english?: string | null
+          full_name?: string
+          height?: string | null
+          id?: string
+          last_edited_by?: string | null
+          monthly_salary?: string | null
+          name_key?: string
+          nationality?: string | null
+          passport_no?: string | null
+          photo_url?: string | null
+          place_of_birth?: string | null
+          position_applied?: string
+          previous_jobs?: Json
+          reference_code?: string | null
+          religion?: string | null
+          remarks?: string | null
+          skills?: Json
+          sponsor?: string | null
+          updated_at?: string
+          user_id?: string
+          weight?: string | null
+        }
+        Relationships: []
+      }
       month_closings: {
         Row: {
           closed_at: string
