@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setReportUser } from "@/lib/format";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
-import { currentAppUser, requestAccess, resolveLogin } from "@/lib/users.functions";
+import { Loader2, ShieldCheck, Mail } from "lucide-react";
+import { currentAppUser } from "@/lib/users.functions";
 import { AppUserProvider } from "@/lib/app-user";
 import type { AppUser } from "@/lib/permissions";
 import {
@@ -20,52 +20,21 @@ import {
   useFinance,
 } from "@/lib/finance-store";
 
-/** Name-first sign in. The name is mapped internally to a login identity. */
 function SignInScreen() {
-  const lookup = useServerFn(resolveLogin);
-  const askAccess = useServerFn(requestAccess);
-
-  const [step, setStep] = useState<"name" | "password" | "requested">("name");
-  const [name, setName] = useState("");
-  const [loginEmail, setLoginEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [unknownName, setUnknownName] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<"signin" | "forgot">("signin");
+  const [forgotSent, setForgotSent] = useState(false);
 
-  async function onName(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setUnknownName(false);
-    try {
-      // An email typed here signs in directly (administrator account).
-      if (name.includes("@")) {
-        setLoginEmail(name.trim());
-        setStep("password");
-        return;
-      }
-      const res = await lookup({ data: { name } });
-      if (!res.found) {
-        setUnknownName(true);
-        return;
-      }
-      if (res.disabled) {
-        toast.error("This account is disabled. Please contact the administrator.");
-        return;
-      }
-      setLoginEmail(res.loginEmail);
-      setStep("password");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not check that name");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function onPassword(e: React.FormEvent) {
+  async function onSignIn(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
       if (error) throw error;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign-in failed");
@@ -74,17 +43,17 @@ function SignInScreen() {
     }
   }
 
-  async function onRequest() {
+  async function onForgot(e: React.FormEvent) {
+    e.preventDefault();
     setBusy(true);
     try {
-      const res = await askAccess({ data: { name } });
-      if (!res.ok) {
-        toast.error(res.reason);
-        return;
-      }
-      setStep("requested");
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: window.location.origin,
+      });
+      if (error) throw error;
+      setForgotSent(true);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not send the request");
+      toast.error(err instanceof Error ? err.message : "Could not send reset email");
     } finally {
       setBusy(false);
     }
@@ -98,51 +67,29 @@ function SignInScreen() {
             <ShieldCheck className="h-4 w-4" /> Alhakeem Group ERP
           </div>
           <h1 className="mt-2 text-xl font-semibold text-foreground">
-            {step === "requested" ? "Access requested" : step === "password" ? `Welcome, ${name}` : "Enter your name"}
+            {mode === "forgot" ? "Reset password" : "Sign in"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {step === "requested"
-              ? "The administrator has your request. You will be given a temporary password."
-              : step === "password"
-                ? "Enter the password you were given."
-                : "Sign in with your name. New here? We will ask the administrator for access."}
+            {mode === "forgot"
+              ? "Enter your email and we'll send you a reset link."
+              : "Sign in with your email and password."}
           </p>
         </div>
 
-        {step === "name" && (
-          <form onSubmit={onName} className="space-y-4">
+        {mode === "signin" && (
+          <form onSubmit={onSignIn} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Your name</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="name"
+                id="email"
+                type="email"
                 autoComplete="username"
                 required
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setUnknownName(false);
-                }}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
               />
             </div>
-            {unknownName ? (
-              <div className="rounded-md border border-border bg-accent/40 p-3 text-sm">
-                <p>
-                  <strong>{name.trim()}</strong> is not registered yet.
-                </p>
-                <Button type="button" size="sm" className="mt-2 w-full" onClick={onRequest} disabled={busy}>
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Request access"}
-                </Button>
-              </div>
-            ) : (
-              <Button type="submit" className="w-full" disabled={busy}>
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue"}
-              </Button>
-            )}
-          </form>
-        )}
-
-        {step === "password" && (
-          <form onSubmit={onPassword} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -161,32 +108,53 @@ function SignInScreen() {
               type="button"
               className="flex w-full items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               onClick={() => {
-                setStep("name");
-                setPassword("");
+                setMode("forgot");
+                setForgotSent(false);
               }}
             >
-              <ArrowLeft className="h-3 w-3" /> Use a different name
+              <Mail className="h-3 w-3" /> Forgot password?
             </button>
           </form>
         )}
 
-        {step === "requested" && (
-          <div className="space-y-4 text-sm">
-            <p className="rounded-md border border-border bg-accent/40 p-3">
-              Your request was recorded. The administrator will give you a temporary password, then you can sign in
-              with your name.
-            </p>
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={() => {
-                setStep("name");
-                setUnknownName(false);
-              }}
-            >
-              Back to sign in
-            </Button>
-          </div>
+        {mode === "forgot" && (
+          <form onSubmit={onForgot} className="space-y-4">
+            {forgotSent ? (
+              <div className="space-y-4 text-sm">
+                <p className="rounded-md border border-border bg-accent/40 p-3">
+                  If that email is registered, a reset link has been sent. Check your inbox and follow the link to set a new password.
+                </p>
+                <Button className="w-full" variant="outline" onClick={() => { setMode("signin"); setForgotSent(false); }}>
+                  Back to sign in
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email">Email</Label>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={busy}>
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send reset link"}
+                </Button>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setMode("signin")}
+                >
+                  Back to sign in
+                </button>
+              </>
+            )}
+          </form>
         )}
       </div>
     </div>

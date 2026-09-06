@@ -109,14 +109,14 @@ export const currentAppUser = createServerFn({ method: "POST" })
     }
 
     // Bootstrap: the registered owner email is always the administrator.
-    if (email.toLowerCase() === ADMIN_EMAIL) {
+    if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
       const inserted = await supabaseAdmin
         .from("app_users")
         .insert({
           auth_user_id: context.userId,
-          name: "Administrator",
-          name_key: nameKey("Administrator"),
-          login_email: email,
+          name: "Super Admin",
+          name_key: nameKey("Super Admin"),
+          login_email: email.toLowerCase(),
           role: "admin",
           permissions: [],
           full_access: true,
@@ -273,5 +273,39 @@ export const clearTempPassword = createServerFn({ method: "POST" })
       .update({ temp_password: null } as never)
       .eq("id", data.id);
     if (error) throw error;
+    return { ok: true as const };
+  });
+
+/** Admin: update a user's display name. */
+export const updateAppUserName = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { id: string; name: string }) => data)
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("is_app_admin", { _uid: context.userId });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { nameKey } = await import("@/lib/users.server");
+    const { error } = await context.supabase
+      .from("app_users")
+      .update({ name: data.name.trim(), name_key: nameKey(data.name) } as never)
+      .eq("id", data.id);
+    if (error) throw error;
+    return { ok: true as const };
+  });
+
+/** Self-service: signed-in user changes their own password. */
+export const changeOwnPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { newPassword: string }) => data)
+  .handler(async ({ data, context }) => {
+    if (data.newPassword.length < 6) throw new Error("Password must be at least 6 characters");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(context.userId, {
+      password: data.newPassword,
+    });
+    if (error) throw error;
+    await context.supabase
+      .from("app_users")
+      .update({ must_change_password: false } as never)
+      .eq("auth_user_id", context.userId);
     return { ok: true as const };
   });

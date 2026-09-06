@@ -75,6 +75,7 @@ const groups: { label: string; items: NavItem[] }[] = [
 ];
 
 const adminItems: NavItem[] = [
+  { to: "/admin", label: "Admin Dashboard", icon: ShieldCheck, module: "admin" },
   { to: "/admin/users", label: "Users & Permissions", icon: ShieldCheck, module: "admin" },
   { to: "/admin/activity", label: "Activity Log", icon: History, module: "admin" },
 ];

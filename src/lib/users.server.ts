@@ -1,18 +1,17 @@
 // Server-only helpers for the multi-user access layer.
 export const ADMIN_EMAIL = "m.aconsultingqatar@gmail.com";
-/** Internal login domain: users sign in with their name, never an email. */
-export const LOGIN_DOMAIN = "users.alhakeemgroup.app";
 
 export function nameKey(name: string) {
   return name.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+/** Generates a placeholder login email for name-based user creation. */
 export function loginEmailFor(name: string) {
   const slug =
     nameKey(name)
       .replace(/[^a-z0-9]+/g, ".")
       .replace(/^\.+|\.+$/g, "") || "user";
-  return `${slug}@${LOGIN_DOMAIN}`;
+  return `${slug}@alhakeemgroup.app`;
 }
 
 export function generateTempPassword() {

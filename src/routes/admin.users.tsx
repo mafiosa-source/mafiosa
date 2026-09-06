@@ -24,6 +24,7 @@ import {
   listAppUsers,
   resetUserPassword,
   saveAppUser,
+  updateAppUserName,
 } from "@/lib/users.functions";
 
 export const Route = createFileRoute("/admin/users")({
@@ -48,6 +49,7 @@ function AdminUsersPage() {
   const create = useServerFn(createAppUser);
   const reset = useServerFn(resetUserPassword);
   const clearTemp = useServerFn(clearTempPassword);
+  const updateName = useServerFn(updateAppUserName);
 
   const [rows, setRows] = useState<Row[]>([]);
   const [busy, setBusy] = useState(false);
@@ -99,8 +101,10 @@ function AdminUsersPage() {
             placeholder="Full name"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); document.getElementById("create-user-btn")?.click(); } }}
           />
           <Button
+            id="create-user-btn"
             disabled={busy || newName.trim().length < 2}
             onClick={async () => {
               setBusy(true);
@@ -140,10 +144,17 @@ function AdminUsersPage() {
                   <Badge variant={row.status === "active" ? "secondary" : "destructive"}>{row.status}</Badge>
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  Last sign-in: {row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleString() : "never"}
+                  {row.loginEmail} · Last sign-in: {row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleString() : "never"}
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => patch(row, { role: row.role === "admin" ? "user" : "admin" })}
+                >
+                  {row.role === "admin" ? "Make user" : "Make admin"}
+                </Button>
                 <Button
                   size="sm"
                   variant="outline"
@@ -233,6 +244,8 @@ function AdminUsersPage() {
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead>Modules allowed</TableHead>
             </TableRow>
           </TableHeader>
@@ -240,6 +253,8 @@ function AdminUsersPage() {
             {rows.map((r) => (
               <TableRow key={r.id}>
                 <TableCell className="font-medium">{r.name}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{r.loginEmail}</TableCell>
+                <TableCell className="text-sm">{r.role}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {r.role === "admin" || r.fullAccess
                     ? "Everything"

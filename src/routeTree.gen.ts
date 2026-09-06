@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as CandidatesRouteImport } from './routes/candidates'
 import { Route as CardsRouteImport } from './routes/cards'
@@ -38,6 +39,11 @@ import { Route as WorkersIdCvRouteImport } from './routes/workers_.$id.cv'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgentsRoute = AgentsRouteImport.update({
@@ -126,14 +132,14 @@ const Workers_newRoute = Workers_newRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminActivityRoute = AdminActivityRouteImport.update({
-  id: '/admin/activity',
-  path: '/admin/activity',
-  getParentRoute: () => rootRouteImport,
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
-  getParentRoute: () => rootRouteImport,
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
 } as any)
 const HousemaidNameRoute = HousemaidNameRouteImport.update({
   id: '/housemaid/$name',
@@ -163,6 +169,7 @@ const WorkersIdCvRoute = WorkersIdCvRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/agents': typeof AgentsRoute
   '/candidates': typeof CandidatesRoute
   '/cards': typeof CardsRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/agents': typeof AgentsRoute
   '/candidates': typeof CandidatesRoute
   '/cards': typeof CardsRoute
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/agents': typeof AgentsRoute
   '/candidates': typeof CandidatesRoute
   '/cards': typeof CardsRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/agents'
     | '/candidates'
     | '/cards'
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/agents'
     | '/candidates'
     | '/cards'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/agents'
     | '/candidates'
     | '/cards'
@@ -329,6 +341,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AgentsRoute: typeof AgentsRoute
   CandidatesRoute: typeof CandidatesRoute
   CardsRoute: typeof CardsRoute
@@ -346,8 +359,6 @@ export interface RootRouteChildren {
   VouchersRoute: typeof VouchersRoute
   WorkersRoute: typeof WorkersRoute
   Workers_newRoute: typeof Workers_newRoute
-  AdminActivityRoute: typeof AdminActivityRoute
-  AdminUsersRoute: typeof AdminUsersRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
   SalariesNameRoute: typeof SalariesNameRoute
   TransactionsIdRoute: typeof TransactionsIdRoute
@@ -362,6 +373,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agents': {
@@ -485,17 +503,17 @@ declare module '@tanstack/react-router' {
     }
     '/admin/activity': {
       id: '/admin/activity'
-      path: '/admin/activity'
+      path: '/activity'
       fullPath: '/admin/activity'
       preLoaderRoute: typeof AdminActivityRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/users': {
       id: '/admin/users'
-      path: '/admin/users'
+      path: '/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/housemaid/$name': {
       id: '/housemaid/$name'
@@ -535,8 +553,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminActivityRoute: typeof AdminActivityRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminActivityRoute: AdminActivityRoute,
+  AdminUsersRoute: AdminUsersRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AgentsRoute: AgentsRoute,
   CandidatesRoute: CandidatesRoute,
   CardsRoute: CardsRoute,
@@ -554,8 +585,6 @@ const rootRouteChildren: RootRouteChildren = {
   VouchersRoute: VouchersRoute,
   WorkersRoute: WorkersRoute,
   Workers_newRoute: Workers_newRoute,
-  AdminActivityRoute: AdminActivityRoute,
-  AdminUsersRoute: AdminUsersRoute,
   HousemaidNameRoute: HousemaidNameRoute,
   SalariesNameRoute: SalariesNameRoute,
   TransactionsIdRoute: TransactionsIdRoute,

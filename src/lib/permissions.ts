@@ -64,6 +64,7 @@ const ROUTE_MODULES: { prefix: string; module: ModuleKey }[] = [
   { prefix: "/reports", module: "reports" },
   { prefix: "/workers", module: "workers" },
   { prefix: "/agents", module: "agents" },
+  { prefix: "/admin", module: "admin" },
 ];
 
 /** Routes that only the administrator may open. */
