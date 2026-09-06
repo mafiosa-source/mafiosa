@@ -67,6 +67,28 @@ export const COUNTRY_CODE_BY_NAME: Record<string, string> = COUNTRIES.reduce(
   {} as Record<string, string>,
 );
 
+export const COUNTRY_ARABIC_BY_CODE: Record<string, string> = {
+  KE: "كينيا",
+  UG: "أوغندا",
+  ET: "إثيوبيا",
+  NG: "نيجيريا",
+  TZ: "تنزانيا",
+  RW: "رواندا",
+  PH: "الفلبين",
+  IN: "الهند",
+  LK: "سريلانكا",
+  NP: "نيبال",
+};
+
+export function countryArabicName(code: string): string {
+  return COUNTRY_ARABIC_BY_CODE[code.toUpperCase()] ?? "";
+}
+
+export function candidateSerialCode(candidate: Pick<Candidate, "countryCode" | "candidateCode">): string {
+  const sequence = candidate.candidateCode.match(/(\\d{1,})$/)?.[1] ?? "001";
+  return `${candidate.countryCode.toUpperCase()}-${sequence.padStart(3, "0")}`;
+}
+
 export const POSITIONS = [
   "Housemaid",
   "Nanny",

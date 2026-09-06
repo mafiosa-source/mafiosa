@@ -221,9 +221,54 @@ function AddCandidatePage() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
-        {/* Personal Section */}
+        {/* Step 1 — Passport scan (auto-fill) */}
         <Card>
-          <CardHeader><CardTitle className="text-base">Personal Information</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Step 1 · Passport Scan</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Upload the passport scan first. Enter the passport details below — they will be carried into the CV automatically.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Field label="Passport Number">
+                <Input value={passportNumber} onChange={(e) => setPassportNumber(e.target.value)} placeholder="Auto-fill from scan" />
+              </Field>
+              <Field label="Issue Date">
+                <Input type="date" value={passportIssueDate} onChange={(e) => setPassportIssueDate(e.target.value)} />
+              </Field>
+              <Field label="Expiry Date">
+                <Input type="date" value={passportExpiryDate} onChange={(e) => setPassportExpiryDate(e.target.value)} />
+              </Field>
+            </div>
+            <div className="space-y-2">
+              <Label>Passport Scan (PDF/Image)</Label>
+              <div className="flex items-center gap-3">
+                {passportScanUrl ? (
+                  <a href={passportScanUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline">
+                    View uploaded scan
+                  </a>
+                ) : (
+                  <span className="text-sm text-muted-foreground">No scan uploaded</span>
+                )}
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm hover:bg-accent">
+                  {uploadingPassport ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  Upload scan
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handlePassportUpload(e.target.files[0])}
+                  />
+                </label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Step 2 — Personal Section */}
+        <Card>
+          <CardHeader><CardTitle className="text-base">Step 2 · Personal Information</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             {/* Main photo */}
             <div className="space-y-2">
@@ -391,49 +436,9 @@ function AddCandidatePage() {
           </CardContent>
         </Card>
 
-        {/* Passport Section */}
+        {/* Step 3 — Assignment Section */}
         <Card>
-          <CardHeader><CardTitle className="text-base">Passport Details</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Field label="Passport Number">
-                <Input value={passportNumber} onChange={(e) => setPassportNumber(e.target.value)} />
-              </Field>
-              <Field label="Issue Date">
-                <Input type="date" value={passportIssueDate} onChange={(e) => setPassportIssueDate(e.target.value)} />
-              </Field>
-              <Field label="Expiry Date">
-                <Input type="date" value={passportExpiryDate} onChange={(e) => setPassportExpiryDate(e.target.value)} />
-              </Field>
-            </div>
-            <div className="space-y-2">
-              <Label>Passport Scan (PDF/Image)</Label>
-              <div className="flex items-center gap-3">
-                {passportScanUrl ? (
-                  <a href={passportScanUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline">
-                    View uploaded scan
-                  </a>
-                ) : (
-                  <span className="text-sm text-muted-foreground">No scan uploaded</span>
-                )}
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm hover:bg-accent">
-                  {uploadingPassport ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                  Upload scan
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,application/pdf"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handlePassportUpload(e.target.files[0])}
-                  />
-                </label>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Assignment Section */}
-        <Card>
-          <CardHeader><CardTitle className="text-base">Assignment</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Step 3 · Assignment</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Agent *">
