@@ -85,7 +85,7 @@ export function countryArabicName(code: string): string {
 }
 
 export function candidateSerialCode(candidate: Pick<Candidate, "countryCode" | "candidateCode">): string {
-  const sequence = candidate.candidateCode.match(/(\\d{1,})$/)?.[1] ?? "001";
+  const sequence = candidate.candidateCode.match(/(\d+)$/)?.[1] ?? "001";
   return `${candidate.countryCode.toUpperCase()}-${sequence.padStart(3, "0")}`;
 }
 

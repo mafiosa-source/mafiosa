@@ -43,7 +43,7 @@ const LETTERHEADS: Letterhead[] = [
 ];
 
 function CandidateCVPage() {
-  const { id } = useParams({ from: "/workers/$id/cv" });
+  const { id } = useParams({ from: "/workers_/$id/cv" });
   const [candidate, setCandidate] = useState<Candidate | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [companyId, setCompanyId] = useState("fast");

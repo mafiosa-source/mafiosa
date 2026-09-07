@@ -36,7 +36,7 @@ import {
 } from "@/lib/cv-management";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/workers_new")({
+export const Route = createFileRoute("/workers_/new")({
   head: () => ({
     meta: [
       { title: "Add Candidate · Alhakeem Group ERP" },
