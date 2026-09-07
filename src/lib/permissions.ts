@@ -46,7 +46,7 @@ export const MODULE_LABEL: Record<string, string> = MODULES.reduce(
 );
 
 /** Route path → module that guards it. Longest prefix wins. */
-const ROUTE_MODULES: { prefix: string; module: ModuleKey | "admin" }[] = [
+const ROUTE_MODULES: { prefix: string; module: ModuleKey }[] = [
   { prefix: "/transactions", module: "transactions" },
   { prefix: "/petty-cash", module: "petty-cash" },
   { prefix: "/du-monde", module: "du-monde" },

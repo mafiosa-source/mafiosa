@@ -27,12 +27,12 @@ import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as TransfersRouteImport } from './routes/transfers'
 import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as WorkersRouteImport } from './routes/workers'
+import { Route as Workers_newRouteImport } from './routes/workers_new'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
 import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
-import { Route as WorkersNewRouteImport } from './routes/workers_.new'
 import { Route as MonthsYearMonthRouteImport } from './routes/months_.$year.$month'
 import { Route as WorkersIdCvRouteImport } from './routes/workers_.$id.cv'
 
@@ -126,6 +126,11 @@ const WorkersRoute = WorkersRouteImport.update({
   path: '/workers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Workers_newRoute = Workers_newRouteImport.update({
+  id: '/workers_new',
+  path: '/workers_new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminActivityRoute = AdminActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
@@ -149,11 +154,6 @@ const SalariesNameRoute = SalariesNameRouteImport.update({
 const TransactionsIdRoute = TransactionsIdRouteImport.update({
   id: '/transactions_/$id',
   path: '/transactions/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WorkersNewRoute = WorkersNewRouteImport.update({
-  id: '/workers_/new',
-  path: '/workers/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MonthsYearMonthRoute = MonthsYearMonthRouteImport.update({
@@ -186,12 +186,12 @@ export interface FileRoutesByFullPath {
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
   '/workers': typeof WorkersRoute
+  '/workers_new': typeof Workers_newRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
-  '/workers/new': typeof WorkersNewRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
 }
@@ -214,12 +214,12 @@ export interface FileRoutesByTo {
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
   '/workers': typeof WorkersRoute
+  '/workers_new': typeof Workers_newRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
-  '/workers/new': typeof WorkersNewRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
 }
@@ -243,12 +243,12 @@ export interface FileRoutesById {
   '/transfers': typeof TransfersRoute
   '/vouchers': typeof VouchersRoute
   '/workers': typeof WorkersRoute
+  '/workers_new': typeof Workers_newRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/salaries_/$name': typeof SalariesNameRoute
   '/transactions_/$id': typeof TransactionsIdRoute
-  '/workers_/new': typeof WorkersNewRoute
   '/months_/$year/$month': typeof MonthsYearMonthRoute
   '/workers_/$id/cv': typeof WorkersIdCvRoute
 }
@@ -273,12 +273,12 @@ export interface FileRouteTypes {
     | '/transfers'
     | '/vouchers'
     | '/workers'
+    | '/workers_new'
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
     | '/salaries/$name'
     | '/transactions/$id'
-    | '/workers/new'
     | '/months/$year/$month'
     | '/workers/$id/cv'
   fileRoutesByTo: FileRoutesByTo
@@ -301,12 +301,12 @@ export interface FileRouteTypes {
     | '/transfers'
     | '/vouchers'
     | '/workers'
+    | '/workers_new'
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
     | '/salaries/$name'
     | '/transactions/$id'
-    | '/workers/new'
     | '/months/$year/$month'
     | '/workers/$id/cv'
   id:
@@ -329,12 +329,12 @@ export interface FileRouteTypes {
     | '/transfers'
     | '/vouchers'
     | '/workers'
+    | '/workers_new'
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
     | '/salaries_/$name'
     | '/transactions_/$id'
-    | '/workers_/new'
     | '/months_/$year/$month'
     | '/workers_/$id/cv'
   fileRoutesById: FileRoutesById
@@ -358,10 +358,10 @@ export interface RootRouteChildren {
   TransfersRoute: typeof TransfersRoute
   VouchersRoute: typeof VouchersRoute
   WorkersRoute: typeof WorkersRoute
+  Workers_newRoute: typeof Workers_newRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
   SalariesNameRoute: typeof SalariesNameRoute
   TransactionsIdRoute: typeof TransactionsIdRoute
-  WorkersNewRoute: typeof WorkersNewRoute
   MonthsYearMonthRoute: typeof MonthsYearMonthRoute
   WorkersIdCvRoute: typeof WorkersIdCvRoute
 }
@@ -494,6 +494,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workers_new': {
+      id: '/workers_new'
+      path: '/workers_new'
+      fullPath: '/workers_new'
+      preLoaderRoute: typeof Workers_newRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/activity': {
       id: '/admin/activity'
       path: '/activity'
@@ -527,13 +534,6 @@ declare module '@tanstack/react-router' {
       path: '/transactions/$id'
       fullPath: '/transactions/$id'
       preLoaderRoute: typeof TransactionsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/workers_/new': {
-      id: '/workers_/new'
-      path: '/workers/new'
-      fullPath: '/workers/new'
-      preLoaderRoute: typeof WorkersNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/months_/$year/$month': {
@@ -584,10 +584,10 @@ const rootRouteChildren: RootRouteChildren = {
   TransfersRoute: TransfersRoute,
   VouchersRoute: VouchersRoute,
   WorkersRoute: WorkersRoute,
+  Workers_newRoute: Workers_newRoute,
   HousemaidNameRoute: HousemaidNameRoute,
   SalariesNameRoute: SalariesNameRoute,
   TransactionsIdRoute: TransactionsIdRoute,
-  WorkersNewRoute: WorkersNewRoute,
   MonthsYearMonthRoute: MonthsYearMonthRoute,
   WorkersIdCvRoute: WorkersIdCvRoute,
 }

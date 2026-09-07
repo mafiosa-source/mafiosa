@@ -22,13 +22,6 @@
       "when": 1788591467700,
       "tag": "0002_create_candidate_profiles_and_secure_app_users",
       "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1788769775962,
-      "tag": "0003_candidate_management_tables",
-      "breakpoints": true
     }
   ]
 }
