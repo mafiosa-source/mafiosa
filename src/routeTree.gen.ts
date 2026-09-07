@@ -9,111 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AgentsRouteImport } from './routes/agents'
-import { Route as CandidatesRouteImport } from './routes/candidates'
-import { Route as CardsRouteImport } from './routes/cards'
-import { Route as DuMondeRouteImport } from './routes/du-monde'
-import { Route as FuelRouteImport } from './routes/fuel'
-import { Route as HoldingWalletRouteImport } from './routes/holding-wallet'
-import { Route as MonthsRouteImport } from './routes/months'
-import { Route as PettyCashRouteImport } from './routes/petty-cash'
-import { Route as ReconciliationRouteImport } from './routes/reconciliation'
-import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as SalariesRouteImport } from './routes/salaries'
-import { Route as SponsorsRouteImport } from './routes/sponsors'
-import { Route as TransactionsRouteImport } from './routes/transactions'
-import { Route as TransfersRouteImport } from './routes/transfers'
-import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as WorkersRouteImport } from './routes/workers'
-import { Route as AdminActivityRouteImport } from './routes/admin.activity'
-import { Route as AdminUsersRouteImport } from './routes/admin.users'
-import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
-import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
-import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
+import { Route as VouchersRouteImport } from './routes/vouchers'
+import { Route as TransfersRouteImport } from './routes/transfers'
+import { Route as TransactionsRouteImport } from './routes/transactions'
+import { Route as SponsorsRouteImport } from './routes/sponsors'
+import { Route as SalariesRouteImport } from './routes/salaries'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ReconciliationRouteImport } from './routes/reconciliation'
+import { Route as PettyCashRouteImport } from './routes/petty-cash'
+import { Route as MonthsRouteImport } from './routes/months'
+import { Route as HoldingWalletRouteImport } from './routes/holding-wallet'
+import { Route as FuelRouteImport } from './routes/fuel'
+import { Route as DuMondeRouteImport } from './routes/du-monde'
+import { Route as CardsRouteImport } from './routes/cards'
+import { Route as CandidatesRouteImport } from './routes/candidates'
+import { Route as AgentsRouteImport } from './routes/agents'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkersNewRouteImport } from './routes/workers_.new'
-import { Route as MonthsYearMonthRouteImport } from './routes/months_.$year.$month'
+import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
+import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
+import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminActivityRouteImport } from './routes/admin.activity'
 import { Route as WorkersIdCvRouteImport } from './routes/workers_.$id.cv'
+import { Route as MonthsYearMonthRouteImport } from './routes/months_.$year.$month'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgentsRoute = AgentsRouteImport.update({
-  id: '/agents',
-  path: '/agents',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CandidatesRoute = CandidatesRouteImport.update({
-  id: '/candidates',
-  path: '/candidates',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CardsRoute = CardsRouteImport.update({
-  id: '/cards',
-  path: '/cards',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DuMondeRoute = DuMondeRouteImport.update({
-  id: '/du-monde',
-  path: '/du-monde',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FuelRoute = FuelRouteImport.update({
-  id: '/fuel',
-  path: '/fuel',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HoldingWalletRoute = HoldingWalletRouteImport.update({
-  id: '/holding-wallet',
-  path: '/holding-wallet',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MonthsRoute = MonthsRouteImport.update({
-  id: '/months',
-  path: '/months',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PettyCashRoute = PettyCashRouteImport.update({
-  id: '/petty-cash',
-  path: '/petty-cash',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReconciliationRoute = ReconciliationRouteImport.update({
-  id: '/reconciliation',
-  path: '/reconciliation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReportsRoute = ReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SalariesRoute = SalariesRouteImport.update({
-  id: '/salaries',
-  path: '/salaries',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SponsorsRoute = SponsorsRouteImport.update({
-  id: '/sponsors',
-  path: '/sponsors',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TransactionsRoute = TransactionsRouteImport.update({
-  id: '/transactions',
-  path: '/transactions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TransfersRoute = TransfersRouteImport.update({
-  id: '/transfers',
-  path: '/transfers',
+const WorkersRoute = WorkersRouteImport.update({
+  id: '/workers',
+  path: '/workers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VouchersRoute = VouchersRouteImport.update({
@@ -121,34 +46,84 @@ const VouchersRoute = VouchersRouteImport.update({
   path: '/vouchers',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WorkersRoute = WorkersRouteImport.update({
-  id: '/workers',
-  path: '/workers',
+const TransfersRoute = TransfersRouteImport.update({
+  id: '/transfers',
+  path: '/transfers',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminActivityRoute = AdminActivityRouteImport.update({
-  id: '/activity',
-  path: '/activity',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
-} as any)
-const HousemaidNameRoute = HousemaidNameRouteImport.update({
-  id: '/housemaid/$name',
-  path: '/housemaid/$name',
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SalariesNameRoute = SalariesNameRouteImport.update({
-  id: '/salaries_/$name',
-  path: '/salaries/$name',
+const SponsorsRoute = SponsorsRouteImport.update({
+  id: '/sponsors',
+  path: '/sponsors',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TransactionsIdRoute = TransactionsIdRouteImport.update({
-  id: '/transactions_/$id',
-  path: '/transactions/$id',
+const SalariesRoute = SalariesRouteImport.update({
+  id: '/salaries',
+  path: '/salaries',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReconciliationRoute = ReconciliationRouteImport.update({
+  id: '/reconciliation',
+  path: '/reconciliation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PettyCashRoute = PettyCashRouteImport.update({
+  id: '/petty-cash',
+  path: '/petty-cash',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonthsRoute = MonthsRouteImport.update({
+  id: '/months',
+  path: '/months',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HoldingWalletRoute = HoldingWalletRouteImport.update({
+  id: '/holding-wallet',
+  path: '/holding-wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FuelRoute = FuelRouteImport.update({
+  id: '/fuel',
+  path: '/fuel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DuMondeRoute = DuMondeRouteImport.update({
+  id: '/du-monde',
+  path: '/du-monde',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CardsRoute = CardsRouteImport.update({
+  id: '/cards',
+  path: '/cards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidatesRoute = CandidatesRouteImport.update({
+  id: '/candidates',
+  path: '/candidates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsRoute = AgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkersNewRoute = WorkersNewRouteImport.update({
@@ -156,14 +131,39 @@ const WorkersNewRoute = WorkersNewRouteImport.update({
   path: '/workers/new',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MonthsYearMonthRoute = MonthsYearMonthRouteImport.update({
-  id: '/months_/$year/$month',
-  path: '/months/$year/$month',
+const TransactionsIdRoute = TransactionsIdRouteImport.update({
+  id: '/transactions_/$id',
+  path: '/transactions/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SalariesNameRoute = SalariesNameRouteImport.update({
+  id: '/salaries_/$name',
+  path: '/salaries/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HousemaidNameRoute = HousemaidNameRouteImport.update({
+  id: '/housemaid/$name',
+  path: '/housemaid/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminActivityRoute = AdminActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AdminRoute,
 } as any)
 const WorkersIdCvRoute = WorkersIdCvRouteImport.update({
   id: '/workers_/$id/cv',
   path: '/workers/$id/cv',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonthsYearMonthRoute = MonthsYearMonthRouteImport.update({
+  id: '/months_/$year/$month',
+  path: '/months/$year/$month',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -368,116 +368,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agents': {
-      id: '/agents'
-      path: '/agents'
-      fullPath: '/agents'
-      preLoaderRoute: typeof AgentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/candidates': {
-      id: '/candidates'
-      path: '/candidates'
-      fullPath: '/candidates'
-      preLoaderRoute: typeof CandidatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cards': {
-      id: '/cards'
-      path: '/cards'
-      fullPath: '/cards'
-      preLoaderRoute: typeof CardsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/du-monde': {
-      id: '/du-monde'
-      path: '/du-monde'
-      fullPath: '/du-monde'
-      preLoaderRoute: typeof DuMondeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/fuel': {
-      id: '/fuel'
-      path: '/fuel'
-      fullPath: '/fuel'
-      preLoaderRoute: typeof FuelRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/holding-wallet': {
-      id: '/holding-wallet'
-      path: '/holding-wallet'
-      fullPath: '/holding-wallet'
-      preLoaderRoute: typeof HoldingWalletRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/months': {
-      id: '/months'
-      path: '/months'
-      fullPath: '/months'
-      preLoaderRoute: typeof MonthsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/petty-cash': {
-      id: '/petty-cash'
-      path: '/petty-cash'
-      fullPath: '/petty-cash'
-      preLoaderRoute: typeof PettyCashRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reconciliation': {
-      id: '/reconciliation'
-      path: '/reconciliation'
-      fullPath: '/reconciliation'
-      preLoaderRoute: typeof ReconciliationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reports': {
-      id: '/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof ReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/salaries': {
-      id: '/salaries'
-      path: '/salaries'
-      fullPath: '/salaries'
-      preLoaderRoute: typeof SalariesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sponsors': {
-      id: '/sponsors'
-      path: '/sponsors'
-      fullPath: '/sponsors'
-      preLoaderRoute: typeof SponsorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/transactions': {
-      id: '/transactions'
-      path: '/transactions'
-      fullPath: '/transactions'
-      preLoaderRoute: typeof TransactionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/transfers': {
-      id: '/transfers'
-      path: '/transfers'
-      fullPath: '/transfers'
-      preLoaderRoute: typeof TransfersRouteImport
+    '/workers': {
+      id: '/workers'
+      path: '/workers'
+      fullPath: '/workers'
+      preLoaderRoute: typeof WorkersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/vouchers': {
@@ -487,46 +382,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VouchersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/workers': {
-      id: '/workers'
-      path: '/workers'
-      fullPath: '/workers'
-      preLoaderRoute: typeof WorkersRouteImport
+    '/transfers': {
+      id: '/transfers'
+      path: '/transfers'
+      fullPath: '/transfers'
+      preLoaderRoute: typeof TransfersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/activity': {
-      id: '/admin/activity'
-      path: '/activity'
-      fullPath: '/admin/activity'
-      preLoaderRoute: typeof AdminActivityRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/housemaid/$name': {
-      id: '/housemaid/$name'
-      path: '/housemaid/$name'
-      fullPath: '/housemaid/$name'
-      preLoaderRoute: typeof HousemaidNameRouteImport
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/salaries_/$name': {
-      id: '/salaries_/$name'
-      path: '/salaries/$name'
-      fullPath: '/salaries/$name'
-      preLoaderRoute: typeof SalariesNameRouteImport
+    '/sponsors': {
+      id: '/sponsors'
+      path: '/sponsors'
+      fullPath: '/sponsors'
+      preLoaderRoute: typeof SponsorsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/transactions_/$id': {
-      id: '/transactions_/$id'
-      path: '/transactions/$id'
-      fullPath: '/transactions/$id'
-      preLoaderRoute: typeof TransactionsIdRouteImport
+    '/salaries': {
+      id: '/salaries'
+      path: '/salaries'
+      fullPath: '/salaries'
+      preLoaderRoute: typeof SalariesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reconciliation': {
+      id: '/reconciliation'
+      path: '/reconciliation'
+      fullPath: '/reconciliation'
+      preLoaderRoute: typeof ReconciliationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/petty-cash': {
+      id: '/petty-cash'
+      path: '/petty-cash'
+      fullPath: '/petty-cash'
+      preLoaderRoute: typeof PettyCashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/months': {
+      id: '/months'
+      path: '/months'
+      fullPath: '/months'
+      preLoaderRoute: typeof MonthsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/holding-wallet': {
+      id: '/holding-wallet'
+      path: '/holding-wallet'
+      fullPath: '/holding-wallet'
+      preLoaderRoute: typeof HoldingWalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fuel': {
+      id: '/fuel'
+      path: '/fuel'
+      fullPath: '/fuel'
+      preLoaderRoute: typeof FuelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/du-monde': {
+      id: '/du-monde'
+      path: '/du-monde'
+      fullPath: '/du-monde'
+      preLoaderRoute: typeof DuMondeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cards': {
+      id: '/cards'
+      path: '/cards'
+      fullPath: '/cards'
+      preLoaderRoute: typeof CardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidates': {
+      id: '/candidates'
+      path: '/candidates'
+      fullPath: '/candidates'
+      preLoaderRoute: typeof CandidatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/workers_/new': {
@@ -536,18 +501,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkersNewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/months_/$year/$month': {
-      id: '/months_/$year/$month'
-      path: '/months/$year/$month'
-      fullPath: '/months/$year/$month'
-      preLoaderRoute: typeof MonthsYearMonthRouteImport
+    '/transactions_/$id': {
+      id: '/transactions_/$id'
+      path: '/transactions/$id'
+      fullPath: '/transactions/$id'
+      preLoaderRoute: typeof TransactionsIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/salaries_/$name': {
+      id: '/salaries_/$name'
+      path: '/salaries/$name'
+      fullPath: '/salaries/$name'
+      preLoaderRoute: typeof SalariesNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/housemaid/$name': {
+      id: '/housemaid/$name'
+      path: '/housemaid/$name'
+      fullPath: '/housemaid/$name'
+      preLoaderRoute: typeof HousemaidNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/activity': {
+      id: '/admin/activity'
+      path: '/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AdminActivityRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/workers_/$id/cv': {
       id: '/workers_/$id/cv'
       path: '/workers/$id/cv'
       fullPath: '/workers/$id/cv'
       preLoaderRoute: typeof WorkersIdCvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/months_/$year/$month': {
+      id: '/months_/$year/$month'
+      path: '/months/$year/$month'
+      fullPath: '/months/$year/$month'
+      preLoaderRoute: typeof MonthsYearMonthRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
