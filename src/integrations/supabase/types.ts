@@ -276,11 +276,13 @@ export type Database = {
       }
       candidates: {
         Row: {
+          address: string | null
           age: number | null
           agent_id: string | null
           availability_status: string
           candidate_code: string | null
           children_count: number
+          contact_number: string | null
           country_code: string
           created_at: string
           date_of_birth: string | null
@@ -292,6 +294,7 @@ export type Database = {
           id: string
           languages: string[]
           marital_status: string | null
+          monthly_salary: string | null
           nationality: string
           notes: string | null
           passport_expiry_date: string | null
@@ -299,19 +302,23 @@ export type Database = {
           passport_number: string | null
           passport_scan_url: string | null
           photo_url: string
+          place_of_birth: string | null
           position: string
           religion: string | null
+          remarks: string | null
           skills: string[]
           status: string
           uploaded_by_user_id: string
           weight: string | null
         }
         Insert: {
+          address?: string | null
           age?: number | null
           agent_id?: string | null
           availability_status?: string
           candidate_code?: string | null
           children_count?: number
+          contact_number?: string | null
           country_code: string
           created_at?: string
           date_of_birth?: string | null
@@ -323,6 +330,7 @@ export type Database = {
           id?: string
           languages?: string[]
           marital_status?: string | null
+          monthly_salary?: string | null
           nationality: string
           notes?: string | null
           passport_expiry_date?: string | null
@@ -330,19 +338,23 @@ export type Database = {
           passport_number?: string | null
           passport_scan_url?: string | null
           photo_url: string
+          place_of_birth?: string | null
           position?: string
           religion?: string | null
+          remarks?: string | null
           skills?: string[]
           status?: string
           uploaded_by_user_id?: string
           weight?: string | null
         }
         Update: {
+          address?: string | null
           age?: number | null
           agent_id?: string | null
           availability_status?: string
           candidate_code?: string | null
           children_count?: number
+          contact_number?: string | null
           country_code?: string
           created_at?: string
           date_of_birth?: string | null
@@ -354,6 +366,7 @@ export type Database = {
           id?: string
           languages?: string[]
           marital_status?: string | null
+          monthly_salary?: string | null
           nationality?: string
           notes?: string | null
           passport_expiry_date?: string | null
@@ -361,8 +374,10 @@ export type Database = {
           passport_number?: string | null
           passport_scan_url?: string | null
           photo_url?: string
+          place_of_birth?: string | null
           position?: string
           religion?: string | null
+          remarks?: string | null
           skills?: string[]
           status?: string
           uploaded_by_user_id?: string
