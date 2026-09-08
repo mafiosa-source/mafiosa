@@ -29,6 +29,13 @@
       "when": 1788849049341,
       "tag": "0003_candidate_cv_extra_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788849963496,
+      "tag": "0004_tighten_security_policies_and_function_grants",
+      "breakpoints": true
     }
   ]
 }
