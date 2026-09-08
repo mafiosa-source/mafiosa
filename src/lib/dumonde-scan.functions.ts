@@ -14,6 +14,8 @@ export type ScannedLine = {
   unit?: string;
   unitCost?: number;
   unitPrice?: number;
+  cashQty?: number;
+  cardQty?: number;
   total?: number;
   date?: string;
   description?: string;
@@ -38,8 +40,10 @@ Rules: name uppercase; availableQty is the available/stock/on-hand quantity colu
 Capture every line exactly as written, including lines where the order quantity is blank or zero.
 Omit any key you cannot read. No markdown fences, no explanation.`,
   sales: `You read daily catering sales sheets.
-Return ONLY JSON: {"date":"YYYY-MM-DD","location":"","lines":[{"name":"","qty":0,"unitPrice":0,"total":0}]}
-Rules: one line per item sold; unitPrice is selling price per unit; total is the line total.
+These sheets have TWO quantity columns: CASH SALES (quantity paid in cash) and CARD PAYMENTS (quantity paid by card).
+Return ONLY JSON: {"date":"YYYY-MM-DD","location":"","lines":[{"name":"","cashQty":0,"cardQty":0,"qty":0,"unitPrice":0,"total":0}]}
+Rules: one line per item sold; cashQty is the cash sales column; cardQty is the card payments column; qty is the combined quantity (cashQty + cardQty, or the sheet's own total column when printed); unitPrice is selling price per unit; total is the line total.
+Capture every line exactly as written, including lines where one of the two quantity columns is blank or zero.
 Omit any key you cannot read. No markdown fences, no explanation.`,
   bank: `You read bank statements (PDF, spreadsheet export or photo).
 Return ONLY JSON: {"label":"account or bank name","fromDate":"YYYY-MM-DD","toDate":"YYYY-MM-DD","lines":[{"date":"YYYY-MM-DD","description":"","direction":"in","amount":0}]}
@@ -103,6 +107,8 @@ export const scanDuMondeDocument = createServerFn({ method: "POST" })
           unit: str(l["unit"]),
           unitCost: nbr(l["unitCost"]),
           unitPrice: nbr(l["unitPrice"]),
+          cashQty: nbr(l["cashQty"]),
+          cardQty: nbr(l["cardQty"]),
           total: nbr(l["total"]),
           date: str(l["date"]),
           description: str(l["description"]),
