@@ -9,7 +9,8 @@
 // ============================================================
 import type { Candidate, Agent } from "@/lib/cv-management";
 import type { Transaction } from "@/lib/finance-types";
-import { flowFor, housemaidKeyOf, type StatusCode } from "@/lib/recruitment";
+import { flowFor, type StatusCode } from "@/lib/recruitment";
+import { housemaidKey as housemaidKeyOf } from "@/lib/finance-store";
 import type { RecruitmentRequest } from "@/lib/recruitment-requests";
 
 export type HalfState = "Not due" | "Due" | "Paid" | "Partial";
