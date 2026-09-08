@@ -26,15 +26,16 @@ import {
   inPeriod,
   saveLpo,
   saveSale,
+  findDmItem,
   uploadDuMondeFile,
   useDuMonde,
   type DmLpo,
   type DmSale,
 } from "@/lib/dumonde-ops";
 
-type Row = { name: string; available?: number; qty: number; cash?: number; card?: number; unit?: string; price: number; total: number };
+type Row = { code?: string; name: string; available?: number; qty: number; cash?: number; card?: number; unit?: string; price: number; total: number };
 
-const emptyRow = (): Row => ({ name: "", available: 0, qty: 1, cash: 0, card: 0, unit: "", price: 0, total: 0 });
+const emptyRow = (): Row => ({ code: "", name: "", available: 0, qty: 1, cash: 0, card: 0, unit: "", price: 0, total: 0 });
 const today = () => new Date().toISOString().slice(0, 10);
 
 export function ItemSheetSection({
@@ -89,7 +90,7 @@ export function ItemSheetSection({
         ? rec.items.map((i) =>
             "unitCost" in i
               ? { name: i.name, available: i.availableQty ?? 0, qty: i.qty, unit: i.unit ?? "", price: i.unitCost, total: i.total }
-              : { name: i.name, qty: i.qty, cash: i.cashQty ?? 0, card: i.cardQty ?? 0, unit: "", price: i.unitPrice, total: i.total },
+              : { code: i.itemCode ?? "", name: i.name, qty: i.qty, cash: i.cashQty ?? 0, card: i.cardQty ?? 0, unit: "", price: i.unitPrice, total: i.total },
           )
         : [emptyRow()],
     );
@@ -107,6 +108,12 @@ export function ItemSheetSection({
         return next;
       }),
     );
+
+  const applyCode = (idx: number, raw: string) => {
+    const code = raw.toUpperCase();
+    const item = findDmItem(s, code);
+    setRow(idx, item ? { code, name: item.name, price: item.price } : { code });
+  };
 
   const submit = async () => {
     const clean = rows.filter((r) => r.name.trim());
@@ -143,6 +150,7 @@ export function ItemSheetSection({
             attachmentUrl,
             items: clean.map((r) => ({
               name: r.name.trim(),
+              itemCode: r.code?.trim().toUpperCase() || undefined,
               qty: r.qty,
               cashQty: r.cash ?? 0,
               cardQty: r.card ?? 0,
@@ -231,8 +239,11 @@ export function ItemSheetSection({
                       const cash = l.cashQty ?? 0;
                       const card = l.cardQty ?? 0;
                       const qty = isLpo ? (l.qty ?? 1) : cash + card || l.qty || 0;
-                      const price = (isLpo ? l.unitCost : l.unitPrice) ?? (l.total && qty ? l.total / qty : 0);
+                      let price = (isLpo ? l.unitCost : l.unitPrice) ?? (l.total && qty ? l.total / qty : 0);
+                      const match = isLpo ? undefined : findDmItem(s, undefined, l.name ?? "");
+                      if (!isLpo && match && !price) price = match.price;
                       return {
+                        code: match?.code ?? "",
                         name: (l.name ?? "").toUpperCase(),
                         available: l.availableQty ?? 0,
                         qty,
@@ -249,10 +260,22 @@ export function ItemSheetSection({
               {file ? <span className="text-xs text-muted-foreground">{file.name}</span> : null}
             </div>
 
+            <datalist id={`${mode}-codes`}>
+              {s.items.map((i) => (
+                <option key={i.id} value={i.code}>{`${i.code} – ${i.name}`}</option>
+              ))}
+            </datalist>
+            <datalist id={`${mode}-names`}>
+              {s.items.map((i) => (
+                <option key={i.id} value={i.name} />
+              ))}
+            </datalist>
+
             <div className="rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
+                    {!isLpo ? <TableHead className="w-24">Code</TableHead> : null}
                     <TableHead>Item</TableHead>
                     {isLpo ? <TableHead className="w-24">Available qty</TableHead> : null}
                     {!isLpo ? <TableHead className="w-24">Cash sales</TableHead> : null}
@@ -267,11 +290,23 @@ export function ItemSheetSection({
                 <TableBody>
                   {rows.map((r, i) => (
                     <TableRow key={i}>
+                      {!isLpo ? (
+                        <TableCell>
+                          <Input
+                            value={r.code ?? ""}
+                            onChange={(e) => applyCode(i, e.target.value)}
+                            placeholder="H100"
+                            list={`${mode}-codes`}
+                            className="h-8 uppercase"
+                          />
+                        </TableCell>
+                      ) : null}
                       <TableCell>
                         <Input
                           value={r.name}
                           onChange={(e) => setRow(i, { name: e.target.value })}
                           placeholder="Item name"
+                          list={`${mode}-names`}
                           className="h-8"
                         />
                       </TableCell>

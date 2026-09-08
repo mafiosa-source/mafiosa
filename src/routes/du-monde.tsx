@@ -11,6 +11,8 @@ import { OpsDashboard } from "@/components/dumonde/OpsDashboard";
 import { ItemSheetSection } from "@/components/dumonde/ItemSheetSection";
 import { ExpensesSection } from "@/components/dumonde/ExpensesSection";
 import { BankSection } from "@/components/dumonde/BankSection";
+import { ItemCatalogSection } from "@/components/dumonde/ItemCatalogSection";
+import { SalesPriceReport } from "@/components/dumonde/SalesPriceReport";
 import { Plus } from "lucide-react";
 import { useFinance, walletBalance, setOpeningBalance } from "@/lib/finance-store";
 import { walletLedger } from "@/lib/finance-derived";
@@ -71,6 +73,8 @@ function DuMonde() {
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="lpo">LPO</TabsTrigger>
           <TabsTrigger value="sales">Sales</TabsTrigger>
+          <TabsTrigger value="price-check">Sales price check</TabsTrigger>
+          <TabsTrigger value="items">Item codes &amp; prices</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
           <TabsTrigger value="bank">Bank statements</TabsTrigger>
           <TabsTrigger value="petty">Petty cash</TabsTrigger>
@@ -84,6 +88,12 @@ function DuMonde() {
         </TabsContent>
         <TabsContent value="sales">
           <ItemSheetSection mode="sales" from={period.from || undefined} to={period.to || undefined} />
+        </TabsContent>
+        <TabsContent value="price-check">
+          <SalesPriceReport from={period.from || undefined} to={period.to || undefined} />
+        </TabsContent>
+        <TabsContent value="items">
+          <ItemCatalogSection />
         </TabsContent>
         <TabsContent value="expenses">
           <ExpensesSection from={period.from || undefined} to={period.to || undefined} />
