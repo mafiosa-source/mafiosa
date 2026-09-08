@@ -33,6 +33,7 @@ import { Route as WorkersNewRouteImport } from './routes/workers_.new'
 import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
 import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
 import { Route as RecruitmentSponsorsRouteImport } from './routes/recruitment.sponsors'
+import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
@@ -159,6 +160,11 @@ const RecruitmentSponsorsRoute = RecruitmentSponsorsRouteImport.update({
   path: '/recruitment/sponsors',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecruitmentIdRoute = RecruitmentIdRouteImport.update({
+  id: '/recruitment/$id',
+  path: '/recruitment/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HousemaidNameRoute = HousemaidNameRouteImport.update({
   id: '/housemaid/$name',
   path: '/housemaid/$name',
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
+  '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
+  '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
+  '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries_/$name': typeof SalariesNameRoute
   '/transactions_/$id': typeof TransactionsIdRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
+    | '/recruitment/$id'
     | '/recruitment/sponsors'
     | '/salaries/$name'
     | '/transactions/$id'
@@ -332,6 +342,7 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
+    | '/recruitment/$id'
     | '/recruitment/sponsors'
     | '/salaries/$name'
     | '/transactions/$id'
@@ -363,6 +374,7 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
+    | '/recruitment/$id'
     | '/recruitment/sponsors'
     | '/salaries_/$name'
     | '/transactions_/$id'
@@ -393,6 +405,7 @@ export interface RootRouteChildren {
   VouchersRoute: typeof VouchersRoute
   WorkersRoute: typeof WorkersRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
+  RecruitmentIdRoute: typeof RecruitmentIdRoute
   RecruitmentSponsorsRoute: typeof RecruitmentSponsorsRoute
   SalariesNameRoute: typeof SalariesNameRoute
   TransactionsIdRoute: typeof TransactionsIdRoute
@@ -572,6 +585,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecruitmentSponsorsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recruitment/$id': {
+      id: '/recruitment/$id'
+      path: '/recruitment/$id'
+      fullPath: '/recruitment/$id'
+      preLoaderRoute: typeof RecruitmentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/housemaid/$name': {
       id: '/housemaid/$name'
       path: '/housemaid/$name'
@@ -644,6 +664,7 @@ const rootRouteChildren: RootRouteChildren = {
   VouchersRoute: VouchersRoute,
   WorkersRoute: WorkersRoute,
   HousemaidNameRoute: HousemaidNameRoute,
+  RecruitmentIdRoute: RecruitmentIdRoute,
   RecruitmentSponsorsRoute: RecruitmentSponsorsRoute,
   SalariesNameRoute: SalariesNameRoute,
   TransactionsIdRoute: TransactionsIdRoute,
