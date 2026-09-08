@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Download, Loader2, Printer } from "lucide-react";
 import { toast } from "sonner";
+import brokerLetterhead from "@/assets/letterheads/broker-letterhead.png.asset.json";
+import skillLetterhead from "@/assets/letterheads/skill-letterhead.png.asset.json";
+import danetLetterhead from "@/assets/letterheads/danet-letterhead.png.asset.json";
+import fastLetterhead from "@/assets/letterheads/fast-letterhead.png.asset.json";
 import {
   agentName,
   candidateSerialCode,
@@ -30,23 +34,40 @@ export const Route = createFileRoute("/workers_/$id/cv")({
 type Letterhead = {
   id: string;
   name: string;
-  english: string;
-  arabic: string;
-  file: string;
+  imageUrl: string;
 };
 
 const LETTERHEADS: Letterhead[] = [
-  { id: "broker", name: "BROKER", english: "BROKER", arabic: "بروكر", file: "/letterheads/BROKER_HEAR_LETTER_NEW_(1).docx" },
-  { id: "skill", name: "SKILL", english: "SKILL", arabic: "سكيل", file: "/letterheads/SKILL_HEAD_LETTER_NEW_(1).docx" },
-  { id: "danet", name: "DANET AL DOHA", english: "DANET AL DOHA", arabic: "دانيت الدوحة", file: "/letterheads/DANET_AL_DOHA_HEAD_LETTER_NEW_(1).docx" },
-  { id: "fast", name: "FAST", english: "FAST", arabic: "فاست", file: "/letterheads/FAST_RECRUITMENT_LETTER_HEAD_NEW_(1).doc" },
+  { id: "broker", name: "BROKER", imageUrl: brokerLetterhead.url },
+  { id: "skill", name: "SKILL", imageUrl: skillLetterhead.url },
+  { id: "danet", name: "DANET AL DOHA", imageUrl: danetLetterhead.url },
+  { id: "fast", name: "FAST", imageUrl: fastLetterhead.url },
 ];
+
+const CV_SKILLS = [
+  ["Ironing", "كوي الملابس", "Baby Sitting", "رعاية الأطفال"],
+  ["Cooking", "الطبخ", "Children Care", "رعاية الأطفال"],
+  ["Arabic Cooking", "الطبخ العربي", "Tutoring", "تعليم الأطفال"],
+  ["Driving", "القيادة", "Cleaning", "التنظيف"],
+  ["Computer", "استخدام الكمبيوتر", "Washing", "الغسيل"],
+] as const;
+
+const hasSkill = (skills: string[], label: string) => {
+  const aliases: Record<string, string[]> = {
+    Computer: ["Computer", "Computer Skills"],
+    "Baby Sitting": ["Baby Sitting", "Babysitting"],
+    "Children Care": ["Children Care", "Childcare"],
+    Washing: ["Washing", "Laundry"],
+  };
+  const accepted = aliases[label] ?? [label];
+  return accepted.some((name) => skills.some((skill) => skill.toLowerCase() === name.toLowerCase()));
+};
 
 function CandidateCVPage() {
   const { id } = useParams({ from: "/workers/$id/cv" });
   const [candidate, setCandidate] = useState<Candidate | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [companyId, setCompanyId] = useState("fast");
+  const [companyId, setCompanyId] = useState("broker");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -74,12 +95,13 @@ function CandidateCVPage() {
   const letterhead = LETTERHEADS.find((item) => item.id === companyId) ?? LETTERHEADS[3];
   const country = countryName(candidate.countryCode).toUpperCase();
   const arabicCountry = countryArabicName(candidate.countryCode);
-  const agent = agentName(agents, candidate.agentId);
   const serial = candidateSerialCode(candidate);
   const age = candidate.age == null ? "—" : String(candidate.age);
-  const languages = candidate.languages.join(" / ") || "—";
   const education = candidate.education || "—";
   const photo = candidate.photoUrl || candidate.galleryUrls[0];
+  const english = candidate.languages.some((language) => language.toLowerCase() === "english") ? "YES" : "NO";
+  const arabic = candidate.languages.some((language) => language.toLowerCase() === "arabic") ? "YES" : "NO";
+  const experiencePeriod = candidate.experienceYears ? `${candidate.experienceYears} YEARS` : "—";
 
   return (
     <AppLayout>
@@ -98,103 +120,111 @@ function CandidateCVPage() {
 
       <div className="okunade-page mx-auto bg-white text-black">
         <div className="okunade-letterhead">
-          <div className="brand-mark">{letterhead.id === "fast" ? "FAST" : letterhead.english}</div>
-          <div className="brand-rule" />
-          <div className="brand-arabic">{letterhead.arabic}</div>
-          <div className="brand-subtitle">{letterhead.id === "fast" ? "RECRUITMENT AGENCY" : "RECRUITMENT AGENCY"}</div>
-          <div className="brand-arabic-subtitle">لجلب الأيدي العاملة</div>
-          <div className="letterhead-file" aria-hidden="true">{letterhead.file}</div>
+          <img src={letterhead.imageUrl} alt={`${letterhead.name} letterhead`} />
         </div>
 
         <table className="okunade-table">
+          <colgroup>
+            <col className="col-left-label" /><col className="col-left-value" /><col className="col-left-arabic" />
+            <col className="col-right-label" /><col className="col-right-value" /><col className="col-right-arabic" />
+          </colgroup>
           <tbody>
             <tr>
               <th colSpan={5} className="full-name">FULLNAME: {candidate.fullName.toUpperCase()}</th>
               <th className="serial">{serial}</th>
-              <th className="arabic-label">الاسم</th>
             </tr>
             <tr>
-              <TopCell label="Religion" arabic="الديانة" value={candidate.religion || "—"} />
-              <TopCell label="Height" arabic="الطول" value={candidate.height || "—"} />
-              <TopCell label="Weight" arabic="الوزن" value={candidate.weight || "—"} />
-              <TopCell label="Position Applied" arabic="الوظيفة" value={candidate.position.toUpperCase()} />
-              <TopCell label="Monthly Salary" arabic="الراتب الشهري" value="—" />
-              <TopCell label="Contract Period" arabic="مدة العقد" value="—" />
-              <TopCell label="Passport No." arabic="رقم جواز السفر" value={candidate.passportNumber || "—"} />
+              <LabelCell label="Religion" arabic="الديانة" value={candidate.religion || "—"} />
+              <LabelCell label="Height" arabic="الطول" value={candidate.height || "—"} />
+              <LabelCell label="Weight" arabic="الوزن" value={candidate.weight || "—"} />
+              <LabelCell label="Position Applied" arabic="الوظيفة المطلوبة" value={candidate.position.toUpperCase()} />
             </tr>
-            <tr className="photo-row">
-              <td colSpan={3} rowSpan={10} className="photo-cell">
+            <tr><td colSpan={3} className="blank-cell" /><LabelCell label="Monthly Salary" arabic="الراتب الشهري" value="—" /></tr>
+            <tr>
+              <td colSpan={3} rowSpan={14} className="photo-cell">
                 <div className="country-title"><span>{country}</span><span dir="rtl">{arabicCountry}</span></div>
-                {photo ? <img src={photo} alt={candidate.fullName} /> : <div className="empty-photo">PHOTO</div>}
+                <div className="photo-frame">
+                  {photo ? <img src={photo} alt={candidate.fullName} /> : <div className="empty-photo">PHOTO</div>}
+                </div>
               </td>
-              <TopCell label="Details of Application" arabic="" value="" heading />
-              <TopCell label="Nationality" arabic="جنسية" value={candidate.nationality.toUpperCase()} />
-              <TopCell label="Contact number" arabic="رقم التواصل" value="—" />
-              <TopCell label="Address" arabic="العنوان" value="—" />
+              <LabelCell label="Contract Period" arabic="مدة العقد" value="2 YEARS" />
             </tr>
-            <tr><Cell label="Date of Birth" arabic="تاريخ الميلاد" value={formatDate(candidate.dateOfBirth)} /><Cell label="Age" arabic="العمر" value={age} /></tr>
-            <tr><Cell label="Place of Birth" arabic="مكان الميلاد" value="—" /><Cell label="Civil Status" arabic="الحالة الاجتماعية" value={(candidate.maritalStatus || "—").toUpperCase()} /></tr>
-            <tr><Cell label="No. of Children" arabic="عدد الاولاد" value={String(candidate.childrenCount)} /><Cell label="Languages & Education" arabic="اللغة والتعليم" value="" heading /></tr>
-            <tr><Cell label="Languages" arabic="إنجليزي" value={languages} /><Cell label="Education" arabic="المستوى الدراسي" value={education.toUpperCase()} /></tr>
-            <tr><Cell label="Previous Employment Abroad" arabic="خبرة خارج البلاد" value={`${candidate.experienceYears} YEARS`} /><Cell label="Agent" arabic="الوكيل" value={agent} /></tr>
-            <tr><Cell label="Passport Issue" arabic="تاريخ الإصدار" value={formatDate(candidate.passportIssueDate)} /><Cell label="Passport Expiry" arabic="تاريخ الانتهاء" value={formatDate(candidate.passportExpiryDate)} /></tr>
-            <tr><Cell label="Serial / Old Code" arabic="الرقم" value={serial} /><Cell label="Old red code" arabic="الرمز السابق" value={candidate.candidateCode} /></tr>
-            <tr><Cell label="Skills" arabic="المهارات" value={candidate.skills.slice(0, 3).join(" / ") || "—"} /><Cell label="Status" arabic="الحالة" value={candidate.status.toUpperCase()} /></tr>
-            <tr><Cell label="Country of CV" arabic="بلد السيرة الذاتية" value={`${country} / ${arabicCountry}`} /><Cell label="Uploaded" arabic="تاريخ الإضافة" value={formatDate(candidate.createdAt.slice(0, 10))} /></tr>
-            <tr><td colSpan={7} className="section-title">Skills &amp; Experience <span dir="rtl">خبرة العمل</span></td></tr>
-            <tr className="skills-head"><th>Skill</th><th>YES / NO</th><th>المهارات</th><th>Skill</th><th>YES / NO</th><th>المهارات</th><th>—</th></tr>
-            <SkillRow left={candidate.skills[0] || "Ironing"} right={candidate.skills[1] || "Baby Sitting"} />
-            <SkillRow left={candidate.skills[2] || "Cooking"} right={candidate.skills[3] || "Children Care"} />
-            <SkillRow left={candidate.skills[4] || "Arabic Cooking"} right={candidate.skills[5] || "Tutoring"} />
-            <SkillRow left={candidate.skills[6] || "Tailor"} right={candidate.skills[7] || "Cleaning"} />
-            <SkillRow left={candidate.skills[8] || "Driving"} right={candidate.skills[9] || "Washing"} />
-            <tr><td colSpan={7} className="remarks"><strong>REMARKS</strong><br />{candidate.notes || `${candidate.fullName.toUpperCase()} HAS ${candidate.experienceYears} YEARS EXPERIENCE.`}</td></tr>
+            <tr><LabelCell label="Passport No." arabic="رقم جواز السفر" value={candidate.passportNumber || "—"} /></tr>
+            <tr><SectionCell label="Details of Application" arabic="تفاصيل الطلب" /></tr>
+            <tr><LabelCell label="Nationality" arabic="الجنسية" value={candidate.nationality.toUpperCase()} /></tr>
+            <tr><LabelCell label="Contact number" arabic="رقم الاتصال" value="—" /></tr>
+            <tr><LabelCell label="Address" arabic="العنوان" value="—" /></tr>
+            <tr><LabelCell label="Date of Birth" arabic="تاريخ الميلاد" value={formatDate(candidate.dateOfBirth).toUpperCase()} /></tr>
+            <tr><LabelCell label="Age" arabic="العمر" value={age} /></tr>
+            <tr><LabelCell label="Place of Birth" arabic="مكان الميلاد" value="—" /></tr>
+            <tr><LabelCell label="Civil Status" arabic="الحالة الاجتماعية" value={(candidate.maritalStatus || "—").toUpperCase()} /></tr>
+            <tr><LabelCell label="No. of Children" arabic="عدد الأطفال" value={candidate.childrenCount ? String(candidate.childrenCount) : "NO CHILD"} /></tr>
+            <tr><SectionCell label="Languages & Education" arabic="اللغة والتعليم" /></tr>
+            <tr><LabelCell label="English" arabic="الإنجليزية" value={english} /></tr>
+            <tr><LabelCell label="Arabic" arabic="العربية" value={arabic} /></tr>
+            <tr><LabelCell label="Educational Attainment" arabic="المستوى الدراسي" value={education.toUpperCase()} /></tr>
+            <tr><SectionCell label="Previous Employment Abroad" arabic="خبرة خارج البلاد" /></tr>
+            <tr><td className="job-head">Period</td><td className="job-head">Position</td><td className="job-head">City, Country</td></tr>
+            <tr><td className="value-cell">{experiencePeriod}</td><td className="value-cell">—</td><td className="value-cell">{candidate.nationality.toUpperCase()}</td></tr>
+            <tr><td colSpan={6} className="section-title">Skills &amp; Experience <span dir="rtl">خبرة العمل</span></td></tr>
+            {CV_SKILLS.map(([left, leftArabic, right, rightArabic]) => (
+              <SkillRow key={left} label={left} value={hasSkill(candidate.skills, left) ? "YES" : "NO"} arabic={leftArabic} rightLabel={right} rightValue={hasSkill(candidate.skills, right) ? "YES" : "NO"} rightArabic={rightArabic} />
+            ))}
+            {candidate.notes ? <tr><td colSpan={6} className="remarks"><strong>REMARKS: </strong>{candidate.notes}</td></tr> : null}
           </tbody>
         </table>
       </div>
 
       <style>{`
-        .okunade-page { width: 790px; max-width: 100%; font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 1.08; }
-        .okunade-letterhead { height: 120px; position: relative; border-bottom: 3px solid #111; overflow: hidden; }
-        .brand-mark { position: absolute; left: 34px; top: 18px; font-size: 42px; font-weight: 900; letter-spacing: -2px; }
-        .brand-rule { position: absolute; left: 333px; top: 8px; width: 150px; height: 34px; border-top: 7px solid #111; transform: skew(-32deg); }
-        .brand-arabic { position: absolute; right: 38px; top: 7px; font-size: 35px; font-weight: 900; direction: rtl; }
-        .brand-subtitle { position: absolute; left: 0; bottom: 3px; font-size: 25px; font-weight: 900; letter-spacing: -1.5px; }
-        .brand-arabic-subtitle { position: absolute; right: 0; bottom: 2px; font-size: 24px; font-weight: 900; direction: rtl; }
-        .letterhead-file { display: none; }
+        .okunade-page { width: 200mm; max-width: 100%; min-height: 287mm; padding: 0; font-family: Arial, Helvetica, sans-serif; font-size: 8.2pt; line-height: 1; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .okunade-page * { box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .okunade-letterhead { height: 31mm; display: flex; align-items: flex-start; justify-content: center; overflow: hidden; }
+        .okunade-letterhead img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center top; }
         .okunade-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .okunade-table th, .okunade-table td { border: 1px solid #111; padding: 4px 3px; height: 25px; vertical-align: middle; text-align: center; }
+        .okunade-table th, .okunade-table td { border: 0.75pt solid #111; padding: 1.2mm 1mm; height: 7mm; vertical-align: middle; text-align: center; overflow-wrap: anywhere; }
         .okunade-table th { font-weight: 700; }
-        .full-name { text-align: left !important; font-size: 15px; width: 67%; }
-        .serial { color: #e00000; font-size: 17px; width: 16%; }
-        .arabic-label { direction: rtl; width: 17%; }
-        .photo-row { height: 580px; }
-        .photo-cell { padding: 0 !important; vertical-align: top !important; width: 49%; }
-        .photo-cell img { width: 82%; height: 500px; margin: 20px auto 0; display: block; object-fit: cover; object-position: center top; }
-        .country-title { height: 76px; display: flex; align-items: center; justify-content: space-around; gap: 8px; font-family: Georgia, 'Times New Roman', serif; font-size: 36px; font-weight: 700; color: #555; white-space: nowrap; }
-        .country-title span:first-child { text-shadow: 1px 1px #ddd; }
-        .empty-photo { height: 500px; margin: 20px; display: grid; place-items: center; background: #f5f5f5; color: #777; }
-        .section-title { height: 26px !important; font-size: 14px; font-weight: 700; }
-        .section-title span { float: right; margin-right: 18%; }
-        .skills-head th { height: 26px !important; }
-        .remarks { height: 70px !important; text-align: left !important; color: #df0000; font-size: 14px; text-transform: uppercase; }
-        .remarks strong { text-decoration: underline; }
-        @media print { @page { size: A4 portrait; margin: 5mm; } body { background: white !important; } .okunade-page { width: 100%; max-width: none; } .okunade-letterhead { height: 112px; } .okunade-table { font-size: 10px; } .okunade-table th, .okunade-table td { padding: 3px 2px; } .photo-row { height: 535px; } .photo-cell img { height: 455px; } .country-title { font-size: 30px; height: 68px; } .brand-mark { font-size: 37px; } .brand-subtitle { font-size: 21px; } .brand-arabic, .brand-arabic-subtitle { font-size: 22px; } }
+        .col-left-label { width: 15.5%; } .col-left-value { width: 17%; } .col-left-arabic { width: 16.5%; }
+        .col-right-label { width: 17.5%; } .col-right-value { width: 20%; } .col-right-arabic { width: 13.5%; }
+        .full-name { text-align: left !important; font-size: 9.5pt; }
+        .serial { color: #d00000; font-size: 10.5pt; white-space: nowrap; }
+        .label-cell { font-size: 7.2pt; font-weight: 400; }
+        .value-cell { font-size: 8.8pt; font-weight: 700; }
+        .arabic-cell { direction: rtl; font-size: 7.2pt; font-weight: 700; }
+        .blank-cell { border-bottom: 0 !important; }
+        .photo-cell { height: 114mm !important; padding: 0 3mm 2mm !important; vertical-align: top !important; overflow: hidden; }
+        .country-title { height: 15mm; display: flex; align-items: center; justify-content: space-around; gap: 2mm; font-family: Georgia, 'Times New Roman', serif; font-size: 18pt; font-weight: 700; color: #555; white-space: nowrap; }
+        .photo-frame { height: 96mm; display: flex; align-items: flex-start; justify-content: center; overflow: hidden; }
+        .photo-frame img { width: 82%; height: 100%; display: block; object-fit: contain; object-position: center top; }
+        .empty-photo { width: 82%; height: 100%; display: grid; place-items: center; background: #f5f5f5; color: #777; }
+        .section-title { height: 7mm !important; font-size: 8.6pt; font-weight: 700; }
+        .section-title span { float: right; margin-right: 16%; }
+        .job-head { height: 7mm !important; font-size: 7.5pt; }
+        .skills-row td { height: 7mm !important; }
+        .skill-label { font-size: 7.5pt; }
+        .skill-answer { font-size: 8.5pt; font-weight: 700; }
+        .remarks { min-height: 9mm; text-align: left !important; color: #d00000; font-size: 8pt; text-transform: uppercase; }
+        @media print {
+          @page { size: A4 portrait; margin: 5mm; }
+          html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: hidden !important; print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
+          body * { visibility: hidden; }
+          .okunade-page, .okunade-page * { visibility: visible; }
+          .okunade-page { position: fixed; inset: 0 auto auto 0; width: 200mm; max-width: none; min-height: 0; height: 287mm; overflow: hidden; break-after: avoid-page; break-inside: avoid-page; page-break-after: avoid; page-break-inside: avoid; }
+          .okunade-letterhead img { visibility: visible !important; display: block !important; }
+          .okunade-table { page-break-inside: avoid; break-inside: avoid-page; }
+        }
       `}</style>
     </AppLayout>
   );
 }
 
-function Cell({ label, arabic, value, heading = false }: { label: string; arabic: string; value: string; heading?: boolean }) {
-  if (heading) return <td colSpan={2} className="section-title">{label} <span dir="rtl">{arabic}</span></td>;
-  return <td colSpan={2}><div>{label}</div><strong>{value}</strong><small dir="rtl">{arabic}</small></td>;
+function LabelCell({ label, arabic, value }: { label: string; arabic: string; value: string }) {
+  return <><td className="label-cell">{label}</td><td className="value-cell">{value}</td><td className="arabic-cell" dir="rtl">{arabic}</td></>;
 }
 
-function TopCell({ label, arabic, value, heading = false }: { label: string; arabic: string; value: string; heading?: boolean }) {
-  if (heading) return <td className="section-title">{label} <span dir="rtl">{arabic}</span></td>;
-  return <td><div>{label}</div><strong>{value}</strong><small dir="rtl">{arabic}</small></td>;
+function SectionCell({ label, arabic }: { label: string; arabic: string }) {
+  return <td colSpan={3} className="section-title">{label}<span dir="rtl">{arabic}</span></td>;
 }
 
-function SkillRow({ left, right }: { left: string; right: string }) {
-  return <tr><td><strong>{left}</strong></td><td>YES</td><td dir="rtl">—</td><td><strong>{right}</strong></td><td>YES</td><td dir="rtl">—</td><td> </td></tr>;
+function SkillRow({ label, value, arabic, rightLabel, rightValue, rightArabic }: { label: string; value: string; arabic: string; rightLabel: string; rightValue: string; rightArabic: string }) {
+  return <tr className="skills-row"><td className="skill-label">{label}</td><td className="skill-answer">{value}</td><td className="arabic-cell" dir="rtl">{arabic}</td><td className="skill-label">{rightLabel}</td><td className="skill-answer">{rightValue}</td><td className="arabic-cell" dir="rtl">{rightArabic}</td></tr>;
 }
