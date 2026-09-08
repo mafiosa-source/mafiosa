@@ -91,6 +91,7 @@ export type Database = {
       }
       app_users: {
         Row: {
+          agent_scope: string[]
           auth_user_id: string | null
           created_at: string
           full_access: boolean
@@ -108,6 +109,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agent_scope?: string[]
           auth_user_id?: string | null
           created_at?: string
           full_access?: boolean
@@ -125,6 +127,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agent_scope?: string[]
           auth_user_id?: string | null
           created_at?: string
           full_access?: boolean

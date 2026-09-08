@@ -36,6 +36,13 @@
       "when": 1788849963496,
       "tag": "0004_tighten_security_policies_and_function_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788852007956,
+      "tag": "0005_app_users_agent_scope",
+      "breakpoints": true
     }
   ]
 }
