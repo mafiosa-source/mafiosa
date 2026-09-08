@@ -206,6 +206,8 @@ function AddCandidatePage() {
     if (!photoUrl) return toast.error("A main photo is required");
     if (!nationality) return toast.error("Nationality is required");
     if (!agentId) return toast.error("Please select an agent");
+    if (scope.length && !scope.includes(agentId))
+      return toast.error("You may only add candidates under your assigned agent");
     if (!countryCode) return toast.error("Could not determine country code");
 
     setSaving(true);
