@@ -242,6 +242,7 @@ export async function saveLpo(input: LpoInput, id?: string) {
       input.items.map((i) => ({
         lpo_id: lpoId!,
         name: i.name,
+        available_qty: i.availableQty ?? 0,
         qty: i.qty,
         unit: i.unit ?? null,
         unit_cost: i.unitCost,
