@@ -1,0 +1,1 @@
+ALTER TABLE public.dm_lpo_items ADD COLUMN IF NOT EXISTS available_qty numeric NOT NULL DEFAULT 0;

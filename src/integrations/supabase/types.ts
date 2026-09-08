@@ -528,6 +528,7 @@ export type Database = {
       }
       dm_lpo_items: {
         Row: {
+          available_qty: number
           created_at: string
           id: string
           lpo_id: string
@@ -538,6 +539,7 @@ export type Database = {
           unit_cost: number
         }
         Insert: {
+          available_qty?: number
           created_at?: string
           id?: string
           lpo_id: string
@@ -548,6 +550,7 @@ export type Database = {
           unit_cost?: number
         }
         Update: {
+          available_qty?: number
           created_at?: string
           id?: string
           lpo_id?: string
