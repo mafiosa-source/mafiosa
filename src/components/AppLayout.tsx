@@ -23,7 +23,9 @@ import {
   Building2,
   Route,
   Contact,
+  Inbox,
 } from "lucide-react";
+import { useRequestNotifications } from "@/lib/use-request-notifications";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -74,6 +76,7 @@ const groups: { label: string; items: NavItem[] }[] = [
       { to: "/agents", label: "Agents", icon: Building2, module: "agents" },
       { to: "/recruitment", label: "Recruitment Pipeline", icon: Route, module: "recruitment" },
       { to: "/recruitment/sponsors", label: "Sponsors Directory", icon: Contact, module: "recruitment" },
+      { to: "/recruitment/requests", label: "Official Requests", icon: Inbox, module: "recruitment" },
     ],
   },
 ];
@@ -152,9 +155,15 @@ function NavGroup({
 export function AppLayout({ children }: { children?: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, isAdmin, can } = useAppUser();
+  const pending = useRequestNotifications(!!user, isAdmin);
   const visibleTop = topLinks.filter((i) => can(i.module));
   const visibleGroups = groups
-    .map((g) => ({ ...g, items: g.items.filter((i) => can(i.module)) }))
+    .map((g) => ({
+      ...g,
+      items: g.items
+        .filter((i) => can(i.module))
+        .map((i) => (i.to === "/recruitment/requests" && isAdmin && pending ? { ...i, label: `${i.label} (${pending})` } : i)),
+    }))
     .filter((g) => g.items.length > 0);
   const allowed = can(moduleForPath(pathname));
   return (
