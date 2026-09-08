@@ -430,6 +430,9 @@ function AddCandidatePage() {
               <Field label="Experience (years)">
                 <Input type="number" step="0.1" min="0" value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} />
               </Field>
+              <Field label="Experience Country">
+                <Input value={experienceCountry} onChange={(e) => setExperienceCountry(e.target.value)} placeholder="e.g. Saudi Arabia" />
+              </Field>
               <Field label="Marital Status">
                 <Select value={maritalStatus || NONE} onValueChange={(v) => setMaritalStatus(v === NONE ? "" : v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
