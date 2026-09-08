@@ -27,10 +27,13 @@ import { Route as CandidatesRouteImport } from './routes/candidates'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RecruitmentIndexRouteImport } from './routes/recruitment.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as WorkersNewRouteImport } from './routes/workers_.new'
 import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
 import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
+import { Route as RecruitmentSponsorsRouteImport } from './routes/recruitment.sponsors'
+import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
@@ -127,6 +130,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecruitmentIndexRoute = RecruitmentIndexRouteImport.update({
+  id: '/recruitment/',
+  path: '/recruitment/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -145,6 +153,16 @@ const TransactionsIdRoute = TransactionsIdRouteImport.update({
 const SalariesNameRoute = SalariesNameRouteImport.update({
   id: '/salaries_/$name',
   path: '/salaries/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecruitmentSponsorsRoute = RecruitmentSponsorsRouteImport.update({
+  id: '/recruitment/sponsors',
+  path: '/recruitment/sponsors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecruitmentIdRoute = RecruitmentIdRouteImport.update({
+  id: '/recruitment/$id',
+  path: '/recruitment/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HousemaidNameRoute = HousemaidNameRouteImport.update({
@@ -195,10 +213,13 @@ export interface FileRoutesByFullPath {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
+  '/recruitment/$id': typeof RecruitmentIdRoute
+  '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
   '/workers/new': typeof WorkersNewRoute
   '/admin/': typeof AdminIndexRoute
+  '/recruitment/': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
 }
@@ -223,10 +244,13 @@ export interface FileRoutesByTo {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
+  '/recruitment/$id': typeof RecruitmentIdRoute
+  '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
   '/workers/new': typeof WorkersNewRoute
   '/admin': typeof AdminIndexRoute
+  '/recruitment': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
 }
@@ -253,10 +277,13 @@ export interface FileRoutesById {
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
+  '/recruitment/$id': typeof RecruitmentIdRoute
+  '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries_/$name': typeof SalariesNameRoute
   '/transactions_/$id': typeof TransactionsIdRoute
   '/workers_/new': typeof WorkersNewRoute
   '/admin/': typeof AdminIndexRoute
+  '/recruitment/': typeof RecruitmentIndexRoute
   '/months_/$year/$month': typeof MonthsYearMonthRoute
   '/workers_/$id/cv': typeof WorkersIdCvRoute
 }
@@ -284,10 +311,13 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
+    | '/recruitment/$id'
+    | '/recruitment/sponsors'
     | '/salaries/$name'
     | '/transactions/$id'
     | '/workers/new'
     | '/admin/'
+    | '/recruitment/'
     | '/months/$year/$month'
     | '/workers/$id/cv'
   fileRoutesByTo: FileRoutesByTo
@@ -312,10 +342,13 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
+    | '/recruitment/$id'
+    | '/recruitment/sponsors'
     | '/salaries/$name'
     | '/transactions/$id'
     | '/workers/new'
     | '/admin'
+    | '/recruitment'
     | '/months/$year/$month'
     | '/workers/$id/cv'
   id:
@@ -341,10 +374,13 @@ export interface FileRouteTypes {
     | '/admin/activity'
     | '/admin/users'
     | '/housemaid/$name'
+    | '/recruitment/$id'
+    | '/recruitment/sponsors'
     | '/salaries_/$name'
     | '/transactions_/$id'
     | '/workers_/new'
     | '/admin/'
+    | '/recruitment/'
     | '/months_/$year/$month'
     | '/workers_/$id/cv'
   fileRoutesById: FileRoutesById
@@ -369,9 +405,12 @@ export interface RootRouteChildren {
   VouchersRoute: typeof VouchersRoute
   WorkersRoute: typeof WorkersRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
+  RecruitmentIdRoute: typeof RecruitmentIdRoute
+  RecruitmentSponsorsRoute: typeof RecruitmentSponsorsRoute
   SalariesNameRoute: typeof SalariesNameRoute
   TransactionsIdRoute: typeof TransactionsIdRoute
   WorkersNewRoute: typeof WorkersNewRoute
+  RecruitmentIndexRoute: typeof RecruitmentIndexRoute
   MonthsYearMonthRoute: typeof MonthsYearMonthRoute
   WorkersIdCvRoute: typeof WorkersIdCvRoute
 }
@@ -504,6 +543,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recruitment/': {
+      id: '/recruitment/'
+      path: '/recruitment'
+      fullPath: '/recruitment/'
+      preLoaderRoute: typeof RecruitmentIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -530,6 +576,20 @@ declare module '@tanstack/react-router' {
       path: '/salaries/$name'
       fullPath: '/salaries/$name'
       preLoaderRoute: typeof SalariesNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recruitment/sponsors': {
+      id: '/recruitment/sponsors'
+      path: '/recruitment/sponsors'
+      fullPath: '/recruitment/sponsors'
+      preLoaderRoute: typeof RecruitmentSponsorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recruitment/$id': {
+      id: '/recruitment/$id'
+      path: '/recruitment/$id'
+      fullPath: '/recruitment/$id'
+      preLoaderRoute: typeof RecruitmentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/housemaid/$name': {
@@ -604,9 +664,12 @@ const rootRouteChildren: RootRouteChildren = {
   VouchersRoute: VouchersRoute,
   WorkersRoute: WorkersRoute,
   HousemaidNameRoute: HousemaidNameRoute,
+  RecruitmentIdRoute: RecruitmentIdRoute,
+  RecruitmentSponsorsRoute: RecruitmentSponsorsRoute,
   SalariesNameRoute: SalariesNameRoute,
   TransactionsIdRoute: TransactionsIdRoute,
   WorkersNewRoute: WorkersNewRoute,
+  RecruitmentIndexRoute: RecruitmentIndexRoute,
   MonthsYearMonthRoute: MonthsYearMonthRoute,
   WorkersIdCvRoute: WorkersIdCvRoute,
 }

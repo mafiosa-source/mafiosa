@@ -36,6 +36,8 @@ import {
 } from "@/lib/cv-management";
 import { cn } from "@/lib/utils";
 import { scanPassport } from "@/lib/passport-ocr.functions";
+import { passportExists } from "@/lib/recruitment";
+import { NameConfirmDialog } from "@/components/NameConfirmDialog";
 
 export const Route = createFileRoute("/workers_/new")({
   head: () => ({
@@ -75,6 +77,7 @@ function AddCandidatePage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
   const [passportNumber, setPassportNumber] = useState("");
+  const [confirmName, setConfirmName] = useState(false);
   const [passportIssueDate, setPassportIssueDate] = useState("");
   const [passportExpiryDate, setPassportExpiryDate] = useState("");
   const [passportScanUrl, setPassportScanUrl] = useState("");
@@ -210,7 +213,22 @@ function AddCandidatePage() {
     if (scope.length && !scope.includes(agentId))
       return toast.error("You may only add candidates under your assigned agent");
     if (!countryCode) return toast.error("Could not determine country code");
+    if (passportNumber.trim()) {
+      try {
+        if (await passportExists(passportNumber)) {
+          return toast.error("This passport number already exists", {
+            description: "A CV with the same passport is already in the system. Duplicates are not allowed.",
+          });
+        }
+      } catch {
+        /* the database also blocks duplicates */
+      }
+    }
+    setConfirmName(true);
+  }
 
+  async function saveCandidate() {
+    setConfirmName(false);
     setSaving(true);
     try {
       const input: CandidateInput = {
@@ -573,6 +591,14 @@ function AddCandidatePage() {
           </Button>
         </div>
       </form>
+      <NameConfirmDialog
+        open={confirmName}
+        name={fullName.trim()}
+        entity="housemaid"
+        documentLabel="passport"
+        onConfirm={saveCandidate}
+        onCancel={() => setConfirmName(false)}
+      />
     </AppLayout>
   );
 }

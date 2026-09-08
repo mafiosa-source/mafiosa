@@ -18,7 +18,8 @@ export type ModuleKey =
   | "months"
   | "reports"
   | "workers"
-  | "agents";
+  | "agents"
+  | "recruitment";
 
 export const MODULES: { key: ModuleKey; label: string; group: string }[] = [
   { key: "dashboard", label: "Dashboard", group: "General" },
@@ -38,6 +39,7 @@ export const MODULES: { key: ModuleKey; label: string; group: string }[] = [
   { key: "reports", label: "Reports", group: "Vouchers, Closing & Reports" },
   { key: "workers", label: "CV / Workers", group: "CV Management" },
   { key: "agents", label: "Agents", group: "CV Management" },
+  { key: "recruitment", label: "Recruitment Pipeline & Sponsors", group: "CV Management" },
 ];
 
 export const MODULE_LABEL: Record<string, string> = MODULES.reduce(
@@ -64,6 +66,7 @@ const ROUTE_MODULES: { prefix: string; module: ModuleKey | "admin" }[] = [
   { prefix: "/reports", module: "reports" },
   { prefix: "/workers", module: "workers" },
   { prefix: "/agents", module: "agents" },
+  { prefix: "/recruitment", module: "recruitment" },
   { prefix: "/admin", module: "admin" },
 ];
 

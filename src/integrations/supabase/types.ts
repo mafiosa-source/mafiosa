@@ -277,11 +277,51 @@ export type Database = {
         }
         Relationships: []
       }
+      candidate_status_history: {
+        Row: {
+          candidate_id: string
+          changed_at: string
+          changed_by: string | null
+          from_status: string | null
+          id: string
+          note: string | null
+          to_status: string
+        }
+        Insert: {
+          candidate_id: string
+          changed_at?: string
+          changed_by?: string | null
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status: string
+        }
+        Update: {
+          candidate_id?: string
+          changed_at?: string
+          changed_by?: string | null
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_status_history_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidates: {
         Row: {
           address: string | null
           age: number | null
           agent_id: string | null
+          agreed_remittance: number | null
+          arrived_at: string | null
           availability_status: string
           candidate_code: string | null
           children_count: number
@@ -290,6 +330,7 @@ export type Database = {
           created_at: string
           date_of_birth: string | null
           education: string | null
+          experience_abroad: boolean
           experience_country: string | null
           experience_years: number
           full_name: string
@@ -306,11 +347,16 @@ export type Database = {
           passport_number: string | null
           passport_scan_url: string | null
           photo_url: string
+          pipeline_notes: string | null
+          pipeline_status: string
           place_of_birth: string | null
+          polo_pickup_date: string | null
           position: string
           religion: string | null
           remarks: string | null
+          selected_at: string | null
           skills: string[]
+          sponsor_id: string | null
           status: string
           uploaded_by_user_id: string
           weight: string | null
@@ -319,6 +365,8 @@ export type Database = {
           address?: string | null
           age?: number | null
           agent_id?: string | null
+          agreed_remittance?: number | null
+          arrived_at?: string | null
           availability_status?: string
           candidate_code?: string | null
           children_count?: number
@@ -327,6 +375,7 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           education?: string | null
+          experience_abroad?: boolean
           experience_country?: string | null
           experience_years?: number
           full_name: string
@@ -343,11 +392,16 @@ export type Database = {
           passport_number?: string | null
           passport_scan_url?: string | null
           photo_url: string
+          pipeline_notes?: string | null
+          pipeline_status?: string
           place_of_birth?: string | null
+          polo_pickup_date?: string | null
           position?: string
           religion?: string | null
           remarks?: string | null
+          selected_at?: string | null
           skills?: string[]
+          sponsor_id?: string | null
           status?: string
           uploaded_by_user_id?: string
           weight?: string | null
@@ -356,6 +410,8 @@ export type Database = {
           address?: string | null
           age?: number | null
           agent_id?: string | null
+          agreed_remittance?: number | null
+          arrived_at?: string | null
           availability_status?: string
           candidate_code?: string | null
           children_count?: number
@@ -364,6 +420,7 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           education?: string | null
+          experience_abroad?: boolean
           experience_country?: string | null
           experience_years?: number
           full_name?: string
@@ -380,11 +437,16 @@ export type Database = {
           passport_number?: string | null
           passport_scan_url?: string | null
           photo_url?: string
+          pipeline_notes?: string | null
+          pipeline_status?: string
           place_of_birth?: string | null
+          polo_pickup_date?: string | null
           position?: string
           religion?: string | null
           remarks?: string | null
+          selected_at?: string | null
           skills?: string[]
+          sponsor_id?: string | null
           status?: string
           uploaded_by_user_id?: string
           weight?: string | null
@@ -395,6 +457,13 @@ export type Database = {
             columns: ["agent_id"]
             isOneToOne: false
             referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidates_sponsor_id_fkey"
+            columns: ["sponsor_id"]
+            isOneToOne: false
+            referencedRelation: "sponsors"
             referencedColumns: ["id"]
           },
         ]
@@ -904,11 +973,51 @@ export type Database = {
         }
         Relationships: []
       }
+      sponsors: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_by: string | null
+          full_name: string
+          id: string
+          name_key: string
+          notes: string | null
+          phone: string | null
+          qid: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          full_name: string
+          id?: string
+          name_key: string
+          notes?: string | null
+          phone?: string | null
+          qid?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          full_name?: string
+          id?: string
+          name_key?: string
+          notes?: string | null
+          phone?: string | null
+          qid?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
           attachment: string | null
           candidate: string | null
+          candidate_id: string | null
           card_category: string | null
           classification: string | null
           company: string | null
@@ -920,6 +1029,7 @@ export type Database = {
           deleted_by: string | null
           description: string | null
           driver: string | null
+          expense_kind: string | null
           from_wallet: string
           id: string
           km_after: number | null
@@ -935,6 +1045,7 @@ export type Database = {
           purpose: string | null
           purpose_category: string | null
           reference_number: string | null
+          settlement_status: string | null
           sponsor: string | null
           station: string | null
           status: string
@@ -949,6 +1060,7 @@ export type Database = {
           amount?: number
           attachment?: string | null
           candidate?: string | null
+          candidate_id?: string | null
           card_category?: string | null
           classification?: string | null
           company?: string | null
@@ -960,6 +1072,7 @@ export type Database = {
           deleted_by?: string | null
           description?: string | null
           driver?: string | null
+          expense_kind?: string | null
           from_wallet: string
           id?: string
           km_after?: number | null
@@ -975,6 +1088,7 @@ export type Database = {
           purpose?: string | null
           purpose_category?: string | null
           reference_number?: string | null
+          settlement_status?: string | null
           sponsor?: string | null
           station?: string | null
           status?: string
@@ -989,6 +1103,7 @@ export type Database = {
           amount?: number
           attachment?: string | null
           candidate?: string | null
+          candidate_id?: string | null
           card_category?: string | null
           classification?: string | null
           company?: string | null
@@ -1000,6 +1115,7 @@ export type Database = {
           deleted_by?: string | null
           description?: string | null
           driver?: string | null
+          expense_kind?: string | null
           from_wallet?: string
           id?: string
           km_after?: number | null
@@ -1015,6 +1131,7 @@ export type Database = {
           purpose?: string | null
           purpose_category?: string | null
           reference_number?: string | null
+          settlement_status?: string | null
           sponsor?: string | null
           station?: string | null
           status?: string
