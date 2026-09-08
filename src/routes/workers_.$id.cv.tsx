@@ -8,13 +8,16 @@ import { toast } from "sonner";
 import brokerLetterhead from "@/assets/letterheads/broker-letterhead.png.asset.json";
 import skillLetterhead from "@/assets/letterheads/skill-letterhead.png.asset.json";
 import danetLetterhead from "@/assets/letterheads/danet-letterhead.png.asset.json";
-import fastLetterhead from "@/assets/letterheads/fast-letterhead.png.asset.json";
+import fastLetterheadDoc from "@/assets/letterheads/fast-letterhead-doc.png";
 import {
   candidateSerialCode,
+  candidateSummary,
+  listAgents,
   countryArabicName,
   countryName,
   formatDate,
   getCandidate,
+  type Agent,
   type Candidate,
 } from "@/lib/cv-management";
 
@@ -38,7 +41,7 @@ const LETTERHEADS: Letterhead[] = [
   { id: "broker", name: "BROKER", imageUrl: brokerLetterhead.url },
   { id: "skill", name: "SKILL", imageUrl: skillLetterhead.url },
   { id: "danet", name: "DANET AL DOHA", imageUrl: danetLetterhead.url },
-  { id: "fast", name: "FAST", imageUrl: fastLetterhead.url },
+  { id: "fast", name: "FAST", imageUrl: fastLetterheadDoc },
 ];
 
 const CV_SKILLS = [
@@ -63,13 +66,16 @@ const hasSkill = (skills: string[], label: string) => {
 function CandidateCVPage() {
   const { id } = useParams({ from: "/workers_/$id/cv" });
   const [candidate, setCandidate] = useState<Candidate | null>(null);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [companyId, setCompanyId] = useState("broker");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        setCandidate(await getCandidate(id));
+        const [record, agentList] = await Promise.all([getCandidate(id), listAgents()]);
+        setCandidate(record);
+        setAgents(agentList);
       } catch {
         toast.error("Could not load the candidate CV.");
       } finally {
@@ -96,6 +102,8 @@ function CandidateCVPage() {
   const english = candidate.languages.some((language) => language.toLowerCase() === "english") ? "YES" : "NO";
   const arabic = candidate.languages.some((language) => language.toLowerCase() === "arabic") ? "YES" : "NO";
   const experiencePeriod = candidate.experienceYears ? `${candidate.experienceYears} YEARS` : "—";
+  const agentCode = agents.find((item) => item.id === candidate.agentId)?.agentCode ?? "";
+  const remarks = candidate.remarks?.trim() || candidateSummary(candidate);
 
   return (
     <AppLayout>
@@ -124,17 +132,18 @@ function CandidateCVPage() {
           </colgroup>
           <tbody>
             <tr>
-              <th colSpan={5} className="full-name">FULLNAME: {candidate.fullName.toUpperCase()}</th>
+              <th colSpan={4} className="full-name">FULLNAME: {candidate.fullName.toUpperCase()}</th>
+              <th className="agent-code">{agentCode || "—"}</th>
               <th className="serial">{serial}</th>
             </tr>
             <tr>
               <LabelCell label="Religion" arabic="الديانة" value={candidate.religion || "—"} />
               <LabelCell label="Position Applied" arabic="الوظيفة المطلوبة" value={candidate.position.toUpperCase()} />
             </tr>
-            <tr><LabelCell label="Height" arabic="الطول" value={candidate.height || "—"} /><LabelCell label="Monthly Salary" arabic="الراتب الشهري" value="—" /></tr>
+            <tr><LabelCell label="Height" arabic="الطول" value={candidate.height || "—"} /><LabelCell label="Monthly Salary" arabic="الراتب الشهري" value={candidate.monthlySalary || "—"} /></tr>
             <tr><LabelCell label="Weight" arabic="الوزن" value={candidate.weight || "—"} /><LabelCell label="Contract Period" arabic="مدة العقد" value="2 YEARS" /></tr>
             <tr>
-              <td colSpan={3} rowSpan={14} className="photo-cell">
+              <td colSpan={3} rowSpan={17} className="photo-cell">
                 <div className="country-title"><span>{country}</span><span dir="rtl">{arabicCountry}</span></div>
                 <div className="photo-frame">
                   {photo ? <img src={photo} alt={candidate.fullName} /> : <div className="empty-photo">PHOTO</div>}
@@ -144,11 +153,11 @@ function CandidateCVPage() {
             </tr>
             <tr><SectionCell label="Details of Application" arabic="تفاصيل الطلب" /></tr>
             <tr><LabelCell label="Nationality" arabic="الجنسية" value={candidate.nationality.toUpperCase()} /></tr>
-            <tr><LabelCell label="Contact number" arabic="رقم الاتصال" value="—" /></tr>
-            <tr><LabelCell label="Address" arabic="العنوان" value="—" /></tr>
+            <tr><LabelCell label="Contact number" arabic="رقم الاتصال" value={candidate.contactNumber || "—"} /></tr>
+            <tr><LabelCell label="Address" arabic="العنوان" value={candidate.address || "—"} /></tr>
             <tr><LabelCell label="Date of Birth" arabic="تاريخ الميلاد" value={formatDate(candidate.dateOfBirth).toUpperCase()} /></tr>
             <tr><LabelCell label="Age" arabic="العمر" value={age} /></tr>
-            <tr><LabelCell label="Place of Birth" arabic="مكان الميلاد" value="—" /></tr>
+            <tr><LabelCell label="Place of Birth" arabic="مكان الميلاد" value={(candidate.placeOfBirth || "—").toUpperCase()} /></tr>
             <tr><LabelCell label="Civil Status" arabic="الحالة الاجتماعية" value={(candidate.maritalStatus || "—").toUpperCase()} /></tr>
             <tr><LabelCell label="No. of Children" arabic="عدد الأطفال" value={candidate.childrenCount ? String(candidate.childrenCount) : "NO CHILD"} /></tr>
             <tr><SectionCell label="Languages & Education" arabic="اللغة والتعليم" /></tr>
@@ -157,12 +166,12 @@ function CandidateCVPage() {
             <tr><LabelCell label="Educational Attainment" arabic="المستوى الدراسي" value={education.toUpperCase()} /></tr>
             <tr><SectionCell label="Previous Employment Abroad" arabic="خبرة خارج البلاد" /></tr>
             <tr><td className="job-head">Period</td><td className="job-head">Position</td><td className="job-head">City, Country</td></tr>
-            <tr><td className="value-cell">{experiencePeriod}</td><td className="value-cell">—</td><td className="value-cell">{candidate.nationality.toUpperCase()}</td></tr>
+            <tr><td className="value-cell">{experiencePeriod}</td><td className="value-cell">{candidate.position.toUpperCase()}</td><td className="value-cell">{candidate.nationality.toUpperCase()}</td></tr>
             <tr><td colSpan={6} className="section-title">Skills &amp; Experience <span dir="rtl">خبرة العمل</span></td></tr>
             {CV_SKILLS.map(([left, leftArabic, right, rightArabic]) => (
               <SkillRow key={left} label={left} value={hasSkill(candidate.skills, left) ? "YES" : "NO"} arabic={leftArabic} rightLabel={right} rightValue={hasSkill(candidate.skills, right) ? "YES" : "NO"} rightArabic={rightArabic} />
             ))}
-            {candidate.notes ? <tr><td colSpan={6} className="remarks"><strong>REMARKS: </strong>{candidate.notes}</td></tr> : null}
+            <tr><td colSpan={6} className="remarks"><strong>REMARKS: </strong>{remarks}</td></tr>
           </tbody>
         </table>
       </div>
@@ -183,18 +192,19 @@ function CandidateCVPage() {
         .value-cell { font-size: 8.8pt; font-weight: 700; }
         .arabic-cell { direction: rtl; font-size: 7.2pt; font-weight: 700; }
         .blank-cell { border-bottom: 0 !important; }
-        .photo-cell { height: 114mm !important; padding: 0 3mm 2mm !important; vertical-align: top !important; overflow: hidden; }
-        .country-title { height: 15mm; display: flex; align-items: center; justify-content: space-around; gap: 2mm; font-family: Georgia, 'Times New Roman', serif; font-size: 18pt; font-weight: 700; color: #555; white-space: nowrap; }
-        .photo-frame { height: 96mm; display: flex; align-items: flex-start; justify-content: center; overflow: hidden; }
-        .photo-frame img { width: 82%; height: 100%; display: block; object-fit: contain; object-position: center top; }
-        .empty-photo { width: 82%; height: 100%; display: grid; place-items: center; background: #f5f5f5; color: #777; }
+        .agent-code { color: #111; font-size: 8.6pt; white-space: nowrap; }
+        .photo-cell { height: 138mm !important; padding: 0 3mm 2mm !important; vertical-align: top !important; overflow: hidden; }
+        .country-title { height: 16mm; display: flex; align-items: center; justify-content: space-around; gap: 2mm; font-family: Georgia, 'Times New Roman', serif; font-size: 18pt; font-weight: 700; color: #555; white-space: nowrap; }
+        .photo-frame { height: 120mm; display: flex; align-items: flex-start; justify-content: center; overflow: hidden; }
+        .photo-frame img { width: 100%; height: 100%; display: block; object-fit: contain; object-position: center top; }
+        .empty-photo { width: 100%; height: 100%; display: grid; place-items: center; background: #f5f5f5; color: #777; }
         .section-title { height: 7mm !important; font-size: 8.6pt; font-weight: 700; }
         .section-title span { float: right; margin-right: 16%; }
         .job-head { height: 7mm !important; font-size: 7.5pt; }
         .skills-row td { height: 7mm !important; }
         .skill-label { font-size: 7.5pt; }
         .skill-answer { font-size: 8.5pt; font-weight: 700; }
-        .remarks { min-height: 9mm; text-align: left !important; color: #d00000; font-size: 8pt; text-transform: uppercase; }
+        .remarks { min-height: 12mm; line-height: 1.25; text-align: left !important; color: #d00000; font-size: 8pt; text-transform: uppercase; }
         @media print {
           @page { size: A4 portrait; margin: 5mm; }
           html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: hidden !important; print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
