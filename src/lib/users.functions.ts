@@ -105,6 +105,7 @@ export const currentAppUser = createServerFn({ method: "POST" })
         fullAccess: Boolean(row.full_access),
         status: row.status as "active" | "disabled",
         mustChangePassword: Boolean(row.must_change_password),
+        agentScope: ((row as { agent_scope?: string[] | null }).agent_scope ?? []) as string[],
       };
     }
 
