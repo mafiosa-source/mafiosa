@@ -9,6 +9,7 @@ const inputSchema = z.object({
 
 export type ScannedLine = {
   name?: string;
+  availableQty?: number;
   qty?: number;
   unit?: string;
   unitCost?: number;
@@ -97,6 +98,7 @@ export const scanDuMondeDocument = createServerFn({ method: "POST" })
         toDate: str(parsed["toDate"]),
         lines: rawLines.map((l) => ({
           name: str(l["name"]),
+          availableQty: nbr(l["availableQty"]),
           qty: nbr(l["qty"]),
           unit: str(l["unit"]),
           unitCost: nbr(l["unitCost"]),
