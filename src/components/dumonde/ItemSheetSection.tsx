@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DuMondeEntryDialog, type DuMondeEntry } from "./DuMondeEntryDialog";
 import { Plus, Trash2, Paperclip, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { qar } from "@/lib/format";
@@ -65,6 +66,7 @@ export function ItemSheetSection({
   const [file, setFile] = useState<File | null>(null);
   const [attachment, setAttachment] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
+  const [entry, setEntry] = useState<DuMondeEntry | null>(null);
 
   const total = rows.reduce((n, r) => n + (r.total || r.qty * r.price), 0);
 
@@ -436,14 +438,37 @@ export function ItemSheetSection({
               </TableRow>
             ) : (
               records.map((r) => (
-                <TableRow key={r.id}>
+                <TableRow
+                  key={r.id}
+                  className="cursor-pointer transition-colors hover:bg-muted/50"
+                  onClick={() =>
+                    setEntry({
+                      kind: isLpo ? "LPO" : "Sales",
+                      date: r.date,
+                      location: r.location,
+                      notes: r.notes,
+                      total: r.total,
+                      lines: r.items.map((i) => ({
+                        name: i.name,
+                        code: "itemCode" in i ? i.itemCode : undefined,
+                        qty: i.qty,
+                        cashQty: "cashQty" in i ? i.cashQty : undefined,
+                        cardQty: "cardQty" in i ? i.cardQty : undefined,
+                        availableQty: "availableQty" in i ? i.availableQty : undefined,
+                        unit: "unit" in i ? i.unit : undefined,
+                        unitPrice: "unitPrice" in i ? i.unitPrice : i.unitCost,
+                        total: i.total,
+                      })),
+                    })
+                  }
+                >
                   <TableCell className="tabular">{r.date}</TableCell>
                   <TableCell>{r.location}</TableCell>
                   <TableCell className="max-w-[380px] truncate text-muted-foreground">
                     {r.items.map((i) => `${i.name} x${i.qty}`).join(", ") || "—"}
                   </TableCell>
                   <TableCell className="text-right tabular font-medium">{qar(r.total)}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-1">
                       {r.attachmentUrl ? (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => void openAttachment(r.attachmentUrl!)}>
@@ -464,6 +489,8 @@ export function ItemSheetSection({
           </TableBody>
         </Table>
       </div>
+
+      <DuMondeEntryDialog entry={entry} open={!!entry} onOpenChange={(v) => { if (!v) setEntry(null); }} />
     </div>
   );
 }
