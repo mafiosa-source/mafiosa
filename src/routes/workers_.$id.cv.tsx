@@ -166,7 +166,7 @@ function CandidateCVPage() {
             <tr><LabelCell label="Educational Attainment" arabic="المستوى الدراسي" value={education.toUpperCase()} /></tr>
             <tr><SectionCell label="Previous Employment Abroad" arabic="خبرة خارج البلاد" /></tr>
             <tr><td className="job-head">Period</td><td className="job-head">Position</td><td className="job-head">City, Country</td></tr>
-            <tr><td className="value-cell">{experiencePeriod}</td><td className="value-cell">{candidate.position.toUpperCase()}</td><td className="value-cell">{candidate.nationality.toUpperCase()}</td></tr>
+            <tr><td className="value-cell">{experiencePeriod}</td><td className="value-cell">{candidate.position.toUpperCase()}</td><td className="value-cell">{(candidate.experienceCountry || candidate.nationality).toUpperCase()}</td></tr>
             <tr><td colSpan={6} className="section-title">Skills &amp; Experience <span dir="rtl">خبرة العمل</span></td></tr>
             {CV_SKILLS.map(([left, leftArabic, right, rightArabic]) => (
               <SkillRow key={left} label={left} value={hasSkill(candidate.skills, left) ? "YES" : "NO"} arabic={leftArabic} rightLabel={right} rightValue={hasSkill(candidate.skills, right) ? "YES" : "NO"} rightArabic={rightArabic} />
