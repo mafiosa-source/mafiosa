@@ -64,6 +64,13 @@
       "when": 1788855295235,
       "tag": "0008_add_experience_country",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788856152221,
+      "tag": "0009_add_lpo_available_qty",
+      "breakpoints": true
     }
   ]
 }

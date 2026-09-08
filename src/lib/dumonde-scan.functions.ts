@@ -9,6 +9,7 @@ const inputSchema = z.object({
 
 export type ScannedLine = {
   name?: string;
+  availableQty?: number;
   qty?: number;
   unit?: string;
   unitCost?: number;
@@ -31,8 +32,10 @@ export type ScanResult = {
 
 const PROMPTS: Record<"lpo" | "sales" | "bank", string> = {
   lpo: `You read catering purchase orders (LPO) — lists of items needed for the next day.
-Return ONLY JSON: {"date":"YYYY-MM-DD","location":"","lines":[{"name":"","qty":0,"unit":"","unitCost":0,"total":0}]}
-Rules: name uppercase; qty numeric; unitCost is price per unit; total is line total (qty x unitCost) when printed.
+These sheets have TWO quantity columns: the available quantity (stock/inventory on hand today) and the quantity to be ordered.
+Return ONLY JSON: {"date":"YYYY-MM-DD","location":"","lines":[{"name":"","availableQty":0,"qty":0,"unit":"","unitCost":0,"total":0}]}
+Rules: name uppercase; availableQty is the available/stock/on-hand quantity column; qty is the quantity to be ordered column; unitCost is price per unit; total is line total (qty x unitCost) when printed.
+Capture every line exactly as written, including lines where the order quantity is blank or zero.
 Omit any key you cannot read. No markdown fences, no explanation.`,
   sales: `You read daily catering sales sheets.
 Return ONLY JSON: {"date":"YYYY-MM-DD","location":"","lines":[{"name":"","qty":0,"unitPrice":0,"total":0}]}
@@ -95,6 +98,7 @@ export const scanDuMondeDocument = createServerFn({ method: "POST" })
         toDate: str(parsed["toDate"]),
         lines: rawLines.map((l) => ({
           name: str(l["name"]),
+          availableQty: nbr(l["availableQty"]),
           qty: nbr(l["qty"]),
           unit: str(l["unit"]),
           unitCost: nbr(l["unitCost"]),

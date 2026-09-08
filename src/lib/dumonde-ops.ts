@@ -7,7 +7,7 @@ import { addTransaction } from "./finance-store";
 
 export const DM_BUCKET = "du-monde-files";
 
-export type DmLpoItem = { id?: string; name: string; qty: number; unit?: string; unitCost: number; total: number };
+export type DmLpoItem = { id?: string; name: string; availableQty?: number; qty: number; unit?: string; unitCost: number; total: number };
 export type DmSaleItem = { id?: string; name: string; qty: number; unitPrice: number; total: number };
 
 export type DmLpo = {
@@ -114,7 +114,8 @@ export async function loadDuMonde() {
         .map((i) => ({
           id: i.id,
           name: i.name,
-          qty: num(i.qty),
+           availableQty: num(i.available_qty),
+           qty: num(i.qty),
           unit: i.unit ?? undefined,
           unitCost: num(i.unit_cost),
           total: num(i.total),
@@ -241,6 +242,7 @@ export async function saveLpo(input: LpoInput, id?: string) {
       input.items.map((i) => ({
         lpo_id: lpoId!,
         name: i.name,
+        available_qty: i.availableQty ?? 0,
         qty: i.qty,
         unit: i.unit ?? null,
         unit_cost: i.unitCost,
