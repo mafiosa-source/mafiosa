@@ -7,7 +7,7 @@ import { addTransaction } from "./finance-store";
 
 export const DM_BUCKET = "du-monde-files";
 
-export type DmLpoItem = { id?: string; name: string; qty: number; unit?: string; unitCost: number; total: number };
+export type DmLpoItem = { id?: string; name: string; availableQty?: number; qty: number; unit?: string; unitCost: number; total: number };
 export type DmSaleItem = { id?: string; name: string; qty: number; unitPrice: number; total: number };
 
 export type DmLpo = {
