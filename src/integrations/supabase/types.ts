@@ -59,6 +59,36 @@ export type Database = {
         }
         Relationships: []
       }
+      agents: {
+        Row: {
+          agent_code: string
+          contact_person: string | null
+          country: string
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          agent_code: string
+          contact_person?: string | null
+          country: string
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          agent_code?: string
+          contact_person?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
       app_users: {
         Row: {
           auth_user_id: string | null
@@ -112,6 +142,32 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      candidate_code_counters: {
+        Row: {
+          agent_id: string
+          country_code: string
+          next_sequence: number
+        }
+        Insert: {
+          agent_id: string
+          country_code: string
+          next_sequence?: number
+        }
+        Update: {
+          agent_id?: string
+          country_code?: string
+          next_sequence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_code_counters_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       candidate_profiles: {
         Row: {
@@ -217,6 +273,110 @@ export type Database = {
           weight?: string | null
         }
         Relationships: []
+      }
+      candidates: {
+        Row: {
+          age: number | null
+          agent_id: string | null
+          availability_status: string
+          candidate_code: string | null
+          children_count: number
+          country_code: string
+          created_at: string
+          date_of_birth: string | null
+          education: string | null
+          experience_years: number
+          full_name: string
+          gallery_urls: string[]
+          height: string | null
+          id: string
+          languages: string[]
+          marital_status: string | null
+          nationality: string
+          notes: string | null
+          passport_expiry_date: string | null
+          passport_issue_date: string | null
+          passport_number: string | null
+          passport_scan_url: string | null
+          photo_url: string
+          position: string
+          religion: string | null
+          skills: string[]
+          status: string
+          uploaded_by_user_id: string
+          weight: string | null
+        }
+        Insert: {
+          age?: number | null
+          agent_id?: string | null
+          availability_status?: string
+          candidate_code?: string | null
+          children_count?: number
+          country_code: string
+          created_at?: string
+          date_of_birth?: string | null
+          education?: string | null
+          experience_years?: number
+          full_name: string
+          gallery_urls?: string[]
+          height?: string | null
+          id?: string
+          languages?: string[]
+          marital_status?: string | null
+          nationality: string
+          notes?: string | null
+          passport_expiry_date?: string | null
+          passport_issue_date?: string | null
+          passport_number?: string | null
+          passport_scan_url?: string | null
+          photo_url: string
+          position?: string
+          religion?: string | null
+          skills?: string[]
+          status?: string
+          uploaded_by_user_id?: string
+          weight?: string | null
+        }
+        Update: {
+          age?: number | null
+          agent_id?: string | null
+          availability_status?: string
+          candidate_code?: string | null
+          children_count?: number
+          country_code?: string
+          created_at?: string
+          date_of_birth?: string | null
+          education?: string | null
+          experience_years?: number
+          full_name?: string
+          gallery_urls?: string[]
+          height?: string | null
+          id?: string
+          languages?: string[]
+          marital_status?: string | null
+          nationality?: string
+          notes?: string | null
+          passport_expiry_date?: string | null
+          passport_issue_date?: string | null
+          passport_number?: string | null
+          passport_scan_url?: string | null
+          photo_url?: string
+          position?: string
+          religion?: string | null
+          skills?: string[]
+          status?: string
+          uploaded_by_user_id?: string
+          weight?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidates_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       month_closings: {
         Row: {
@@ -549,6 +709,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_next_candidate_code: {
+        Args: { p_agent_id: string; p_country_code: string }
+        Returns: string
+      }
       is_app_admin: { Args: { _uid: string }; Returns: boolean }
       is_app_member: { Args: { _uid: string }; Returns: boolean }
     }
