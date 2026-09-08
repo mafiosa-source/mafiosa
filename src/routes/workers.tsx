@@ -429,6 +429,11 @@ function CandidateDetail({
             <FileText className="h-4 w-4" /> View Full CV
           </Link>
         </Button>
+        <Button size="sm" variant="outline" asChild>
+          <Link to="/recruitment/$id" params={{ id: candidate.id }}>
+            Recruitment file
+          </Link>
+        </Button>
         <Button size="sm" variant={shortlisted ? "destructive" : "outline"} onClick={onShortlist}>
           <Heart className={cn("h-4 w-4", shortlisted && "fill-current")} />
           {shortlisted ? "Shortlisted" : "Shortlist"}
