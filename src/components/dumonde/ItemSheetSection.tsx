@@ -32,9 +32,9 @@ import {
   type DmSale,
 } from "@/lib/dumonde-ops";
 
-type Row = { name: string; qty: number; unit?: string; price: number; total: number };
+type Row = { name: string; available?: number; qty: number; unit?: string; price: number; total: number };
 
-const emptyRow = (): Row => ({ name: "", qty: 1, unit: "", price: 0, total: 0 });
+const emptyRow = (): Row => ({ name: "", available: 0, qty: 1, unit: "", price: 0, total: 0 });
 const today = () => new Date().toISOString().slice(0, 10);
 
 export function ItemSheetSection({
@@ -88,7 +88,7 @@ export function ItemSheetSection({
       rec.items.length
         ? rec.items.map((i) =>
             "unitCost" in i
-              ? { name: i.name, qty: i.qty, unit: i.unit ?? "", price: i.unitCost, total: i.total }
+              ? { name: i.name, available: i.availableQty ?? 0, qty: i.qty, unit: i.unit ?? "", price: i.unitCost, total: i.total }
               : { name: i.name, qty: i.qty, unit: "", price: i.unitPrice, total: i.total },
           )
         : [emptyRow()],
@@ -123,6 +123,7 @@ export function ItemSheetSection({
             attachmentUrl,
             items: clean.map((r) => ({
               name: r.name.trim(),
+              availableQty: r.available ?? 0,
               qty: r.qty,
               unit: r.unit?.trim() || undefined,
               unitCost: r.price,
@@ -227,6 +228,7 @@ export function ItemSheetSection({
                       const price = (isLpo ? l.unitCost : l.unitPrice) ?? (l.total && qty ? l.total / qty : 0);
                       return {
                         name: (l.name ?? "").toUpperCase(),
+                        available: l.availableQty ?? 0,
                         qty,
                         unit: l.unit ?? "",
                         price,
@@ -244,7 +246,8 @@ export function ItemSheetSection({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Item</TableHead>
-                    <TableHead className="w-20">Qty</TableHead>
+                    {isLpo ? <TableHead className="w-24">Available qty</TableHead> : null}
+                    <TableHead className="w-24">{isLpo ? "Order qty" : "Qty"}</TableHead>
                     {isLpo ? <TableHead className="w-24">Unit</TableHead> : null}
                     <TableHead className="w-28">{isLpo ? "Unit cost" : "Unit price"}</TableHead>
                     <TableHead className="w-28 text-right">Total</TableHead>
@@ -262,6 +265,17 @@ export function ItemSheetSection({
                           className="h-8"
                         />
                       </TableCell>
+                      {isLpo ? (
+                        <TableCell>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={r.available ?? 0}
+                            onChange={(e) => setRow(i, { available: Number(e.target.value) || 0 })}
+                            className="h-8"
+                          />
+                        </TableCell>
+                      ) : null}
                       <TableCell>
                         <Input
                           type="number"
