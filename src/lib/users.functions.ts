@@ -180,6 +180,7 @@ export const saveAppUser = createServerFn({ method: "POST" })
     fullAccess?: boolean;
     role?: "admin" | "user";
     status?: "active" | "disabled";
+    agentScope?: string[];
   }) => data)
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("is_app_admin", { _uid: context.userId });
