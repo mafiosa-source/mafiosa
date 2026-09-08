@@ -28,6 +28,7 @@ export type Candidate = {
   dateOfBirth?: string;
   position: string;
   experienceYears: number;
+  experienceCountry?: string;
   languages: string[];
   availabilityStatus: "Available" | "Reserved" | "Unavailable";
   maritalStatus?: string;
