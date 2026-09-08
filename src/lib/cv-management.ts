@@ -10,6 +10,7 @@ export type Agent = {
   name: string;
   agentCode: string;
   country: string;
+  agencyName?: string;
   phone?: string;
   contactPerson?: string;
   createdAt: string;
@@ -148,6 +149,7 @@ function agentFromRow(r: Row): Agent {
     name: String(r.name ?? ""),
     agentCode: String(r.agent_code ?? ""),
     country: String(r.country ?? ""),
+    agencyName: (r.agency_name as string) ?? undefined,
     phone: (r.phone as string) ?? undefined,
     contactPerson: (r.contact_person as string) ?? undefined,
     createdAt: String(r.created_at ?? ""),
@@ -213,6 +215,7 @@ export async function createAgent(input: {
   name: string;
   agentCode: string;
   country: string;
+  agencyName?: string;
   phone?: string;
   contactPerson?: string;
 }): Promise<Agent> {
@@ -222,6 +225,7 @@ export async function createAgent(input: {
       name: input.name,
       agent_code: input.agentCode.toUpperCase(),
       country: input.country,
+      agency_name: input.agencyName || null,
       phone: input.phone || null,
       contact_person: input.contactPerson || null,
     })
@@ -236,6 +240,7 @@ export async function updateAgent(id: string, patch: Partial<Omit<Agent, "id" | 
   if (patch.name !== undefined) row.name = patch.name;
   if (patch.agentCode !== undefined) row.agent_code = patch.agentCode.toUpperCase();
   if (patch.country !== undefined) row.country = patch.country;
+  if (patch.agencyName !== undefined) row.agency_name = patch.agencyName || null;
   if (patch.phone !== undefined) row.phone = patch.phone || null;
   if (patch.contactPerson !== undefined) row.contact_person = patch.contactPerson || null;
   const { error } = await supabase.from("agents").update(row as never).eq("id", id);
