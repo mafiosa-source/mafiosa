@@ -36,6 +36,7 @@ import {
 } from "@/lib/cv-management";
 import { cn } from "@/lib/utils";
 import { scanPassport } from "@/lib/passport-ocr.functions";
+import { scanCv } from "@/lib/cv-ocr.functions";
 import { passportExists } from "@/lib/recruitment";
 import { NameConfirmDialog } from "@/components/NameConfirmDialog";
 
@@ -92,6 +93,8 @@ function AddCandidatePage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingPassport, setUploadingPassport] = useState(false);
+  const [scanningCv, setScanningCv] = useState(false);
+  const [cvFileName, setCvFileName] = useState("");
 
   const scope = user?.role === "admin" || user?.fullAccess ? [] : (user?.agentScope ?? []);
 
@@ -165,6 +168,77 @@ function AddCandidatePage() {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploadingPassport(false);
+    }
+  }
+
+  /** Reads an existing CV (image or PDF) and fills every field it can find. */
+  async function readCv(file: File) {
+    if (file.size > 15 * 1024 * 1024) return toast.error("CV file is too large (max 15 MB)");
+    setScanningCv(true);
+    setCvFileName(file.name);
+    try {
+      const fileBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
+        reader.onerror = () => reject(new Error("Could not read the file"));
+        reader.readAsDataURL(file);
+      });
+      const mimeType = file.type || (file.name.toLowerCase().endsWith(".pdf") ? "application/pdf" : "image/jpeg");
+      const r = await scanCv({ data: { fileBase64, mimeType, fileName: file.name } });
+      const filled: string[] = [];
+      const pick = <T extends string>(options: readonly T[], value?: string) =>
+        value ? options.find((o) => o.toLowerCase() === value.toLowerCase()) : undefined;
+
+      if (r.fullName) { setFullName(r.fullName); filled.push("name"); }
+      if (r.passportNumber) { setPassportNumber(r.passportNumber); filled.push("passport"); }
+      if (r.passportIssueDate) setPassportIssueDate(r.passportIssueDate);
+      if (r.passportExpiryDate) setPassportExpiryDate(r.passportExpiryDate);
+      if (r.dateOfBirth) { setDateOfBirth(r.dateOfBirth); filled.push("date of birth"); }
+      if (r.placeOfBirth) setPlaceOfBirth(r.placeOfBirth);
+      if (r.nationality) {
+        const match = COUNTRIES.find((c) => c.name.toLowerCase() === r.nationality!.toLowerCase());
+        if (match) { setNationality(match.name); filled.push("nationality"); }
+      }
+      const pos = pick(POSITIONS, r.position);
+      if (pos) setPosition(pos);
+      if (r.experienceYears !== undefined) { setExperienceYears(String(r.experienceYears)); filled.push("experience"); }
+      if (r.experienceCountry) setExperienceCountry(r.experienceCountry);
+      const ms = pick(MARITAL_STATUSES, r.maritalStatus);
+      if (ms) setMaritalStatus(ms);
+      if (r.childrenCount !== undefined) setChildrenCount(String(r.childrenCount));
+      if (r.heightCm) setHeight(r.heightCm);
+      if (r.weightKg) setWeight(r.weightKg);
+      const rel = pick(RELIGIONS, r.religion);
+      if (rel) setReligion(rel);
+      if (r.education) setEducation(r.education);
+      if (r.languages?.length) {
+        const langs = r.languages
+          .map((l) => COMMON_LANGUAGES.find((c) => c.toLowerCase() === l.toLowerCase()) ?? l)
+          .filter((l, i, a) => a.indexOf(l) === i);
+        setSelectedLanguages(langs);
+        filled.push("languages");
+      }
+      if (r.skills?.length) {
+        const skills = r.skills
+          .map((s) => COMMON_SKILLS.find((c) => c.toLowerCase() === s.toLowerCase()) ?? s)
+          .filter((s, i, a) => a.indexOf(s) === i);
+        setSelectedSkills(skills);
+        filled.push("skills");
+      }
+      if (r.contactNumber) setContactNumber(r.contactNumber);
+      if (r.address) setAddress(r.address);
+      if (r.monthlySalary) setMonthlySalary(r.monthlySalary);
+      if (r.notes) setNotes(r.notes);
+
+      toast[filled.length ? "success" : "info"](
+        filled.length
+          ? `Filled from CV: ${filled.join(", ")}. Please check everything before saving.`
+          : "Nothing could be read from this CV — please type the details.",
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not read the CV");
+    } finally {
+      setScanningCv(false);
     }
   }
 
@@ -296,6 +370,43 @@ function AddCandidatePage() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+        {/* Upload existing CV (auto-fill everything) */}
+        <Card className="border-primary/40">
+          <CardHeader>
+            <CardTitle className="text-base">Upload Existing CV · Auto-fill</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Have a CV from the agent already? Upload the scan (image or PDF) and every detail it contains — name,
+              passport, personal details, experience, languages, skills, contact, salary and remarks — is filled in
+              below. Review and correct anything before saving.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <label
+                className={cn(
+                  "inline-flex cursor-pointer items-center gap-2 rounded-md border bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90",
+                  scanningCv && "pointer-events-none opacity-60",
+                )}
+              >
+                {scanningCv ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {scanningCv ? "Reading CV..." : "Upload CV & fill form"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  className="hidden"
+                  disabled={scanningCv}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void readCv(f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              {cvFileName ? <span className="text-sm text-muted-foreground">{cvFileName}</span> : null}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Step 1 — Passport scan (auto-fill) */}
         <Card>
           <CardHeader>
