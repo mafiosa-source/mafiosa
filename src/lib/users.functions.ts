@@ -137,6 +137,7 @@ export const currentAppUser = createServerFn({ method: "POST" })
           fullAccess: true,
           status: "active" as const,
           mustChangePassword: false,
+          agentScope: [] as string[],
         };
       }
     }
