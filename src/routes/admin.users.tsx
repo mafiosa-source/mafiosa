@@ -43,6 +43,21 @@ export const Route = createFileRoute("/admin/users")({
 
 type Row = Awaited<ReturnType<typeof listAppUsers>>[number];
 
+const GROUPED: [string, typeof MODULES][] = Array.from(
+  MODULES.reduce((map, m) => {
+    map.set(m.group, [...(map.get(m.group) ?? []), m]);
+    return map;
+  }, new Map<string, typeof MODULES>()),
+);
+
+const PRESETS: Record<string, ModuleKey[]> = {
+  "CV management only": ["workers", "agents"],
+  "Fuel only": ["fuel"],
+  "Agents only": ["agents"],
+  "Petty cash only": ["petty-cash"],
+  "Reports only": ["reports"],
+};
+
 function AdminUsersPage() {
   const load = useServerFn(listAppUsers);
   const save = useServerFn(saveAppUser);
@@ -52,6 +67,7 @@ function AdminUsersPage() {
   const updateName = useServerFn(updateAppUserName);
 
   const [rows, setRows] = useState<Row[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [busy, setBusy] = useState(false);
   const [newName, setNewName] = useState("");
 
@@ -62,6 +78,23 @@ function AdminUsersPage() {
   }, [load]);
 
   useEffect(refresh, [refresh]);
+
+  useEffect(() => {
+    listAgents()
+      .then(setAgents)
+      .catch(() => setAgents([]));
+  }, []);
+
+  const setPermissions = async (row: Row, next: ModuleKey[]) => {
+    setRows((rs) => rs.map((r) => (r.id === row.id ? { ...r, permissions: next } : r)));
+    try {
+      await save({ data: { id: row.id, permissions: next } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save permissions");
+      refresh();
+    }
+  };
+
 
   const togglePermission = async (row: Row, key: ModuleKey) => {
     const next = row.permissions.includes(key)
