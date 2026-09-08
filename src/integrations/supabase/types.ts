@@ -61,6 +61,7 @@ export type Database = {
       }
       agents: {
         Row: {
+          agency_name: string | null
           agent_code: string
           contact_person: string | null
           country: string
@@ -70,6 +71,7 @@ export type Database = {
           phone: string | null
         }
         Insert: {
+          agency_name?: string | null
           agent_code: string
           contact_person?: string | null
           country: string
@@ -79,6 +81,7 @@ export type Database = {
           phone?: string | null
         }
         Update: {
+          agency_name?: string | null
           agent_code?: string
           contact_person?: string | null
           country?: string
