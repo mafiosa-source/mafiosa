@@ -331,6 +331,7 @@ export async function updateCandidate(id: string, patch: Partial<CandidateInput>
   if (patch.dateOfBirth !== undefined) row.date_of_birth = patch.dateOfBirth;
   if (patch.position !== undefined) row.position = patch.position;
   if (patch.experienceYears !== undefined) row.experience_years = patch.experienceYears;
+  if (patch.experienceCountry !== undefined) row.experience_country = patch.experienceCountry || null;
   if (patch.languages !== undefined) row.languages = patch.languages;
   if (patch.availabilityStatus !== undefined) row.availability_status = patch.availabilityStatus;
   if (patch.maritalStatus !== undefined) row.marital_status = patch.maritalStatus;
