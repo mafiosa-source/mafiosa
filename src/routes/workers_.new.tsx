@@ -62,6 +62,7 @@ function AddCandidatePage() {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [position, setPosition] = useState("Housemaid");
   const [experienceYears, setExperienceYears] = useState("0");
+  const [experienceCountry, setExperienceCountry] = useState("");
   const [maritalStatus, setMaritalStatus] = useState("");
   const [childrenCount, setChildrenCount] = useState("0");
   const [height, setHeight] = useState("");
