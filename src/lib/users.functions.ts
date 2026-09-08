@@ -297,6 +297,30 @@ export const updateAppUserName = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+/** Admin: permanently remove a user (their login identity and access row). */
+export const deleteAppUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { id: string }) => data)
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("is_app_admin", { _uid: context.userId });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { ADMIN_EMAIL } = await import("@/lib/users.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin
+      .from("app_users")
+      .select("auth_user_id, login_email")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (!row) throw new Error("User not found");
+    if ((row.login_email as string).toLowerCase() === ADMIN_EMAIL.toLowerCase())
+      throw new Error("The super admin account cannot be deleted");
+    if (row.auth_user_id === context.userId) throw new Error("You cannot delete your own account");
+    const { error } = await supabaseAdmin.from("app_users").delete().eq("id", data.id);
+    if (error) throw error;
+    if (row.auth_user_id) await supabaseAdmin.auth.admin.deleteUser(row.auth_user_id as string);
+    return { ok: true as const };
+  });
+
 /** Self-service: signed-in user changes their own password. */
 export const changeOwnPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

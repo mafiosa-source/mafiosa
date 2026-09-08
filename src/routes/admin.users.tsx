@@ -22,6 +22,7 @@ import { listAgents, type Agent } from "@/lib/cv-management";
 import {
   clearTempPassword,
   createAppUser,
+  deleteAppUser,
   listAppUsers,
   resetUserPassword,
   saveAppUser,
@@ -66,6 +67,7 @@ function AdminUsersPage() {
   const reset = useServerFn(resetUserPassword);
   const clearTemp = useServerFn(clearTempPassword);
   const updateName = useServerFn(updateAppUserName);
+  const removeUser = useServerFn(deleteAppUser);
 
   const [rows, setRows] = useState<Row[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -218,6 +220,22 @@ function AdminUsersPage() {
                   }}
                 >
                   Reset password
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={async () => {
+                    if (!window.confirm(`Permanently delete ${row.name}? This removes their login and access. Their past transactions stay untouched.`)) return;
+                    try {
+                      await removeUser({ data: { id: row.id } });
+                      toast.success("User deleted");
+                      refresh();
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : "Could not delete user");
+                    }
+                  }}
+                >
+                  Delete
                 </Button>
               </div>
             </div>
