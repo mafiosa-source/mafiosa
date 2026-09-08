@@ -43,6 +43,11 @@ export type Candidate = {
   passportIssueDate?: string;
   passportExpiryDate?: string;
   passportScanUrl?: string;
+  placeOfBirth?: string;
+  contactNumber?: string;
+  address?: string;
+  monthlySalary?: string;
+  remarks?: string;
   notes?: string;
   status: "Available" | "Reserved" | "Deployed";
   createdAt: string;
@@ -167,6 +172,11 @@ function candidateFromRow(r: Row): Candidate {
     passportIssueDate: (r.passport_issue_date as string) ?? undefined,
     passportExpiryDate: (r.passport_expiry_date as string) ?? undefined,
     passportScanUrl: (r.passport_scan_url as string) ?? undefined,
+    placeOfBirth: (r.place_of_birth as string) ?? undefined,
+    contactNumber: (r.contact_number as string) ?? undefined,
+    address: (r.address as string) ?? undefined,
+    monthlySalary: (r.monthly_salary as string) ?? undefined,
+    remarks: (r.remarks as string) ?? undefined,
     notes: (r.notes as string) ?? undefined,
     status: (r.status as Candidate["status"]) ?? "Available",
     createdAt: String(r.created_at ?? ""),
@@ -243,6 +253,11 @@ export type CandidateInput = {
   passportIssueDate?: string;
   passportExpiryDate?: string;
   passportScanUrl?: string;
+  placeOfBirth?: string;
+  contactNumber?: string;
+  address?: string;
+  monthlySalary?: string;
+  remarks?: string;
   notes?: string;
   status: Candidate["status"];
 };
@@ -289,6 +304,11 @@ export async function createCandidate(input: CandidateInput): Promise<Candidate>
   if (input.passportIssueDate) row.passport_issue_date = input.passportIssueDate;
   if (input.passportExpiryDate) row.passport_expiry_date = input.passportExpiryDate;
   if (input.passportScanUrl) row.passport_scan_url = input.passportScanUrl;
+  if (input.placeOfBirth) row.place_of_birth = input.placeOfBirth;
+  if (input.contactNumber) row.contact_number = input.contactNumber;
+  if (input.address) row.address = input.address;
+  if (input.monthlySalary) row.monthly_salary = input.monthlySalary;
+  if (input.remarks) row.remarks = input.remarks;
   if (input.notes) row.notes = input.notes;
 
   const { data, error } = await supabase.from("candidates").insert(row as never).select("*").single();
@@ -321,6 +341,11 @@ export async function updateCandidate(id: string, patch: Partial<CandidateInput>
   if (patch.passportIssueDate !== undefined) row.passport_issue_date = patch.passportIssueDate;
   if (patch.passportExpiryDate !== undefined) row.passport_expiry_date = patch.passportExpiryDate;
   if (patch.passportScanUrl !== undefined) row.passport_scan_url = patch.passportScanUrl;
+  if (patch.placeOfBirth !== undefined) row.place_of_birth = patch.placeOfBirth;
+  if (patch.contactNumber !== undefined) row.contact_number = patch.contactNumber;
+  if (patch.address !== undefined) row.address = patch.address;
+  if (patch.monthlySalary !== undefined) row.monthly_salary = patch.monthlySalary;
+  if (patch.remarks !== undefined) row.remarks = patch.remarks;
   if (patch.notes !== undefined) row.notes = patch.notes;
   if (patch.status !== undefined) row.status = patch.status;
 
@@ -404,4 +429,34 @@ export function countryFlag(code: string): string {
 export function agentName(agents: Agent[], id?: string): string {
   if (!id) return "—";
   return agents.find((a) => a.id === id)?.name ?? "—";
+}
+
+// ---------- CV remarks summary ----------
+/** Builds a readable narrative summary of the candidate for the CV REMARKS box. */
+export function candidateSummary(c: Candidate): string {
+  const parts: string[] = [];
+  const name = c.fullName.toUpperCase();
+  const age = c.age ?? ageFromDob(c.dateOfBirth);
+  const bits = [
+    age ? `${age}-year-old` : "",
+    c.maritalStatus ? c.maritalStatus.toLowerCase() : "",
+    c.nationality ? `${c.nationality} national` : "",
+  ].filter(Boolean).join(" ");
+  parts.push(`${name} is a ${bits || "candidate"} applying as ${c.position.toUpperCase()}.`);
+
+  if (c.experienceYears > 0) {
+    parts.push(`She has ${c.experienceYears} year(s) of working experience.`);
+  } else {
+    parts.push("No previous overseas working experience recorded.");
+  }
+
+  if (c.skills.length) parts.push(`Skilled in ${c.skills.join(", ").toLowerCase()}.`);
+  if (c.languages.length) parts.push(`Speaks ${c.languages.join(" and ")}.`);
+  if (c.education) parts.push(`Education: ${c.education}.`);
+  parts.push(
+    c.childrenCount > 0 ? `Has ${c.childrenCount} child(ren).` : "No children.",
+  );
+  if (c.religion) parts.push(`Religion: ${c.religion}.`);
+  if (c.notes) parts.push(c.notes);
+  return parts.join(" ");
 }
