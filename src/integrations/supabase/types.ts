@@ -396,6 +396,290 @@ export type Database = {
           },
         ]
       }
+      dm_bank_lines: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          description: string | null
+          direction: string
+          id: string
+          location: string | null
+          statement_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          date?: string
+          description?: string | null
+          direction?: string
+          id?: string
+          location?: string | null
+          statement_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          description?: string | null
+          direction?: string
+          id?: string
+          location?: string | null
+          statement_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_bank_lines_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: false
+            referencedRelation: "dm_bank_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dm_bank_statements: {
+        Row: {
+          attachment_url: string | null
+          created_at: string
+          created_by: string | null
+          from_date: string | null
+          id: string
+          label: string
+          to_date: string | null
+          user_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          from_date?: string | null
+          id?: string
+          label: string
+          to_date?: string | null
+          user_id?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          from_date?: string | null
+          id?: string
+          label?: string
+          to_date?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dm_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          created_by: string | null
+          date: string
+          id: string
+          location: string
+          lpo_id: string | null
+          particulars: string | null
+          txn_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          location: string
+          lpo_id?: string | null
+          particulars?: string | null
+          txn_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          location?: string
+          lpo_id?: string | null
+          particulars?: string | null
+          txn_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_expenses_lpo_id_fkey"
+            columns: ["lpo_id"]
+            isOneToOne: false
+            referencedRelation: "dm_lpos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dm_lpo_items: {
+        Row: {
+          created_at: string
+          id: string
+          lpo_id: string
+          name: string
+          qty: number
+          total: number
+          unit: string | null
+          unit_cost: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lpo_id: string
+          name: string
+          qty?: number
+          total?: number
+          unit?: string | null
+          unit_cost?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lpo_id?: string
+          name?: string
+          qty?: number
+          total?: number
+          unit?: string | null
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_lpo_items_lpo_id_fkey"
+            columns: ["lpo_id"]
+            isOneToOne: false
+            referencedRelation: "dm_lpos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dm_lpos: {
+        Row: {
+          attachment_url: string | null
+          created_at: string
+          created_by: string | null
+          date: string
+          id: string
+          location: string
+          notes: string | null
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          location: string
+          notes?: string | null
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          location?: string
+          notes?: string | null
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dm_sale_items: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          qty: number
+          sale_id: string
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          qty?: number
+          sale_id: string
+          total?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          qty?: number
+          sale_id?: string
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "dm_sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dm_sales: {
+        Row: {
+          attachment_url: string | null
+          created_at: string
+          created_by: string | null
+          date: string
+          id: string
+          location: string
+          notes: string | null
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          location: string
+          notes?: string | null
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          location?: string
+          notes?: string | null
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       month_closings: {
         Row: {
           closed_at: string

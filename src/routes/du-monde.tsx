@@ -6,6 +6,11 @@ import { TransactionDialog } from "@/components/TransactionDialog";
 import { PeriodSelect } from "@/components/PeriodSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OpsDashboard } from "@/components/dumonde/OpsDashboard";
+import { ItemSheetSection } from "@/components/dumonde/ItemSheetSection";
+import { ExpensesSection } from "@/components/dumonde/ExpensesSection";
+import { BankSection } from "@/components/dumonde/BankSection";
 import { Plus } from "lucide-react";
 import { useFinance, walletBalance, setOpeningBalance } from "@/lib/finance-store";
 import { walletLedger } from "@/lib/finance-derived";
@@ -48,8 +53,8 @@ function DuMonde() {
   return (
     <AppLayout>
       <PageHeader
-        title="Du Monde Petty Cash"
-        description="Factory catering wallet · automatic ledger. Period figures show this month's activity only."
+        title="Du Monde"
+        description="Factory catering: daily orders, sales, costs, bank statements and the petty cash wallet."
         action={
           <TransactionDialog
             trigger={<Button size="sm"><Plus className="h-4 w-4" /> New transaction</Button>}
@@ -60,22 +65,52 @@ function DuMonde() {
       <div className="mb-4 rounded-lg border bg-card p-4">
         <PeriodSelect period={period} onChange={setPeriod} />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <StatCard label={`Opening balance (${period.from || "start"})`} value={led.opening} caption="Balance carried into the period" />
-        <StatCard label="Money In (period)" value={led.debit} tone="success" caption="Received in this period" />
-        <StatCard label="Money Out (period)" value={led.credit} tone="warning" caption="Paid out in this period" />
-        <StatCard label="Closing balance (period)" value={led.closing} tone={led.closing < 0 ? "danger" : "info"} caption="Opening + In − Out" />
-      </div>
-      <div className="mb-6 rounded-lg border bg-card p-3 flex flex-wrap items-center gap-3">
-        <span className="text-sm text-muted-foreground">
-          Actual current wallet balance (all history):{" "}
-          <span className="tabular font-semibold text-foreground">{qar(b.balance)}</span>
-        </span>
-        <span className="ml-auto text-sm text-muted-foreground">Set opening balance</span>
-        <Input value={opening} onChange={(e) => setOpening(e.target.value)} type="number" step="0.01" className="max-w-[180px] h-8" />
-        <Button size="sm" variant="outline" onClick={() => setOpeningBalance("dumonde-petty", Number(opening) || 0)}>Save</Button>
-      </div>
-      <TransactionsTable rows={rows} exportName="dumonde-petty.csv" ledgerWallet="dumonde-petty" printTitle="Du Monde Petty Cash Report" />
+
+      <Tabs defaultValue="dashboard" className="space-y-4">
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="lpo">LPO</TabsTrigger>
+          <TabsTrigger value="sales">Sales</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          <TabsTrigger value="bank">Bank statements</TabsTrigger>
+          <TabsTrigger value="petty">Petty cash</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="dashboard">
+          <OpsDashboard from={period.from || undefined} to={period.to || undefined} />
+        </TabsContent>
+        <TabsContent value="lpo">
+          <ItemSheetSection mode="lpo" from={period.from || undefined} to={period.to || undefined} />
+        </TabsContent>
+        <TabsContent value="sales">
+          <ItemSheetSection mode="sales" from={period.from || undefined} to={period.to || undefined} />
+        </TabsContent>
+        <TabsContent value="expenses">
+          <ExpensesSection from={period.from || undefined} to={period.to || undefined} />
+        </TabsContent>
+        <TabsContent value="bank">
+          <BankSection from={period.from || undefined} to={period.to || undefined} />
+        </TabsContent>
+
+        <TabsContent value="petty" className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard label={`Opening balance (${period.from || "start"})`} value={led.opening} caption="Balance carried into the period" />
+            <StatCard label="Money In (period)" value={led.debit} tone="success" caption="Received in this period" />
+            <StatCard label="Money Out (period)" value={led.credit} tone="warning" caption="Paid out in this period" />
+            <StatCard label="Closing balance (period)" value={led.closing} tone={led.closing < 0 ? "danger" : "info"} caption="Opening + In − Out" />
+          </div>
+          <div className="rounded-lg border bg-card p-3 flex flex-wrap items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              Actual current wallet balance (all history):{" "}
+              <span className="tabular font-semibold text-foreground">{qar(b.balance)}</span>
+            </span>
+            <span className="ml-auto text-sm text-muted-foreground">Set opening balance</span>
+            <Input value={opening} onChange={(e) => setOpening(e.target.value)} type="number" step="0.01" className="max-w-[180px] h-8" />
+            <Button size="sm" variant="outline" onClick={() => setOpeningBalance("dumonde-petty", Number(opening) || 0)}>Save</Button>
+          </div>
+          <TransactionsTable rows={rows} exportName="dumonde-petty.csv" ledgerWallet="dumonde-petty" printTitle="Du Monde Petty Cash Report" />
+        </TabsContent>
+      </Tabs>
     </AppLayout>
   );
 }
