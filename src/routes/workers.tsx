@@ -320,6 +320,8 @@ function WorkersPage() {
               agents={agents}
               onShortlist={() => toggleShortlist(detailCandidate.id)}
               shortlisted={shortlisted.has(detailCandidate.id)}
+              isAdmin={isAdmin}
+              onDelete={() => void removeCandidate(detailCandidate)}
             />
           )}
         </SheetContent>
@@ -333,11 +335,15 @@ function CandidateDetail({
   agents,
   onShortlist,
   shortlisted,
+  isAdmin,
+  onDelete,
 }: {
   candidate: Candidate;
   agents: Agent[];
   onShortlist: () => void;
   shortlisted: boolean;
+  isAdmin: boolean;
+  onDelete: () => void;
 }) {
   const [uploader, setUploader] = useState("Loading...");
   const [activePhoto, setActivePhoto] = useState(0);
