@@ -228,12 +228,16 @@ export function ItemSheetSection({
                   const parsed = res.lines
                     .filter((l) => l.name)
                     .map<Row>((l) => {
-                      const qty = l.qty ?? 1;
+                      const cash = l.cashQty ?? 0;
+                      const card = l.cardQty ?? 0;
+                      const qty = isLpo ? (l.qty ?? 1) : cash + card || l.qty || 0;
                       const price = (isLpo ? l.unitCost : l.unitPrice) ?? (l.total && qty ? l.total / qty : 0);
                       return {
                         name: (l.name ?? "").toUpperCase(),
                         available: l.availableQty ?? 0,
                         qty,
+                        cash,
+                        card,
                         unit: l.unit ?? "",
                         price,
                         total: l.total ?? qty * price,
@@ -251,7 +255,9 @@ export function ItemSheetSection({
                   <TableRow>
                     <TableHead>Item</TableHead>
                     {isLpo ? <TableHead className="w-24">Available qty</TableHead> : null}
-                    <TableHead className="w-24">{isLpo ? "Order qty" : "Qty"}</TableHead>
+                    {!isLpo ? <TableHead className="w-24">Cash sales</TableHead> : null}
+                    {!isLpo ? <TableHead className="w-24">Card payments</TableHead> : null}
+                    {isLpo ? <TableHead className="w-24">Order qty</TableHead> : <TableHead className="w-20">Total qty</TableHead>}
                     {isLpo ? <TableHead className="w-24">Unit</TableHead> : null}
                     <TableHead className="w-28">{isLpo ? "Unit cost" : "Unit price"}</TableHead>
                     <TableHead className="w-28 text-right">Total</TableHead>
