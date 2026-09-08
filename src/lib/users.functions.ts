@@ -167,6 +167,7 @@ export const listAppUsers = createServerFn({ method: "POST" })
       createdAt: r.created_at as string,
       lastLoginAt: (r.last_login_at as string) ?? null,
       tempPassword: ((r as { temp_password?: string | null }).temp_password ?? null),
+      agentScope: ((r as { agent_scope?: string[] | null }).agent_scope ?? []) as string[],
     }));
   });
 
