@@ -105,6 +105,7 @@ export const currentAppUser = createServerFn({ method: "POST" })
         fullAccess: Boolean(row.full_access),
         status: row.status as "active" | "disabled",
         mustChangePassword: Boolean(row.must_change_password),
+        agentScope: ((row as { agent_scope?: string[] | null }).agent_scope ?? []) as string[],
       };
     }
 
@@ -136,6 +137,7 @@ export const currentAppUser = createServerFn({ method: "POST" })
           fullAccess: true,
           status: "active" as const,
           mustChangePassword: false,
+          agentScope: [] as string[],
         };
       }
     }
@@ -165,6 +167,7 @@ export const listAppUsers = createServerFn({ method: "POST" })
       createdAt: r.created_at as string,
       lastLoginAt: (r.last_login_at as string) ?? null,
       tempPassword: ((r as { temp_password?: string | null }).temp_password ?? null),
+      agentScope: ((r as { agent_scope?: string[] | null }).agent_scope ?? []) as string[],
     }));
   });
 
@@ -177,6 +180,7 @@ export const saveAppUser = createServerFn({ method: "POST" })
     fullAccess?: boolean;
     role?: "admin" | "user";
     status?: "active" | "disabled";
+    agentScope?: string[];
   }) => data)
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("is_app_admin", { _uid: context.userId });
@@ -186,6 +190,7 @@ export const saveAppUser = createServerFn({ method: "POST" })
     if (data.fullAccess !== undefined) patch["full_access"] = data.fullAccess;
     if (data.role) patch["role"] = data.role;
     if (data.status) patch["status"] = data.status;
+    if (data.agentScope) patch["agent_scope"] = data.agentScope;
     const { error } = await context.supabase.from("app_users").update(patch as never).eq("id", data.id);
     if (error) throw error;
     return { ok: true as const };

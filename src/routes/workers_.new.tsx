@@ -89,17 +89,23 @@ function AddCandidatePage() {
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingPassport, setUploadingPassport] = useState(false);
 
+  const scope = user?.role === "admin" || user?.fullAccess ? [] : (user?.agentScope ?? []);
+
   useEffect(() => {
     (async () => {
       try {
-        setAgents(await listAgents());
+        const all = await listAgents();
+        const visible = scope.length ? all.filter((a) => scope.includes(a.id)) : all;
+        setAgents(visible);
+        if (visible.length === 1) setAgentId(visible[0]!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not load agents");
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scope.join(",")]);
 
   const countryCode = nationality ? (COUNTRY_CODE_BY_NAME[nationality] ?? "") : "";
 
@@ -200,6 +206,8 @@ function AddCandidatePage() {
     if (!photoUrl) return toast.error("A main photo is required");
     if (!nationality) return toast.error("Nationality is required");
     if (!agentId) return toast.error("Please select an agent");
+    if (scope.length && !scope.includes(agentId))
+      return toast.error("You may only add candidates under your assigned agent");
     if (!countryCode) return toast.error("Could not determine country code");
 
     setSaving(true);

@@ -1,0 +1,2 @@
+ALTER TABLE public.app_users
+  ADD COLUMN IF NOT EXISTS agent_scope uuid[] NOT NULL DEFAULT '{}'::uuid[];

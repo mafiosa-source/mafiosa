@@ -88,9 +88,19 @@ export type AppUser = {
   fullAccess: boolean;
   status: "active" | "disabled";
   mustChangePassword: boolean;
+  /** Empty = every agent. Otherwise the user may only see/add CVs for these agents. */
+  agentScope: string[];
   createdAt?: string;
   lastLoginAt?: string | null;
 };
+
+/** True when the user may work with candidates belonging to this agent. */
+export function canUseAgent(user: AppUser | null, agentId?: string | null): boolean {
+  if (!user) return false;
+  if (user.role === "admin" || user.fullAccess) return true;
+  if (!user.agentScope || user.agentScope.length === 0) return true;
+  return !!agentId && user.agentScope.includes(agentId);
+}
 
 export function canAccess(user: AppUser | null, module: ModuleKey | "admin" | null): boolean {
   if (!user) return false;

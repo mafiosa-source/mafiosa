@@ -21,6 +21,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Search, Heart, Eye, FileText, MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAppUser } from "@/lib/app-user";
 import { toast } from "sonner";
 import {
   listCandidates,
@@ -56,6 +57,8 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 function WorkersPage() {
+  const { user } = useAppUser();
+  const agentScope = user?.role === "admin" || user?.fullAccess ? [] : (user?.agentScope ?? []);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,6 +95,7 @@ function WorkersPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return candidates.filter((c) => {
+      if (agentScope.length && !(c.agentId && agentScope.includes(c.agentId))) return false;
       if (selectedCountry && c.countryCode !== selectedCountry) return false;
       if (positionFilter !== "all" && c.position !== positionFilter) return false;
       if (statusFilter !== "all" && c.status !== statusFilter) return false;
@@ -101,7 +105,8 @@ function WorkersPage() {
       }
       return true;
     });
-  }, [candidates, selectedCountry, positionFilter, statusFilter, search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidates, selectedCountry, positionFilter, statusFilter, search, agentScope.join(",")]);
 
   const detailCandidate = detailId ? candidates.find((c) => c.id === detailId) : null;
 

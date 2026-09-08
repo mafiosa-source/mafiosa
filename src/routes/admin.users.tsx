@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MODULES, type ModuleKey } from "@/lib/permissions";
+import { listAgents, type Agent } from "@/lib/cv-management";
 import {
   clearTempPassword,
   createAppUser,
@@ -43,6 +44,21 @@ export const Route = createFileRoute("/admin/users")({
 
 type Row = Awaited<ReturnType<typeof listAppUsers>>[number];
 
+const GROUPED: [string, typeof MODULES][] = Array.from(
+  MODULES.reduce((map, m) => {
+    map.set(m.group, [...(map.get(m.group) ?? []), m]);
+    return map;
+  }, new Map<string, typeof MODULES>()),
+);
+
+const PRESETS: Record<string, ModuleKey[]> = {
+  "CV management only": ["workers", "agents"],
+  "Fuel only": ["fuel"],
+  "Agents only": ["agents"],
+  "Petty cash only": ["petty-cash"],
+  "Reports only": ["reports"],
+};
+
 function AdminUsersPage() {
   const load = useServerFn(listAppUsers);
   const save = useServerFn(saveAppUser);
@@ -52,6 +68,7 @@ function AdminUsersPage() {
   const updateName = useServerFn(updateAppUserName);
 
   const [rows, setRows] = useState<Row[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [busy, setBusy] = useState(false);
   const [newName, setNewName] = useState("");
 
@@ -62,6 +79,23 @@ function AdminUsersPage() {
   }, [load]);
 
   useEffect(refresh, [refresh]);
+
+  useEffect(() => {
+    listAgents()
+      .then(setAgents)
+      .catch(() => setAgents([]));
+  }, []);
+
+  const setPermissions = async (row: Row, next: ModuleKey[]) => {
+    setRows((rs) => rs.map((r) => (r.id === row.id ? { ...r, permissions: next } : r)));
+    try {
+      await save({ data: { id: row.id, permissions: next } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save permissions");
+      refresh();
+    }
+  };
+
 
   const togglePermission = async (row: Row, key: ModuleKey) => {
     const next = row.permissions.includes(key)
@@ -76,7 +110,15 @@ function AdminUsersPage() {
     }
   };
 
-  const patch = async (row: Row, data: Partial<{ fullAccess: boolean; status: "active" | "disabled"; role: "admin" | "user" }>) => {
+  const patch = async (
+    row: Row,
+    data: Partial<{
+      fullAccess: boolean;
+      status: "active" | "disabled";
+      role: "admin" | "user";
+      agentScope: string[];
+    }>,
+  ) => {
     try {
       await save({ data: { id: row.id, ...data } });
       refresh();
@@ -221,18 +263,102 @@ function AdminUsersPage() {
                 Full system access
               </label>
               {!row.fullAccess ? (
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {MODULES.map((m) => (
-                    <label key={m.key} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Checkbox
-                        checked={row.permissions.includes(m.key)}
-                        onCheckedChange={() => void togglePermission(row, m.key)}
-                      />
-                      <span className="text-foreground">{m.label}</span>
-                      <span className="text-xs">· {m.group}</span>
-                    </label>
-                  ))}
-                </div>
+                <>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {Object.entries(PRESETS).map(([label, keys]) => (
+                      <Button
+                        key={label}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void setPermissions(row, keys)}
+                      >
+                        {label}
+                      </Button>
+                    ))}
+                    <Button size="sm" variant="ghost" onClick={() => void setPermissions(row, [])}>
+                      Clear all
+                    </Button>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {GROUPED.map(([group, mods]) => {
+                      const allOn = mods.every((m) => row.permissions.includes(m.key));
+                      return (
+                        <div key={group} className="rounded-lg border p-3">
+                          <div className="mb-2 flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                              {group}
+                            </span>
+                            <button
+                              type="button"
+                              className="text-xs text-primary hover:underline"
+                              onClick={() => {
+                                const keys = mods.map((m) => m.key);
+                                const next = allOn
+                                  ? row.permissions.filter((p) => !keys.includes(p))
+                                  : Array.from(new Set([...row.permissions, ...keys]));
+                                void setPermissions(row, next);
+                              }}
+                            >
+                              {allOn ? "None" : "All"}
+                            </button>
+                          </div>
+                          <div className="space-y-1.5">
+                            {mods.map((m) => (
+                              <label key={m.key} className="flex items-center gap-2 text-sm">
+                                <Checkbox
+                                  checked={row.permissions.includes(m.key)}
+                                  onCheckedChange={() => void togglePermission(row, m.key)}
+                                />
+                                <span className="text-foreground">{m.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {row.permissions.includes("workers") || row.permissions.includes("agents") ? (
+                    <div className="mt-4 rounded-lg border p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <div className="text-sm font-medium">Limit CV work to specific agents</div>
+                          <p className="text-xs text-muted-foreground">
+                            {row.agentScope.length === 0
+                              ? "Currently allowed for all agents."
+                              : `Currently limited to ${row.agentScope.length} agent(s).`}
+                          </p>
+                        </div>
+                        {row.agentScope.length ? (
+                          <Button size="sm" variant="ghost" onClick={() => void patch(row, { agentScope: [] })}>
+                            Allow all agents
+                          </Button>
+                        ) : null}
+                      </div>
+                      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {agents.length === 0 ? (
+                          <span className="text-xs text-muted-foreground">No agents registered yet.</span>
+                        ) : null}
+                        {agents.map((a) => (
+                          <label key={a.id} className="flex items-center gap-2 text-sm">
+                            <Checkbox
+                              checked={row.agentScope.includes(a.id)}
+                              onCheckedChange={() => {
+                                const next = row.agentScope.includes(a.id)
+                                  ? row.agentScope.filter((x) => x !== a.id)
+                                  : [...row.agentScope, a.id];
+                                void patch(row, { agentScope: next });
+                              }}
+                            />
+                            <span className="text-foreground">{a.agentCode} · {a.name}</span>
+                            <span className="text-xs text-muted-foreground">{a.country}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </div>
           </div>
