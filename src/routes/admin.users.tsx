@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MODULES, type ModuleKey } from "@/lib/permissions";
+import { listAgents, type Agent } from "@/lib/cv-management";
 import {
   clearTempPassword,
   createAppUser,
@@ -109,7 +110,15 @@ function AdminUsersPage() {
     }
   };
 
-  const patch = async (row: Row, data: Partial<{ fullAccess: boolean; status: "active" | "disabled"; role: "admin" | "user" }>) => {
+  const patch = async (
+    row: Row,
+    data: Partial<{
+      fullAccess: boolean;
+      status: "active" | "disabled";
+      role: "admin" | "user";
+      agentScope: string[];
+    }>,
+  ) => {
     try {
       await save({ data: { id: row.id, ...data } });
       refresh();
