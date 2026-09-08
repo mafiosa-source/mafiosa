@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Plus, Trash2, Loader2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Loader2, List, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import {
   listAgents,
@@ -40,6 +40,7 @@ function AgentsPage() {
   const [country, setCountry] = useState("");
   const [phone, setPhone] = useState("");
   const [contactPerson, setContactPerson] = useState("");
+  const [view, setView] = useState<"list" | "decks">("list");
 
   async function refresh() {
     setLoading(true);
@@ -125,7 +126,15 @@ function AgentsPage() {
       <PageHeader
         title="Agents"
         description="Recruitment agents grouped by country. Agent codes are used in candidate serial numbers."
-        action={<Button size="sm" onClick={startCreate}><Plus className="h-4 w-4" /> Add Agent</Button>}
+        action={
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-md border">
+              <Button size="sm" variant={view === "list" ? "secondary" : "ghost"} className="rounded-r-none" onClick={() => setView("list")}><List className="h-4 w-4" /> List</Button>
+              <Button size="sm" variant={view === "decks" ? "secondary" : "ghost"} className="rounded-l-none" onClick={() => setView("decks")}><LayoutGrid className="h-4 w-4" /> Decks</Button>
+            </div>
+            <Button size="sm" onClick={startCreate}><Plus className="h-4 w-4" /> Add Agent</Button>
+          </div>
+        }
       />
 
       {loading ? (
@@ -136,25 +145,48 @@ function AgentsPage() {
         <div className="space-y-6">
           {grouped.map(([group, rows]) => (
             <Card key={group}>
-              <CardHeader className="pb-3"><CardTitle className="text-base">{group}</CardTitle></CardHeader>
+              <CardHeader className="pb-3"><CardTitle className="text-base">{group} <span className="ml-1 text-sm font-normal text-muted-foreground">({rows.length})</span></CardTitle></CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader><TableRow>
-                    <TableHead>Agent code</TableHead><TableHead>Name</TableHead><TableHead>Contact person</TableHead><TableHead>Phone</TableHead><TableHead className="w-24 text-right">Actions</TableHead>
-                  </TableRow></TableHeader>
-                  <TableBody>{rows.map((agent) => (
-                    <TableRow key={agent.id}>
-                      <TableCell className="font-mono text-sm">{agent.agentCode}</TableCell>
-                      <TableCell className="font-medium">{agent.name}</TableCell>
-                      <TableCell>{agent.contactPerson || "—"}</TableCell>
-                      <TableCell>{agent.phone || "—"}</TableCell>
-                      <TableCell className="text-right"><div className="flex justify-end gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => startEdit(agent)}><Pencil className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => void remove(agent)}><Trash2 className="h-4 w-4" /></Button>
-                      </div></TableCell>
-                    </TableRow>
-                  ))}</TableBody>
-                </Table>
+                {view === "list" ? (
+                  <Table>
+                    <TableHeader><TableRow>
+                      <TableHead>Agent code</TableHead><TableHead>Name</TableHead><TableHead>Contact person</TableHead><TableHead>Phone</TableHead><TableHead className="w-24 text-right">Actions</TableHead>
+                    </TableRow></TableHeader>
+                    <TableBody>{rows.map((agent) => (
+                      <TableRow key={agent.id}>
+                        <TableCell className="font-mono text-sm">{agent.agentCode}</TableCell>
+                        <TableCell className="font-medium">{agent.name}</TableCell>
+                        <TableCell>{agent.contactPerson || "—"}</TableCell>
+                        <TableCell>{agent.phone || "—"}</TableCell>
+                        <TableCell className="text-right"><div className="flex justify-end gap-1">
+                          <Button size="icon" variant="ghost" onClick={() => startEdit(agent)}><Pencil className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" onClick={() => void remove(agent)}><Trash2 className="h-4 w-4" /></Button>
+                        </div></TableCell>
+                      </TableRow>
+                    ))}</TableBody>
+                  </Table>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {rows.map((agent) => (
+                      <div key={agent.id} className="rounded-lg border bg-background p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-semibold">{agent.name}</p>
+                            <p className="font-mono text-xs text-muted-foreground">{agent.agentCode}</p>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" onClick={() => startEdit(agent)}><Pencil className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => void remove(agent)}><Trash2 className="h-4 w-4" /></Button>
+                          </div>
+                        </div>
+                        <div className="mt-3 space-y-1 text-sm">
+                          <p><span className="text-muted-foreground">Contact: </span>{agent.contactPerson || "—"}</p>
+                          <p><span className="text-muted-foreground">Phone: </span>{agent.phone || "—"}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
