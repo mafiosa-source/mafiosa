@@ -82,11 +82,13 @@ function HousemaidFilePage() {
   const [sponsorPick, setSponsorPick] = useState("");
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [detail, setDetail] = useState<Transaction | null>(null);
+  const [remit, setRemit] = useState("");
 
   async function load() {
     try {
       const [cand, a, s, h] = await Promise.all([getCandidate(id), listAgents(), listSponsors(), listStatusHistory(id)]);
       setC(cand);
+      setRemit(cand?.agreedRemittance != null ? String(cand.agreedRemittance) : "");
       setAgents(a);
       setSponsors(s);
       setHistory(h);
@@ -337,6 +339,41 @@ function HousemaidFilePage() {
             )}
             <Link to="/recruitment/sponsors" className="text-xs text-primary hover:underline block pt-1">
               + Add a new sponsor in the directory
+            </Link>
+            <div className="border-t pt-3 mt-2">
+              <Label className="text-xs">Agreed agent remittance (QAR)</Label>
+              <div className="flex gap-2 mt-1">
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={remit}
+                  onChange={(e) => setRemit(e.target.value)}
+                  placeholder="e.g. 4000"
+                  disabled={!isAdmin && c.agreedRemittance != null}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy || (!isAdmin && c.agreedRemittance != null)}
+                  onClick={async () => {
+                    try {
+                      await updatePipelineFields(c.id, { agreedRemittance: remit ? Number(remit) : null });
+                      toast.success("Remittance saved");
+                      await load();
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : "Could not save");
+                    }
+                  }}
+                >
+                  Save
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Paid in two halves: 50% when the visa is ready to print, 50% after arrival — each as an Admin-approved request.
+              </p>
+            </div>
+            <Link to="/recruitment/requests" className="text-xs text-primary hover:underline block pt-1">
+              View requests for this housemaid
             </Link>
           </CardContent>
         </Card>
