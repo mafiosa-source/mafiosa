@@ -19,7 +19,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Search, Heart, Eye, FileText, MapPin, Loader2 } from "lucide-react";
+import { Plus, Search, Heart, Eye, FileText, MapPin, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppUser } from "@/lib/app-user";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ import {
   listAgents,
   getCandidate,
   getUploaderName,
+  deleteCandidate,
   countryFlag,
   countryName,
   formatDate,
@@ -57,7 +58,7 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 function WorkersPage() {
-  const { user } = useAppUser();
+  const { user, isAdmin } = useAppUser();
   const agentScope = user?.role === "admin" || user?.fullAccess ? [] : (user?.agentScope ?? []);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -117,6 +118,19 @@ function WorkersPage() {
       else next.add(id);
       return next;
     });
+  }
+
+  async function removeCandidate(c: Candidate) {
+    if (!isAdmin) return;
+    if (!window.confirm(`Delete the CV of ${c.fullName}? This cannot be undone.`)) return;
+    try {
+      await deleteCandidate(c.id);
+      setCandidates((prev) => prev.filter((x) => x.id !== c.id));
+      if (detailId === c.id) setDetailId(null);
+      toast.success("CV deleted");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not delete CV");
+    }
   }
 
   return (
@@ -274,6 +288,17 @@ function WorkersPage() {
                           <FileText className="h-3 w-3" />
                         </Link>
                       </Button>
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-destructive hover:text-destructive"
+                          title="Delete CV (admin only)"
+                          onClick={() => void removeCandidate(c)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -295,6 +320,8 @@ function WorkersPage() {
               agents={agents}
               onShortlist={() => toggleShortlist(detailCandidate.id)}
               shortlisted={shortlisted.has(detailCandidate.id)}
+              isAdmin={isAdmin}
+              onDelete={() => void removeCandidate(detailCandidate)}
             />
           )}
         </SheetContent>
@@ -308,11 +335,15 @@ function CandidateDetail({
   agents,
   onShortlist,
   shortlisted,
+  isAdmin,
+  onDelete,
 }: {
   candidate: Candidate;
   agents: Agent[];
   onShortlist: () => void;
   shortlisted: boolean;
+  isAdmin: boolean;
+  onDelete: () => void;
 }) {
   const [uploader, setUploader] = useState("Loading...");
   const [activePhoto, setActivePhoto] = useState(0);
@@ -403,6 +434,12 @@ function CandidateDetail({
           {shortlisted ? "Shortlisted" : "Shortlist"}
         </Button>
       </div>
+
+      {isAdmin && onDelete && (
+        <Button size="sm" variant="destructive" className="w-full" onClick={onDelete}>
+          <Trash2 className="h-4 w-4" /> Delete CV (admin only)
+        </Button>
+      )}
     </div>
   );
 }
