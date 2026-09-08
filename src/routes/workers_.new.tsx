@@ -35,6 +35,7 @@ import {
   type CandidateInput,
 } from "@/lib/cv-management";
 import { cn } from "@/lib/utils";
+import { scanPassport } from "@/lib/passport-ocr.functions";
 
 export const Route = createFileRoute("/workers_/new")({
   head: () => ({
@@ -76,7 +77,12 @@ function AddCandidatePage() {
   const [passportIssueDate, setPassportIssueDate] = useState("");
   const [passportExpiryDate, setPassportExpiryDate] = useState("");
   const [passportScanUrl, setPassportScanUrl] = useState("");
+  const [placeOfBirth, setPlaceOfBirth] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [monthlySalary, setMonthlySalary] = useState("");
   const [notes, setNotes] = useState("");
+  const [scanning, setScanning] = useState(false);
   const [status, setStatus] = useState("Available");
   const [availabilityStatus, setAvailabilityStatus] = useState("Available");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -144,10 +150,47 @@ function AddCandidatePage() {
       const url = await uploadPassportScan(file);
       setPassportScanUrl(url);
       toast.success("Passport scan uploaded");
+      if (file.type.startsWith("image/")) await readPassport(file);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploadingPassport(false);
+    }
+  }
+
+  /** Reads the passport photo page and fills name, passport number, date & place of birth. */
+  async function readPassport(file: File) {
+    setScanning(true);
+    try {
+      const imageBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
+        reader.onerror = () => reject(new Error("Could not read the image"));
+        reader.readAsDataURL(file);
+      });
+      const result = await scanPassport({
+        data: { imageBase64, mimeType: file.type || "image/jpeg" },
+      });
+      const filled: string[] = [];
+      if (result.fullName) { setFullName(result.fullName); filled.push("name"); }
+      if (result.passportNumber) { setPassportNumber(result.passportNumber); filled.push("passport number"); }
+      if (result.dateOfBirth) { setDateOfBirth(result.dateOfBirth); filled.push("date of birth"); }
+      if (result.placeOfBirth) { setPlaceOfBirth(result.placeOfBirth); filled.push("place of birth"); }
+      if (result.issueDate) setPassportIssueDate(result.issueDate);
+      if (result.expiryDate) setPassportExpiryDate(result.expiryDate);
+      if (result.nationality) {
+        const match = COUNTRIES.find(
+          (c) => c.name.toLowerCase() === result.nationality!.toLowerCase(),
+        );
+        if (match) setNationality(match.name);
+      }
+      toast[filled.length ? "success" : "info"](
+        filled.length ? `Read from passport: ${filled.join(", ")}` : "Nothing could be read — please type the details.",
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not read the passport");
+    } finally {
+      setScanning(false);
     }
   }
 
@@ -185,6 +228,10 @@ function AddCandidatePage() {
         passportIssueDate: passportIssueDate || undefined,
         passportExpiryDate: passportExpiryDate || undefined,
         passportScanUrl: passportScanUrl || undefined,
+        placeOfBirth: placeOfBirth || undefined,
+        contactNumber: contactNumber || undefined,
+        address: address || undefined,
+        monthlySalary: monthlySalary || undefined,
         notes: notes || undefined,
         status: status as CandidateInput["status"],
       };
@@ -228,7 +275,8 @@ function AddCandidatePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Upload the passport scan first. Enter the passport details below — they will be carried into the CV automatically.
+              Upload the passport photo page first. The name, passport number, date of birth and place of birth are read
+              automatically and filled in below — you can correct anything before saving.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label="Passport Number">
@@ -240,7 +288,21 @@ function AddCandidatePage() {
               <Field label="Expiry Date">
                 <Input type="date" value={passportExpiryDate} onChange={(e) => setPassportExpiryDate(e.target.value)} />
               </Field>
+              <Field label="Full Name (from passport)">
+                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Read from scan" />
+              </Field>
+              <Field label="Date of Birth">
+                <Input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
+              </Field>
+              <Field label="Place of Birth">
+                <Input value={placeOfBirth} onChange={(e) => setPlaceOfBirth(e.target.value)} placeholder="Read from scan" />
+              </Field>
             </div>
+            {scanning ? (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" /> Reading the passport...
+              </p>
+            ) : null}
             <div className="space-y-2">
               <Label>Passport Scan (PDF/Image)</Label>
               <div className="flex items-center gap-3">
@@ -387,6 +449,18 @@ function AddCandidatePage() {
               </Field>
               <Field label="Education">
                 <Input value={education} onChange={(e) => setEducation(e.target.value)} placeholder="e.g. High School" />
+              </Field>
+              <Field label="Place of Birth">
+                <Input value={placeOfBirth} onChange={(e) => setPlaceOfBirth(e.target.value)} placeholder="e.g. Nairobi" />
+              </Field>
+              <Field label="Monthly Salary">
+                <Input value={monthlySalary} onChange={(e) => setMonthlySalary(e.target.value)} placeholder="e.g. QAR 1,200" />
+              </Field>
+              <Field label="Contact Number">
+                <Input value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} placeholder="e.g. +254 7XX XXX XXX" />
+              </Field>
+              <Field label="Address">
+                <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Home address" />
               </Field>
             </div>
 
