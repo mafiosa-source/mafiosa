@@ -36,6 +36,8 @@ import {
 } from "@/lib/cv-management";
 import { cn } from "@/lib/utils";
 import { scanPassport } from "@/lib/passport-ocr.functions";
+import { passportExists } from "@/lib/recruitment";
+import { NameConfirmDialog } from "@/components/NameConfirmDialog";
 
 export const Route = createFileRoute("/workers_/new")({
   head: () => ({
@@ -589,6 +591,14 @@ function AddCandidatePage() {
           </Button>
         </div>
       </form>
+      <NameConfirmDialog
+        open={confirmName}
+        name={fullName.trim()}
+        entity="housemaid"
+        documentLabel="passport"
+        onConfirm={saveCandidate}
+        onCancel={() => setConfirmName(false)}
+      />
     </AppLayout>
   );
 }
