@@ -33,6 +33,7 @@ import { Route as WorkersNewRouteImport } from './routes/workers_.new'
 import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
 import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
 import { Route as RecruitmentSponsorsRouteImport } from './routes/recruitment.sponsors'
+import { Route as RecruitmentRequestsRouteImport } from './routes/recruitment.requests'
 import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
@@ -160,6 +161,11 @@ const RecruitmentSponsorsRoute = RecruitmentSponsorsRouteImport.update({
   path: '/recruitment/sponsors',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecruitmentRequestsRoute = RecruitmentRequestsRouteImport.update({
+  id: '/recruitment/requests',
+  path: '/recruitment/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RecruitmentIdRoute = RecruitmentIdRouteImport.update({
   id: '/recruitment/$id',
   path: '/recruitment/$id',
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
+  '/recruitment/requests': typeof RecruitmentRequestsRoute
   '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
+  '/recruitment/requests': typeof RecruitmentRequestsRoute
   '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries/$name': typeof SalariesNameRoute
   '/transactions/$id': typeof TransactionsIdRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
+  '/recruitment/requests': typeof RecruitmentRequestsRoute
   '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries_/$name': typeof SalariesNameRoute
   '/transactions_/$id': typeof TransactionsIdRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/housemaid/$name'
     | '/recruitment/$id'
+    | '/recruitment/requests'
     | '/recruitment/sponsors'
     | '/salaries/$name'
     | '/transactions/$id'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/housemaid/$name'
     | '/recruitment/$id'
+    | '/recruitment/requests'
     | '/recruitment/sponsors'
     | '/salaries/$name'
     | '/transactions/$id'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/housemaid/$name'
     | '/recruitment/$id'
+    | '/recruitment/requests'
     | '/recruitment/sponsors'
     | '/salaries_/$name'
     | '/transactions_/$id'
@@ -406,6 +418,7 @@ export interface RootRouteChildren {
   WorkersRoute: typeof WorkersRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
   RecruitmentIdRoute: typeof RecruitmentIdRoute
+  RecruitmentRequestsRoute: typeof RecruitmentRequestsRoute
   RecruitmentSponsorsRoute: typeof RecruitmentSponsorsRoute
   SalariesNameRoute: typeof SalariesNameRoute
   TransactionsIdRoute: typeof TransactionsIdRoute
@@ -585,6 +598,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecruitmentSponsorsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recruitment/requests': {
+      id: '/recruitment/requests'
+      path: '/recruitment/requests'
+      fullPath: '/recruitment/requests'
+      preLoaderRoute: typeof RecruitmentRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/recruitment/$id': {
       id: '/recruitment/$id'
       path: '/recruitment/$id'
@@ -665,6 +685,7 @@ const rootRouteChildren: RootRouteChildren = {
   WorkersRoute: WorkersRoute,
   HousemaidNameRoute: HousemaidNameRoute,
   RecruitmentIdRoute: RecruitmentIdRoute,
+  RecruitmentRequestsRoute: RecruitmentRequestsRoute,
   RecruitmentSponsorsRoute: RecruitmentSponsorsRoute,
   SalariesNameRoute: SalariesNameRoute,
   TransactionsIdRoute: TransactionsIdRoute,

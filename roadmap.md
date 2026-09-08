@@ -8,9 +8,9 @@
 - [x] Name confirmation + passport duplicate check on CV entry
 - [x] Module permission + officer role presets
 
-## Stage 2 (pending — user to confirm start)
-- [ ] Requests table + Official Requests admin page (approve/reject, red flags, notifications)
-- [ ] Auto requests: AGENT_REMITTANCE_1 at VISA_READY_TO_PRINT, OEC_PAYMENT_REQUEST at OEC, DISCOUNT_REQUEST
+## Stage 2 (done)
+- [x] Requests table + Official Requests admin page (approve/reject, red flags, notifications)
+- [x] Auto requests: AGENT_REMITTANCE_1 at VISA_READY_TO_PRINT, OEC_PAYMENT_REQUEST at OEC, DISCOUNT_REQUEST
 
 ## Stage 3 (pending)
 - [ ] Agent remittance module (agency vs agent, half payments, payment history)
