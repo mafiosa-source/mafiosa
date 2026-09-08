@@ -50,6 +50,13 @@
       "when": 1788854222297,
       "tag": "0006_du_monde_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788854268509,
+      "tag": "0007_du_monde_files_storage_policies",
+      "breakpoints": true
     }
   ]
 }
