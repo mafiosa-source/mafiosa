@@ -450,7 +450,8 @@ export function candidateSummary(c: Candidate): string {
   parts.push(`${name} is a ${bits || "candidate"} applying as ${c.position.toUpperCase()}.`);
 
   if (c.experienceYears > 0) {
-    parts.push(`She has ${c.experienceYears} year(s) of working experience.`);
+    const where = c.experienceCountry ? ` in ${c.experienceCountry}` : "";
+    parts.push(`She has ${c.experienceYears} year(s) of working experience${where}.`);
   } else {
     parts.push("No previous overseas working experience recorded.");
   }
