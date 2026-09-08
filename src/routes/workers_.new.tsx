@@ -89,17 +89,23 @@ function AddCandidatePage() {
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingPassport, setUploadingPassport] = useState(false);
 
+  const scope = user?.role === "admin" || user?.fullAccess ? [] : (user?.agentScope ?? []);
+
   useEffect(() => {
     (async () => {
       try {
-        setAgents(await listAgents());
+        const all = await listAgents();
+        const visible = scope.length ? all.filter((a) => scope.includes(a.id)) : all;
+        setAgents(visible);
+        if (visible.length === 1) setAgentId(visible[0]!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not load agents");
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scope.join(",")]);
 
   const countryCode = nationality ? (COUNTRY_CODE_BY_NAME[nationality] ?? "") : "";
 
