@@ -75,6 +75,7 @@ function AgentsPage() {
     setCountry("");
     setPhone("");
     setContactPerson("");
+    setAgencyName("");
     setOpen(true);
   }
 
