@@ -428,6 +428,12 @@ function CandidateDetail({
           {shortlisted ? "Shortlisted" : "Shortlist"}
         </Button>
       </div>
+
+      {isAdmin && onDelete && (
+        <Button size="sm" variant="destructive" className="w-full" onClick={onDelete}>
+          <Trash2 className="h-4 w-4" /> Delete CV (admin only)
+        </Button>
+      )}
     </div>
   );
 }
