@@ -288,6 +288,17 @@ function WorkersPage() {
                           <FileText className="h-3 w-3" />
                         </Link>
                       </Button>
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-destructive hover:text-destructive"
+                          title="Delete CV (admin only)"
+                          onClick={() => void removeCandidate(c)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
