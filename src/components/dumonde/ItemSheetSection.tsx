@@ -286,15 +286,41 @@ export function ItemSheetSection({
                           />
                         </TableCell>
                       ) : null}
-                      <TableCell>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={r.qty}
-                          onChange={(e) => setRow(i, { qty: Number(e.target.value) || 0 })}
-                          className="h-8"
-                        />
-                      </TableCell>
+                      {!isLpo ? (
+                        <>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={r.cash ?? 0}
+                              onChange={(e) => setRow(i, { cash: Number(e.target.value) || 0 })}
+                              className="h-8"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={r.card ?? 0}
+                              onChange={(e) => setRow(i, { card: Number(e.target.value) || 0 })}
+                              className="h-8"
+                            />
+                          </TableCell>
+                        </>
+                      ) : null}
+                      {isLpo ? (
+                        <TableCell>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={r.qty}
+                            onChange={(e) => setRow(i, { qty: Number(e.target.value) || 0 })}
+                            className="h-8"
+                          />
+                        </TableCell>
+                      ) : (
+                        <TableCell className="tabular">{r.qty}</TableCell>
+                      )}
                       {isLpo ? (
                         <TableCell>
                           <Input
