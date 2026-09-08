@@ -40,6 +40,7 @@ function AgentsPage() {
   const [country, setCountry] = useState("");
   const [phone, setPhone] = useState("");
   const [contactPerson, setContactPerson] = useState("");
+  const [agencyName, setAgencyName] = useState("");
   const [view, setView] = useState<"list" | "decks">("list");
 
   async function refresh() {
@@ -74,6 +75,7 @@ function AgentsPage() {
     setCountry("");
     setPhone("");
     setContactPerson("");
+    setAgencyName("");
     setOpen(true);
   }
 
@@ -84,6 +86,7 @@ function AgentsPage() {
     setCountry(agent.country);
     setPhone(agent.phone ?? "");
     setContactPerson(agent.contactPerson ?? "");
+    setAgencyName(agent.agencyName ?? "");
     setOpen(true);
   }
 
@@ -95,10 +98,10 @@ function AgentsPage() {
     setSaving(true);
     try {
       if (editing) {
-        await updateAgent(editing.id, { name: name.trim(), agentCode, country, phone, contactPerson });
+        await updateAgent(editing.id, { name: name.trim(), agentCode, country, phone, contactPerson, agencyName });
         toast.success("Agent updated");
       } else {
-        await createAgent({ name: name.trim(), agentCode, country, phone, contactPerson });
+        await createAgent({ name: name.trim(), agentCode, country, phone, contactPerson, agencyName });
         toast.success("Agent added");
       }
       setOpen(false);
@@ -150,12 +153,13 @@ function AgentsPage() {
                 {view === "list" ? (
                   <Table>
                     <TableHeader><TableRow>
-                      <TableHead>Agent code</TableHead><TableHead>Name</TableHead><TableHead>Contact person</TableHead><TableHead>Phone</TableHead><TableHead className="w-24 text-right">Actions</TableHead>
+                      <TableHead>Agent code</TableHead><TableHead>Name</TableHead><TableHead>Agency</TableHead><TableHead>Contact person</TableHead><TableHead>Phone</TableHead><TableHead className="w-24 text-right">Actions</TableHead>
                     </TableRow></TableHeader>
                     <TableBody>{rows.map((agent) => (
                       <TableRow key={agent.id}>
                         <TableCell className="font-mono text-sm">{agent.agentCode}</TableCell>
                         <TableCell className="font-medium">{agent.name}</TableCell>
+                        <TableCell>{agent.agencyName || "—"}</TableCell>
                         <TableCell>{agent.contactPerson || "—"}</TableCell>
                         <TableCell>{agent.phone || "—"}</TableCell>
                         <TableCell className="text-right"><div className="flex justify-end gap-1">
@@ -180,6 +184,7 @@ function AgentsPage() {
                           </div>
                         </div>
                         <div className="mt-3 space-y-1 text-sm">
+                          <p><span className="text-muted-foreground">Agency: </span>{agent.agencyName || "—"}</p>
                           <p><span className="text-muted-foreground">Contact: </span>{agent.contactPerson || "—"}</p>
                           <p><span className="text-muted-foreground">Phone: </span>{agent.phone || "—"}</p>
                         </div>
@@ -200,6 +205,7 @@ function AgentsPage() {
             <div className="space-y-1.5"><Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
             <div className="space-y-1.5"><Label>Agent code</Label><Input value={agentCode} onChange={(e) => setAgentCode(e.target.value)} placeholder="AG11" /></div>
             <div className="space-y-1.5"><Label>Country</Label><Select value={country} onValueChange={setCountry}><SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger><SelectContent>{COUNTRIES.map((c) => <SelectItem key={c.code} value={c.name}>{c.flag} {c.name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-1.5"><Label>Agency (overseas company)</Label><Input value={agencyName} onChange={(e) => setAgencyName(e.target.value)} placeholder="e.g. Manila Manpower Inc." /></div>
             <div className="space-y-1.5"><Label>Contact person</Label><Input value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} /></div>
             <div className="space-y-1.5 sm:col-span-2"><Label>Phone</Label><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
           </div>

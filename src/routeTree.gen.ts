@@ -34,6 +34,7 @@ import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
 import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
 import { Route as RecruitmentSponsorsRouteImport } from './routes/recruitment.sponsors'
 import { Route as RecruitmentRequestsRouteImport } from './routes/recruitment.requests'
+import { Route as RecruitmentRemittanceRouteImport } from './routes/recruitment.remittance'
 import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
@@ -166,6 +167,11 @@ const RecruitmentRequestsRoute = RecruitmentRequestsRouteImport.update({
   path: '/recruitment/requests',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecruitmentRemittanceRoute = RecruitmentRemittanceRouteImport.update({
+  id: '/recruitment/remittance',
+  path: '/recruitment/remittance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RecruitmentIdRoute = RecruitmentIdRouteImport.update({
   id: '/recruitment/$id',
   path: '/recruitment/$id',
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
+  '/recruitment/remittance': typeof RecruitmentRemittanceRoute
   '/recruitment/requests': typeof RecruitmentRequestsRoute
   '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries/$name': typeof SalariesNameRoute
@@ -252,6 +259,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
+  '/recruitment/remittance': typeof RecruitmentRemittanceRoute
   '/recruitment/requests': typeof RecruitmentRequestsRoute
   '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries/$name': typeof SalariesNameRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
+  '/recruitment/remittance': typeof RecruitmentRemittanceRoute
   '/recruitment/requests': typeof RecruitmentRequestsRoute
   '/recruitment/sponsors': typeof RecruitmentSponsorsRoute
   '/salaries_/$name': typeof SalariesNameRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/housemaid/$name'
     | '/recruitment/$id'
+    | '/recruitment/remittance'
     | '/recruitment/requests'
     | '/recruitment/sponsors'
     | '/salaries/$name'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/housemaid/$name'
     | '/recruitment/$id'
+    | '/recruitment/remittance'
     | '/recruitment/requests'
     | '/recruitment/sponsors'
     | '/salaries/$name'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/housemaid/$name'
     | '/recruitment/$id'
+    | '/recruitment/remittance'
     | '/recruitment/requests'
     | '/recruitment/sponsors'
     | '/salaries_/$name'
@@ -418,6 +430,7 @@ export interface RootRouteChildren {
   WorkersRoute: typeof WorkersRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
   RecruitmentIdRoute: typeof RecruitmentIdRoute
+  RecruitmentRemittanceRoute: typeof RecruitmentRemittanceRoute
   RecruitmentRequestsRoute: typeof RecruitmentRequestsRoute
   RecruitmentSponsorsRoute: typeof RecruitmentSponsorsRoute
   SalariesNameRoute: typeof SalariesNameRoute
@@ -605,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecruitmentRequestsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recruitment/remittance': {
+      id: '/recruitment/remittance'
+      path: '/recruitment/remittance'
+      fullPath: '/recruitment/remittance'
+      preLoaderRoute: typeof RecruitmentRemittanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/recruitment/$id': {
       id: '/recruitment/$id'
       path: '/recruitment/$id'
@@ -685,6 +705,7 @@ const rootRouteChildren: RootRouteChildren = {
   WorkersRoute: WorkersRoute,
   HousemaidNameRoute: HousemaidNameRoute,
   RecruitmentIdRoute: RecruitmentIdRoute,
+  RecruitmentRemittanceRoute: RecruitmentRemittanceRoute,
   RecruitmentRequestsRoute: RecruitmentRequestsRoute,
   RecruitmentSponsorsRoute: RecruitmentSponsorsRoute,
   SalariesNameRoute: SalariesNameRoute,

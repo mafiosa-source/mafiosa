@@ -322,6 +322,7 @@ export type ExpenseKind =
   | "MEDICAL"
   | "QVC"
   | "VISA"
+  | "AGENT_REMITTANCE"
   | "OTHER";
 
 export const EXPENSE_KINDS: { key: ExpenseKind; label: string; defaultAmount?: number; defaultPayer?: PaidBy; purpose: PurposeCategory }[] = [
@@ -333,6 +334,7 @@ export const EXPENSE_KINDS: { key: ExpenseKind; label: string; defaultAmount?: n
   { key: "MEDICAL", label: "Medical", defaultPayer: "Sponsor", purpose: "Medical" },
   { key: "QVC", label: "QVC", defaultPayer: "Sponsor", purpose: "QVC" },
   { key: "VISA", label: "Visa", defaultPayer: "Company", purpose: "Visa" },
+  { key: "AGENT_REMITTANCE", label: "Agent Remittance", defaultPayer: "Company", purpose: "Other" },
   { key: "OTHER", label: "Other", defaultPayer: "Company", purpose: "Other" },
 ];
 
