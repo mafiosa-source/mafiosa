@@ -158,6 +158,7 @@ function candidateFromRow(r: Row): Candidate {
     dateOfBirth: (r.date_of_birth as string) ?? undefined,
     position: String(r.position ?? "Housemaid"),
     experienceYears: Number(r.experience_years ?? 0),
+    experienceCountry: (r.experience_country as string) ?? undefined,
     languages: Array.isArray(r.languages) ? (r.languages as string[]) : [],
     availabilityStatus: (r.availability_status as Candidate["availabilityStatus"]) ?? "Available",
     maritalStatus: (r.marital_status as string) ?? undefined,
