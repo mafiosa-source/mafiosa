@@ -58,7 +58,7 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 function WorkersPage() {
-  const { user } = useAppUser();
+  const { user, isAdmin } = useAppUser();
   const agentScope = user?.role === "admin" || user?.fullAccess ? [] : (user?.agentScope ?? []);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -118,6 +118,19 @@ function WorkersPage() {
       else next.add(id);
       return next;
     });
+  }
+
+  async function removeCandidate(c: Candidate) {
+    if (!isAdmin) return;
+    if (!window.confirm(`Delete the CV of ${c.fullName}? This cannot be undone.`)) return;
+    try {
+      await deleteCandidate(c.id);
+      setCandidates((prev) => prev.filter((x) => x.id !== c.id));
+      if (detailId === c.id) setDetailId(null);
+      toast.success("CV deleted");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not delete CV");
+    }
   }
 
   return (
