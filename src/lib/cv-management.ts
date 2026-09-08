@@ -52,6 +52,15 @@ export type Candidate = {
   notes?: string;
   status: "Available" | "Reserved" | "Deployed";
   createdAt: string;
+  // Recruitment pipeline (additive)
+  sponsorId?: string;
+  pipelineStatus: string;
+  experienceAbroad: boolean;
+  poloPickupDate?: string;
+  agreedRemittance?: number;
+  pipelineNotes?: string;
+  selectedAt?: string;
+  arrivedAt?: string;
 };
 
 // ---------- Country list ----------
@@ -182,6 +191,14 @@ function candidateFromRow(r: Row): Candidate {
     notes: (r.notes as string) ?? undefined,
     status: (r.status as Candidate["status"]) ?? "Available",
     createdAt: String(r.created_at ?? ""),
+    sponsorId: (r.sponsor_id as string) ?? undefined,
+    pipelineStatus: String(r.pipeline_status ?? "CV_UPLOADED"),
+    experienceAbroad: Boolean(r.experience_abroad),
+    poloPickupDate: (r.polo_pickup_date as string) ?? undefined,
+    agreedRemittance: r.agreed_remittance == null ? undefined : Number(r.agreed_remittance),
+    pipelineNotes: (r.pipeline_notes as string) ?? undefined,
+    selectedAt: (r.selected_at as string) ?? undefined,
+    arrivedAt: (r.arrived_at as string) ?? undefined,
   };
 }
 
