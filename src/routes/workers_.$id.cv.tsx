@@ -129,11 +129,10 @@ function CandidateCVPage() {
             </tr>
             <tr>
               <LabelCell label="Religion" arabic="الديانة" value={candidate.religion || "—"} />
-              <LabelCell label="Height" arabic="الطول" value={candidate.height || "—"} />
-              <LabelCell label="Weight" arabic="الوزن" value={candidate.weight || "—"} />
               <LabelCell label="Position Applied" arabic="الوظيفة المطلوبة" value={candidate.position.toUpperCase()} />
             </tr>
-            <tr><td colSpan={3} className="blank-cell" /><LabelCell label="Monthly Salary" arabic="الراتب الشهري" value="—" /></tr>
+            <tr><LabelCell label="Height" arabic="الطول" value={candidate.height || "—"} /><LabelCell label="Monthly Salary" arabic="الراتب الشهري" value="—" /></tr>
+            <tr><LabelCell label="Weight" arabic="الوزن" value={candidate.weight || "—"} /><LabelCell label="Contract Period" arabic="مدة العقد" value="2 YEARS" /></tr>
             <tr>
               <td colSpan={3} rowSpan={14} className="photo-cell">
                 <div className="country-title"><span>{country}</span><span dir="rtl">{arabicCountry}</span></div>
@@ -141,9 +140,8 @@ function CandidateCVPage() {
                   {photo ? <img src={photo} alt={candidate.fullName} /> : <div className="empty-photo">PHOTO</div>}
                 </div>
               </td>
-              <LabelCell label="Contract Period" arabic="مدة العقد" value="2 YEARS" />
+              <LabelCell label="Passport No." arabic="رقم جواز السفر" value={candidate.passportNumber || "—"} />
             </tr>
-            <tr><LabelCell label="Passport No." arabic="رقم جواز السفر" value={candidate.passportNumber || "—"} /></tr>
             <tr><SectionCell label="Details of Application" arabic="تفاصيل الطلب" /></tr>
             <tr><LabelCell label="Nationality" arabic="الجنسية" value={candidate.nationality.toUpperCase()} /></tr>
             <tr><LabelCell label="Contact number" arabic="رقم الاتصال" value="—" /></tr>
