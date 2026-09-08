@@ -526,6 +526,39 @@ export type Database = {
           },
         ]
       }
+      dm_items: {
+        Row: {
+          active: boolean
+          category: string
+          code: string
+          created_at: string
+          id: string
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          price?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dm_lpo_items: {
         Row: {
           available_qty: number
@@ -615,6 +648,7 @@ export type Database = {
           cash_qty: number
           created_at: string
           id: string
+          item_code: string | null
           name: string
           qty: number
           sale_id: string
@@ -626,6 +660,7 @@ export type Database = {
           cash_qty?: number
           created_at?: string
           id?: string
+          item_code?: string | null
           name: string
           qty?: number
           sale_id: string
@@ -637,6 +672,7 @@ export type Database = {
           cash_qty?: number
           created_at?: string
           id?: string
+          item_code?: string | null
           name?: string
           qty?: number
           sale_id?: string

@@ -8,7 +8,19 @@ import { addTransaction } from "./finance-store";
 export const DM_BUCKET = "du-monde-files";
 
 export type DmLpoItem = { id?: string; name: string; availableQty?: number; qty: number; unit?: string; unitCost: number; total: number };
-export type DmSaleItem = { id?: string; name: string; qty: number; cashQty?: number; cardQty?: number; unitPrice: number; total: number };
+export type DmSaleItem = { id?: string; name: string; itemCode?: string; qty: number; cashQty?: number; cardQty?: number; unitPrice: number; total: number };
+
+/** Admin-maintained standard item list: code, name, category and the correct price. */
+export type DmItem = {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  price: number;
+  active: boolean;
+};
+
+export const DM_ITEM_CATEGORIES = ["HOT DRINKS", "COLD DRINKS", "MOJITO", "SWEETS", "SANDWICH", "OTHER"] as const;
 
 export type DmLpo = {
   id: string;
@@ -75,10 +87,11 @@ export type DuMondeState = {
   sales: DmSale[];
   expenses: DmExpense[];
   statements: DmStatement[];
+  items: DmItem[];
   loading: boolean;
 };
 
-let state: DuMondeState = { lpos: [], sales: [], expenses: [], statements: [], loading: true };
+let state: DuMondeState = { lpos: [], sales: [], expenses: [], statements: [], items: [], loading: true };
 const listeners = new Set<() => void>();
 let started = false;
 
@@ -90,7 +103,7 @@ function emit(next: Partial<DuMondeState>) {
 const num = (v: unknown) => (typeof v === "number" ? v : Number(v ?? 0) || 0);
 
 export async function loadDuMonde() {
-  const [lpos, lpoItems, sales, saleItems, expenses, statements, bankLines] = await Promise.all([
+  const [lpos, lpoItems, sales, saleItems, expenses, statements, bankLines, catalog] = await Promise.all([
     supabase.from("dm_lpos").select("*").order("date", { ascending: false }),
     supabase.from("dm_lpo_items").select("*"),
     supabase.from("dm_sales").select("*").order("date", { ascending: false }),
@@ -98,10 +111,19 @@ export async function loadDuMonde() {
     supabase.from("dm_expenses").select("*").order("date", { ascending: false }),
     supabase.from("dm_bank_statements").select("*").order("created_at", { ascending: false }),
     supabase.from("dm_bank_lines").select("*").order("date", { ascending: true }),
+    supabase.from("dm_items").select("*").order("code", { ascending: true }),
   ]);
 
   emit({
     loading: false,
+    items: (catalog.data ?? []).map((r) => ({
+      id: r.id,
+      code: r.code,
+      name: r.name,
+      category: r.category,
+      price: num(r.price),
+      active: r.active !== false,
+    })),
     lpos: (lpos.data ?? []).map((r) => ({
       id: r.id,
       date: r.date,
@@ -130,7 +152,7 @@ export async function loadDuMonde() {
       attachmentUrl: r.attachment_url ?? undefined,
       items: (saleItems.data ?? [])
         .filter((i) => i.sale_id === r.id)
-        .map((i) => ({ id: i.id, name: i.name, qty: num(i.qty), cashQty: num(i.cash_qty), cardQty: num(i.card_qty), unitPrice: num(i.unit_price), total: num(i.total) })),
+        .map((i) => ({ id: i.id, name: i.name, itemCode: i.item_code ?? undefined, qty: num(i.qty), cashQty: num(i.cash_qty), cardQty: num(i.card_qty), unitPrice: num(i.unit_price), total: num(i.total) })),
     })),
     expenses: (expenses.data ?? []).map((r) => ({
       id: r.id,
@@ -315,6 +337,7 @@ export async function saveSale(input: SaleInput, id?: string) {
       input.items.map((i) => ({
         sale_id: saleId!,
         name: i.name,
+        item_code: i.itemCode ?? null,
         qty: i.qty,
         cash_qty: i.cashQty ?? 0,
         card_qty: i.cardQty ?? 0,
@@ -521,4 +544,116 @@ export function bankVsSales(s: DuMondeState, from?: string, to?: string) {
       return { id: k, date: date!, location: location || "—", entered, bank, variance: bank - entered };
     })
     .sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+
+// ---------- Item catalog (admin) ----------
+export type DmItemInput = { code: string; name: string; category: string; price: number; active?: boolean };
+
+export async function saveDmItem(input: DmItemInput, id?: string) {
+  const row = {
+    code: input.code.trim().toUpperCase(),
+    name: input.name.trim(),
+    category: input.category,
+    price: input.price,
+    active: input.active ?? true,
+  };
+  if (id) {
+    const { error } = await supabase.from("dm_items").update(row).eq("id", id);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from("dm_items").insert(row);
+    if (error) throw error;
+  }
+  await loadDuMonde();
+}
+
+export async function deleteDmItem(id: string) {
+  const { error } = await supabase.from("dm_items").delete().eq("id", id);
+  if (error) throw error;
+  await loadDuMonde();
+}
+
+const keyOf = (v: string) => v.trim().toUpperCase();
+
+/** Match a sales line to the standard item list by code first, then by name. */
+export function findDmItem(s: DuMondeState, code?: string, name?: string): DmItem | undefined {
+  if (code) {
+    const byCode = s.items.find((i) => keyOf(i.code) === keyOf(code));
+    if (byCode) return byCode;
+  }
+  if (name) {
+    const k = keyOf(name);
+    return s.items.find((i) => keyOf(i.name) === k || keyOf(i.code) === k);
+  }
+  return undefined;
+}
+
+export type SalesPriceRow = {
+  key: string;
+  code: string;
+  name: string;
+  qty: number;
+  cashQty: number;
+  cardQty: number;
+  actual: number;
+  standardPrice: number | null;
+  expected: number;
+  variance: number;
+};
+
+/**
+ * Actual sales (as entered) vs correct sales (quantity x the standard price of
+ * the item), per item for the period.
+ */
+export function salesPriceReport(
+  s: DuMondeState,
+  from?: string,
+  to?: string,
+  location?: string,
+): { rows: SalesPriceRow[]; totals: { qty: number; actual: number; expected: number; variance: number } } {
+  const map = new Map<string, SalesPriceRow>();
+  s.sales
+    .filter((sale) => inPeriod(sale.date, from, to) && (!location || sale.location === location))
+    .forEach((sale) =>
+      sale.items.forEach((line) => {
+        const item = findDmItem(s, line.itemCode, line.name);
+        const code = item?.code ?? line.itemCode ?? "";
+        const name = item?.name ?? line.name;
+        const key = code || keyOf(name);
+        const qty = line.qty || (line.cashQty ?? 0) + (line.cardQty ?? 0);
+        const row =
+          map.get(key) ??
+          {
+            key,
+            code: code || "—",
+            name,
+            qty: 0,
+            cashQty: 0,
+            cardQty: 0,
+            actual: 0,
+            standardPrice: item ? item.price : null,
+            expected: 0,
+            variance: 0,
+          };
+        row.qty += qty;
+        row.cashQty += line.cashQty ?? 0;
+        row.cardQty += line.cardQty ?? 0;
+        row.actual += line.total || qty * line.unitPrice;
+        row.expected += item ? qty * item.price : 0;
+        row.variance = row.expected - row.actual;
+        map.set(key, row);
+      }),
+    );
+
+  const rows = [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
+  return {
+    rows,
+    totals: {
+      qty: rows.reduce((n, r) => n + r.qty, 0),
+      actual: rows.reduce((n, r) => n + r.actual, 0),
+      expected: rows.reduce((n, r) => n + r.expected, 0),
+      variance: rows.reduce((n, r) => n + r.variance, 0),
+    },
+  };
 }
