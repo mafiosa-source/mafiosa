@@ -221,18 +221,102 @@ function AdminUsersPage() {
                 Full system access
               </label>
               {!row.fullAccess ? (
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {MODULES.map((m) => (
-                    <label key={m.key} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Checkbox
-                        checked={row.permissions.includes(m.key)}
-                        onCheckedChange={() => void togglePermission(row, m.key)}
-                      />
-                      <span className="text-foreground">{m.label}</span>
-                      <span className="text-xs">· {m.group}</span>
-                    </label>
-                  ))}
-                </div>
+                <>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {Object.entries(PRESETS).map(([label, keys]) => (
+                      <Button
+                        key={label}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void setPermissions(row, keys)}
+                      >
+                        {label}
+                      </Button>
+                    ))}
+                    <Button size="sm" variant="ghost" onClick={() => void setPermissions(row, [])}>
+                      Clear all
+                    </Button>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {GROUPED.map(([group, mods]) => {
+                      const allOn = mods.every((m) => row.permissions.includes(m.key));
+                      return (
+                        <div key={group} className="rounded-lg border p-3">
+                          <div className="mb-2 flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                              {group}
+                            </span>
+                            <button
+                              type="button"
+                              className="text-xs text-primary hover:underline"
+                              onClick={() => {
+                                const keys = mods.map((m) => m.key);
+                                const next = allOn
+                                  ? row.permissions.filter((p) => !keys.includes(p))
+                                  : Array.from(new Set([...row.permissions, ...keys]));
+                                void setPermissions(row, next);
+                              }}
+                            >
+                              {allOn ? "None" : "All"}
+                            </button>
+                          </div>
+                          <div className="space-y-1.5">
+                            {mods.map((m) => (
+                              <label key={m.key} className="flex items-center gap-2 text-sm">
+                                <Checkbox
+                                  checked={row.permissions.includes(m.key)}
+                                  onCheckedChange={() => void togglePermission(row, m.key)}
+                                />
+                                <span className="text-foreground">{m.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {row.permissions.includes("workers") || row.permissions.includes("agents") ? (
+                    <div className="mt-4 rounded-lg border p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <div className="text-sm font-medium">Limit CV work to specific agents</div>
+                          <p className="text-xs text-muted-foreground">
+                            {row.agentScope.length === 0
+                              ? "Currently allowed for all agents."
+                              : `Currently limited to ${row.agentScope.length} agent(s).`}
+                          </p>
+                        </div>
+                        {row.agentScope.length ? (
+                          <Button size="sm" variant="ghost" onClick={() => void patch(row, { agentScope: [] })}>
+                            Allow all agents
+                          </Button>
+                        ) : null}
+                      </div>
+                      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {agents.length === 0 ? (
+                          <span className="text-xs text-muted-foreground">No agents registered yet.</span>
+                        ) : null}
+                        {agents.map((a) => (
+                          <label key={a.id} className="flex items-center gap-2 text-sm">
+                            <Checkbox
+                              checked={row.agentScope.includes(a.id)}
+                              onCheckedChange={() => {
+                                const next = row.agentScope.includes(a.id)
+                                  ? row.agentScope.filter((x) => x !== a.id)
+                                  : [...row.agentScope, a.id];
+                                void patch(row, { agentScope: next });
+                              }}
+                            />
+                            <span className="text-foreground">{a.agentCode} · {a.name}</span>
+                            <span className="text-xs text-muted-foreground">{a.country}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </div>
           </div>
