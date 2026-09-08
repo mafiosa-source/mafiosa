@@ -85,6 +85,13 @@
       "when": 1788857196350,
       "tag": "0011_create_dm_items_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788874985169,
+      "tag": "0012_recruitment_pipeline_stage1",
+      "breakpoints": true
     }
   ]
 }
