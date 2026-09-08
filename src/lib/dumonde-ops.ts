@@ -114,7 +114,8 @@ export async function loadDuMonde() {
         .map((i) => ({
           id: i.id,
           name: i.name,
-          qty: num(i.qty),
+           availableQty: num(i.available_qty),
+           qty: num(i.qty),
           unit: i.unit ?? undefined,
           unitCost: num(i.unit_cost),
           total: num(i.total),
