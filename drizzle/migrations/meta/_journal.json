@@ -43,6 +43,13 @@
       "when": 1788852007956,
       "tag": "0005_app_users_agent_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788854222297,
+      "tag": "0006_du_monde_operations",
+      "breakpoints": true
     }
   ]
 }
