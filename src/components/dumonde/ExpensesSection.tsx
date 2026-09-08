@@ -18,6 +18,7 @@ import { Plus, Trash2, Pencil, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
 import { qar } from "@/lib/format";
 import { LocationInput } from "./LocationInput";
+import { DuMondeEntryDialog, type DuMondeEntry } from "./DuMondeEntryDialog";
 import {
   DM_EXPENSE_CATEGORIES,
   deleteExpense,
@@ -44,6 +45,7 @@ export function ExpensesSection({ from, to }: { from?: string; to?: string }) {
   const [particulars, setParticulars] = useState("");
   const [amount, setAmount] = useState("0");
   const [saving, setSaving] = useState(false);
+  const [entry, setEntry] = useState<DuMondeEntry | null>(null);
 
   const reset = () => {
     setEditing(null);
@@ -183,7 +185,20 @@ export function ExpensesSection({ from, to }: { from?: string; to?: string }) {
               </TableRow>
             ) : (
               rows.map((e) => (
-                <TableRow key={e.id}>
+                <TableRow
+                  key={e.id}
+                  className="cursor-pointer transition-colors hover:bg-muted/50"
+                  onClick={() =>
+                    setEntry({
+                      kind: "Expense",
+                      date: e.date,
+                      location: e.location,
+                      category: e.category,
+                      notes: e.particulars,
+                      total: e.amount,
+                    })
+                  }
+                >
                   <TableCell className="tabular">{e.date}</TableCell>
                   <TableCell>{e.location}</TableCell>
                   <TableCell>
@@ -195,7 +210,7 @@ export function ExpensesSection({ from, to }: { from?: string; to?: string }) {
                   <TableCell className="max-w-[240px] truncate text-muted-foreground">{e.particulars ?? "—"}</TableCell>
                   <TableCell className="text-right tabular font-medium">{qar(e.amount)}</TableCell>
                   <TableCell className="text-right tabular text-muted-foreground">{qar(salesFor(e))}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(ev) => ev.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1">
                       {e.txnId ? (
                         <Badge variant="outline">In ledger</Badge>
@@ -243,6 +258,8 @@ export function ExpensesSection({ from, to }: { from?: string; to?: string }) {
         </Table>
         <div className="flex justify-end border-t p-3 text-sm font-semibold tabular">Total {qar(total)}</div>
       </div>
+
+      <DuMondeEntryDialog entry={entry} open={!!entry} onOpenChange={(v) => { if (!v) setEntry(null); }} />
     </div>
   );
 }
