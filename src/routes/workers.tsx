@@ -105,7 +105,8 @@ function WorkersPage() {
       }
       return true;
     });
-  }, [candidates, selectedCountry, positionFilter, statusFilter, search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidates, selectedCountry, positionFilter, statusFilter, search, agentScope.join(",")]);
 
   const detailCandidate = detailId ? candidates.find((c) => c.id === detailId) : null;
 
