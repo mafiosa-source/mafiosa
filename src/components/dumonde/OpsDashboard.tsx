@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { StatCard } from "@/components/StatCard";
 import { DrillDownStat, type DrillRow } from "@/components/DrillDownStat";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -332,6 +331,3 @@ function Empty({ cols, text }: { cols: number; text: string }) {
     </TableRow>
   );
 }
-
-// StatCard stays imported for future non-drillable tiles.
-void StatCard;
