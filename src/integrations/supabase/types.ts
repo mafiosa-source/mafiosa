@@ -973,6 +973,94 @@ export type Database = {
         }
         Relationships: []
       }
+      recruitment_requests: {
+        Row: {
+          agent_id: string | null
+          amount: number | null
+          auto_created: boolean
+          candidate_id: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          flags: Json
+          id: string
+          reason: string | null
+          requested_by: string | null
+          requested_by_user: string | null
+          seen_by_requester: boolean
+          settlement_status: string | null
+          sponsor_id: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id?: string | null
+          amount?: number | null
+          auto_created?: boolean
+          candidate_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          flags?: Json
+          id?: string
+          reason?: string | null
+          requested_by?: string | null
+          requested_by_user?: string | null
+          seen_by_requester?: boolean
+          settlement_status?: string | null
+          sponsor_id?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string | null
+          amount?: number | null
+          auto_created?: boolean
+          candidate_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          flags?: Json
+          id?: string
+          reason?: string | null
+          requested_by?: string | null
+          requested_by_user?: string | null
+          seen_by_requester?: boolean
+          settlement_status?: string | null
+          sponsor_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recruitment_requests_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recruitment_requests_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recruitment_requests_sponsor_id_fkey"
+            columns: ["sponsor_id"]
+            isOneToOne: false
+            referencedRelation: "sponsors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sponsors: {
         Row: {
           address: string | null
