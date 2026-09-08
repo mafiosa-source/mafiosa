@@ -48,6 +48,7 @@ import {
 } from "@/lib/recruitment";
 import { TransactionDetailsDialog } from "@/components/TransactionDetailsDialog";
 import type { Transaction } from "@/lib/finance-types";
+import { REQUEST_TYPE_LABEL, autoRequestForStatus } from "@/lib/recruitment-requests";
 
 export const Route = createFileRoute("/recruitment/$id")({
   head: () => ({
@@ -118,6 +119,18 @@ function HousemaidFilePage() {
     try {
       await changeStatus(c, to, { note, poloPickupDate: poloDate || undefined });
       toast.success(`Status: ${statusLabel(to)}`);
+      try {
+        const req = await autoRequestForStatus(c, to, fin.transactions);
+        if (req) {
+          toast.info(`Request sent to Admin: ${REQUEST_TYPE_LABEL[req.type]}`, {
+            description: req.flags.length ? `${req.flags.length} red flag(s) noted` : undefined,
+          });
+        }
+      } catch (err) {
+        toast.error("Status saved, but the automatic request could not be created", {
+          description: err instanceof Error ? err.message : undefined,
+        });
+      }
       setAdvance(null);
       setNote("");
       setPoloDate("");
