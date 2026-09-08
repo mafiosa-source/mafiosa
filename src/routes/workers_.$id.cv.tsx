@@ -192,7 +192,7 @@ function CandidateCVPage() {
         .value-cell { font-size: 8.8pt; font-weight: 700; }
         .arabic-cell { direction: rtl; font-size: 7.2pt; font-weight: 700; }
         .blank-cell { border-bottom: 0 !important; }
-        .agent-code { color: #111; font-size: 8.6pt; white-space: nowrap; }
+        .agent-code { color: #d00000; font-size: 8.6pt; white-space: nowrap; }
         .photo-cell { height: 138mm !important; padding: 0 3mm 2mm !important; vertical-align: top !important; overflow: hidden; }
         .country-title { height: 16mm; display: flex; align-items: center; justify-content: space-around; gap: 2mm; font-family: Georgia, 'Times New Roman', serif; font-size: 18pt; font-weight: 700; color: #555; white-space: nowrap; }
         .photo-frame { height: 120mm; display: flex; align-items: flex-start; justify-content: center; overflow: hidden; }
