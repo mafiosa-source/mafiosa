@@ -240,6 +240,7 @@ export type CandidateInput = {
   dateOfBirth?: string;
   position: string;
   experienceYears: number;
+  experienceCountry?: string;
   languages: string[];
   availabilityStatus: Candidate["availabilityStatus"];
   maritalStatus?: string;
