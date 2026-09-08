@@ -32,9 +32,9 @@ import {
   type DmSale,
 } from "@/lib/dumonde-ops";
 
-type Row = { name: string; available?: number; qty: number; unit?: string; price: number; total: number };
+type Row = { name: string; available?: number; qty: number; cash?: number; card?: number; unit?: string; price: number; total: number };
 
-const emptyRow = (): Row => ({ name: "", available: 0, qty: 1, unit: "", price: 0, total: 0 });
+const emptyRow = (): Row => ({ name: "", available: 0, qty: 1, cash: 0, card: 0, unit: "", price: 0, total: 0 });
 const today = () => new Date().toISOString().slice(0, 10);
 
 export function ItemSheetSection({
@@ -89,7 +89,7 @@ export function ItemSheetSection({
         ? rec.items.map((i) =>
             "unitCost" in i
               ? { name: i.name, available: i.availableQty ?? 0, qty: i.qty, unit: i.unit ?? "", price: i.unitCost, total: i.total }
-              : { name: i.name, qty: i.qty, unit: "", price: i.unitPrice, total: i.total },
+              : { name: i.name, qty: i.qty, cash: i.cashQty ?? 0, card: i.cardQty ?? 0, unit: "", price: i.unitPrice, total: i.total },
           )
         : [emptyRow()],
     );
@@ -101,7 +101,9 @@ export function ItemSheetSection({
       prev.map((r, i) => {
         if (i !== idx) return r;
         const next = { ...r, ...patch };
-        if (patch.qty !== undefined || patch.price !== undefined) next.total = next.qty * next.price;
+        if (!isLpo && (patch.cash !== undefined || patch.card !== undefined)) next.qty = (next.cash ?? 0) + (next.card ?? 0);
+        if (patch.qty !== undefined || patch.price !== undefined || patch.cash !== undefined || patch.card !== undefined)
+          next.total = next.qty * next.price;
         return next;
       }),
     );
@@ -142,6 +144,8 @@ export function ItemSheetSection({
             items: clean.map((r) => ({
               name: r.name.trim(),
               qty: r.qty,
+              cashQty: r.cash ?? 0,
+              cardQty: r.card ?? 0,
               unitPrice: r.price,
               total: r.total || r.qty * r.price,
             })),
