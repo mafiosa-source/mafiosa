@@ -342,6 +342,10 @@ export type Transaction = {
   kmReading?: number;
   // Salary linkage
   parentTxnId?: string; // Salary Release → Salary Holding
+  // Recruitment expense folder (additive)
+  candidateId?: string;
+  expenseKind?: string;
+  settlementStatus?: string;
   createdBy?: string;
   /** Audit: operator who last edited the record. */
   lastEditedBy?: string;

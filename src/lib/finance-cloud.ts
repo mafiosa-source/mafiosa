@@ -48,6 +48,9 @@ export function rowToTransaction(r: Row): Transaction {
     kmAfter: r.km_after == null ? undefined : Number(r.km_after),
     kmReading: r.km_reading == null ? undefined : Number(r.km_reading),
     parentTxnId: (r.parent_txn_id as string) ?? undefined,
+    candidateId: (r.candidate_id as string) ?? undefined,
+    expenseKind: (r.expense_kind as string) ?? undefined,
+    settlementStatus: (r.settlement_status as string) ?? undefined,
     createdBy: (r.created_by as string) ?? undefined,
     lastEditedBy: (r.last_edited_by as string) ?? undefined,
     createdAt: String(r.created_at ?? new Date().toISOString()),
@@ -91,6 +94,9 @@ export function transactionToRow(t: Partial<Transaction>): Row {
   set("km_after", t.kmAfter);
   set("km_reading", t.kmReading);
   set("parent_txn_id", t.parentTxnId);
+  set("candidate_id", t.candidateId);
+  set("expense_kind", t.expenseKind);
+  set("settlement_status", t.settlementStatus);
   set("created_by", t.createdBy);
   set("last_edited_by", t.lastEditedBy);
   return row;

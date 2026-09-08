@@ -21,6 +21,8 @@ import {
   History,
   UserCircle2,
   Building2,
+  Route,
+  Contact,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -70,6 +72,8 @@ const groups: { label: string; items: NavItem[] }[] = [
     items: [
       { to: "/workers", label: "CV / Workers", icon: UserCircle2, module: "workers" },
       { to: "/agents", label: "Agents", icon: Building2, module: "agents" },
+      { to: "/recruitment", label: "Recruitment Pipeline", icon: Route, module: "recruitment" },
+      { to: "/recruitment/sponsors", label: "Sponsors Directory", icon: Contact, module: "recruitment" },
     ],
   },
 ];
