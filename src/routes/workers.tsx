@@ -19,7 +19,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Search, Heart, Eye, FileText, MapPin, Loader2 } from "lucide-react";
+import { Plus, Search, Heart, Eye, FileText, MapPin, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppUser } from "@/lib/app-user";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ import {
   listAgents,
   getCandidate,
   getUploaderName,
+  deleteCandidate,
   countryFlag,
   countryName,
   formatDate,
