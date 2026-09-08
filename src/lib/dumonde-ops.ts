@@ -8,7 +8,7 @@ import { addTransaction } from "./finance-store";
 export const DM_BUCKET = "du-monde-files";
 
 export type DmLpoItem = { id?: string; name: string; availableQty?: number; qty: number; unit?: string; unitCost: number; total: number };
-export type DmSaleItem = { id?: string; name: string; qty: number; unitPrice: number; total: number };
+export type DmSaleItem = { id?: string; name: string; qty: number; cashQty?: number; cardQty?: number; unitPrice: number; total: number };
 
 export type DmLpo = {
   id: string;
@@ -130,7 +130,7 @@ export async function loadDuMonde() {
       attachmentUrl: r.attachment_url ?? undefined,
       items: (saleItems.data ?? [])
         .filter((i) => i.sale_id === r.id)
-        .map((i) => ({ id: i.id, name: i.name, qty: num(i.qty), unitPrice: num(i.unit_price), total: num(i.total) })),
+        .map((i) => ({ id: i.id, name: i.name, qty: num(i.qty), cashQty: num(i.cash_qty), cardQty: num(i.card_qty), unitPrice: num(i.unit_price), total: num(i.total) })),
     })),
     expenses: (expenses.data ?? []).map((r) => ({
       id: r.id,
@@ -316,6 +316,8 @@ export async function saveSale(input: SaleInput, id?: string) {
         sale_id: saleId!,
         name: i.name,
         qty: i.qty,
+        cash_qty: i.cashQty ?? 0,
+        card_qty: i.cardQty ?? 0,
         unit_price: i.unitPrice,
         total: i.total || i.qty * i.unitPrice,
       })),

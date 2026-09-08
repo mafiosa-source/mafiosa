@@ -611,6 +611,8 @@ export type Database = {
       }
       dm_sale_items: {
         Row: {
+          card_qty: number
+          cash_qty: number
           created_at: string
           id: string
           name: string
@@ -620,6 +622,8 @@ export type Database = {
           unit_price: number
         }
         Insert: {
+          card_qty?: number
+          cash_qty?: number
           created_at?: string
           id?: string
           name: string
@@ -629,6 +633,8 @@ export type Database = {
           unit_price?: number
         }
         Update: {
+          card_qty?: number
+          cash_qty?: number
           created_at?: string
           id?: string
           name?: string

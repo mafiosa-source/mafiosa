@@ -32,9 +32,9 @@ import {
   type DmSale,
 } from "@/lib/dumonde-ops";
 
-type Row = { name: string; available?: number; qty: number; unit?: string; price: number; total: number };
+type Row = { name: string; available?: number; qty: number; cash?: number; card?: number; unit?: string; price: number; total: number };
 
-const emptyRow = (): Row => ({ name: "", available: 0, qty: 1, unit: "", price: 0, total: 0 });
+const emptyRow = (): Row => ({ name: "", available: 0, qty: 1, cash: 0, card: 0, unit: "", price: 0, total: 0 });
 const today = () => new Date().toISOString().slice(0, 10);
 
 export function ItemSheetSection({
@@ -89,7 +89,7 @@ export function ItemSheetSection({
         ? rec.items.map((i) =>
             "unitCost" in i
               ? { name: i.name, available: i.availableQty ?? 0, qty: i.qty, unit: i.unit ?? "", price: i.unitCost, total: i.total }
-              : { name: i.name, qty: i.qty, unit: "", price: i.unitPrice, total: i.total },
+              : { name: i.name, qty: i.qty, cash: i.cashQty ?? 0, card: i.cardQty ?? 0, unit: "", price: i.unitPrice, total: i.total },
           )
         : [emptyRow()],
     );
@@ -101,7 +101,9 @@ export function ItemSheetSection({
       prev.map((r, i) => {
         if (i !== idx) return r;
         const next = { ...r, ...patch };
-        if (patch.qty !== undefined || patch.price !== undefined) next.total = next.qty * next.price;
+        if (!isLpo && (patch.cash !== undefined || patch.card !== undefined)) next.qty = (next.cash ?? 0) + (next.card ?? 0);
+        if (patch.qty !== undefined || patch.price !== undefined || patch.cash !== undefined || patch.card !== undefined)
+          next.total = next.qty * next.price;
         return next;
       }),
     );
@@ -142,6 +144,8 @@ export function ItemSheetSection({
             items: clean.map((r) => ({
               name: r.name.trim(),
               qty: r.qty,
+              cashQty: r.cash ?? 0,
+              cardQty: r.card ?? 0,
               unitPrice: r.price,
               total: r.total || r.qty * r.price,
             })),
@@ -224,12 +228,16 @@ export function ItemSheetSection({
                   const parsed = res.lines
                     .filter((l) => l.name)
                     .map<Row>((l) => {
-                      const qty = l.qty ?? 1;
+                      const cash = l.cashQty ?? 0;
+                      const card = l.cardQty ?? 0;
+                      const qty = isLpo ? (l.qty ?? 1) : cash + card || l.qty || 0;
                       const price = (isLpo ? l.unitCost : l.unitPrice) ?? (l.total && qty ? l.total / qty : 0);
                       return {
                         name: (l.name ?? "").toUpperCase(),
                         available: l.availableQty ?? 0,
                         qty,
+                        cash,
+                        card,
                         unit: l.unit ?? "",
                         price,
                         total: l.total ?? qty * price,
@@ -247,7 +255,9 @@ export function ItemSheetSection({
                   <TableRow>
                     <TableHead>Item</TableHead>
                     {isLpo ? <TableHead className="w-24">Available qty</TableHead> : null}
-                    <TableHead className="w-24">{isLpo ? "Order qty" : "Qty"}</TableHead>
+                    {!isLpo ? <TableHead className="w-24">Cash sales</TableHead> : null}
+                    {!isLpo ? <TableHead className="w-24">Card payments</TableHead> : null}
+                    {isLpo ? <TableHead className="w-24">Order qty</TableHead> : <TableHead className="w-20">Total qty</TableHead>}
                     {isLpo ? <TableHead className="w-24">Unit</TableHead> : null}
                     <TableHead className="w-28">{isLpo ? "Unit cost" : "Unit price"}</TableHead>
                     <TableHead className="w-28 text-right">Total</TableHead>
@@ -276,15 +286,41 @@ export function ItemSheetSection({
                           />
                         </TableCell>
                       ) : null}
-                      <TableCell>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={r.qty}
-                          onChange={(e) => setRow(i, { qty: Number(e.target.value) || 0 })}
-                          className="h-8"
-                        />
-                      </TableCell>
+                      {!isLpo ? (
+                        <>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={r.cash ?? 0}
+                              onChange={(e) => setRow(i, { cash: Number(e.target.value) || 0 })}
+                              className="h-8"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={r.card ?? 0}
+                              onChange={(e) => setRow(i, { card: Number(e.target.value) || 0 })}
+                              className="h-8"
+                            />
+                          </TableCell>
+                        </>
+                      ) : null}
+                      {isLpo ? (
+                        <TableCell>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={r.qty}
+                            onChange={(e) => setRow(i, { qty: Number(e.target.value) || 0 })}
+                            className="h-8"
+                          />
+                        </TableCell>
+                      ) : (
+                        <TableCell className="tabular">{r.qty}</TableCell>
+                      )}
                       {isLpo ? (
                         <TableCell>
                           <Input
