@@ -92,6 +92,7 @@ function WorkersPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return candidates.filter((c) => {
+      if (agentScope.length && !(c.agentId && agentScope.includes(c.agentId))) return false;
       if (selectedCountry && c.countryCode !== selectedCountry) return false;
       if (positionFilter !== "all" && c.position !== positionFilter) return false;
       if (statusFilter !== "all" && c.status !== statusFilter) return false;
