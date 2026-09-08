@@ -62,6 +62,7 @@ function AddCandidatePage() {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [position, setPosition] = useState("Housemaid");
   const [experienceYears, setExperienceYears] = useState("0");
+  const [experienceCountry, setExperienceCountry] = useState("");
   const [maritalStatus, setMaritalStatus] = useState("");
   const [childrenCount, setChildrenCount] = useState("0");
   const [height, setHeight] = useState("");
@@ -222,6 +223,7 @@ function AddCandidatePage() {
         dateOfBirth: dateOfBirth || undefined,
         position,
         experienceYears: Number(experienceYears) || 0,
+        experienceCountry: experienceCountry || undefined,
         languages: selectedLanguages,
         availabilityStatus: availabilityStatus as CandidateInput["availabilityStatus"],
         maritalStatus: maritalStatus || undefined,
@@ -427,6 +429,9 @@ function AddCandidatePage() {
               </Field>
               <Field label="Experience (years)">
                 <Input type="number" step="0.1" min="0" value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} />
+              </Field>
+              <Field label="Experience Country">
+                <Input value={experienceCountry} onChange={(e) => setExperienceCountry(e.target.value)} placeholder="e.g. Saudi Arabia" />
               </Field>
               <Field label="Marital Status">
                 <Select value={maritalStatus || NONE} onValueChange={(v) => setMaritalStatus(v === NONE ? "" : v)}>

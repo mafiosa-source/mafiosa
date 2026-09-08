@@ -290,6 +290,7 @@ export type Database = {
           created_at: string
           date_of_birth: string | null
           education: string | null
+          experience_country: string | null
           experience_years: number
           full_name: string
           gallery_urls: string[]
@@ -326,6 +327,7 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           education?: string | null
+          experience_country?: string | null
           experience_years?: number
           full_name: string
           gallery_urls?: string[]
@@ -362,6 +364,7 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           education?: string | null
+          experience_country?: string | null
           experience_years?: number
           full_name?: string
           gallery_urls?: string[]

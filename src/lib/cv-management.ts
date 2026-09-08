@@ -28,6 +28,7 @@ export type Candidate = {
   dateOfBirth?: string;
   position: string;
   experienceYears: number;
+  experienceCountry?: string;
   languages: string[];
   availabilityStatus: "Available" | "Reserved" | "Unavailable";
   maritalStatus?: string;
@@ -157,6 +158,7 @@ function candidateFromRow(r: Row): Candidate {
     dateOfBirth: (r.date_of_birth as string) ?? undefined,
     position: String(r.position ?? "Housemaid"),
     experienceYears: Number(r.experience_years ?? 0),
+    experienceCountry: (r.experience_country as string) ?? undefined,
     languages: Array.isArray(r.languages) ? (r.languages as string[]) : [],
     availabilityStatus: (r.availability_status as Candidate["availabilityStatus"]) ?? "Available",
     maritalStatus: (r.marital_status as string) ?? undefined,
@@ -239,6 +241,7 @@ export type CandidateInput = {
   dateOfBirth?: string;
   position: string;
   experienceYears: number;
+  experienceCountry?: string;
   languages: string[];
   availabilityStatus: Candidate["availabilityStatus"];
   maritalStatus?: string;
@@ -286,6 +289,7 @@ export async function createCandidate(input: CandidateInput): Promise<Candidate>
     country_code: input.countryCode,
     position: input.position,
     experience_years: input.experienceYears,
+    experience_country: input.experienceCountry || null,
     languages: input.languages,
     availability_status: input.availabilityStatus,
     children_count: input.childrenCount,
@@ -327,6 +331,7 @@ export async function updateCandidate(id: string, patch: Partial<CandidateInput>
   if (patch.dateOfBirth !== undefined) row.date_of_birth = patch.dateOfBirth;
   if (patch.position !== undefined) row.position = patch.position;
   if (patch.experienceYears !== undefined) row.experience_years = patch.experienceYears;
+  if (patch.experienceCountry !== undefined) row.experience_country = patch.experienceCountry || null;
   if (patch.languages !== undefined) row.languages = patch.languages;
   if (patch.availabilityStatus !== undefined) row.availability_status = patch.availabilityStatus;
   if (patch.maritalStatus !== undefined) row.marital_status = patch.maritalStatus;
@@ -445,7 +450,8 @@ export function candidateSummary(c: Candidate): string {
   parts.push(`${name} is a ${bits || "candidate"} applying as ${c.position.toUpperCase()}.`);
 
   if (c.experienceYears > 0) {
-    parts.push(`She has ${c.experienceYears} year(s) of working experience.`);
+    const where = c.experienceCountry ? ` in ${c.experienceCountry}` : "";
+    parts.push(`She has ${c.experienceYears} year(s) of working experience${where}.`);
   } else {
     parts.push("No previous overseas working experience recorded.");
   }
