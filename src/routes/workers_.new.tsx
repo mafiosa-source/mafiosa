@@ -223,6 +223,7 @@ function AddCandidatePage() {
         dateOfBirth: dateOfBirth || undefined,
         position,
         experienceYears: Number(experienceYears) || 0,
+        experienceCountry: experienceCountry || undefined,
         languages: selectedLanguages,
         availabilityStatus: availabilityStatus as CandidateInput["availabilityStatus"],
         maritalStatus: maritalStatus || undefined,
