@@ -98,7 +98,7 @@ function RemittancePage() {
     <AppLayout>
       <PageHeader
         title="Agent Remittance"
-        subtitle="Agreed amount per housemaid, paid in two halves — 50% when the visa is ready to print, 50% after arrival. Payments come from the master ledger."
+        description="Agreed amount per housemaid, paid in two halves — 50% when the visa is ready to print, 50% after arrival. Payments come from the master ledger."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-5">
@@ -142,7 +142,7 @@ function RemittancePage() {
           onClose={() => setPayRow(null)}
         />
       )}
-      <TransactionDetailsDialog transaction={detail} open={!!detail} onOpenChange={(o) => !o && setDetail(null)} />
+      {detail && <TransactionDetailsDialog transaction={detail} open onOpenChange={(o) => !o && setDetail(null)} />}
     </AppLayout>
   );
 }

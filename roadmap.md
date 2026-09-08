@@ -12,5 +12,5 @@
 - [x] Requests table + Official Requests admin page (approve/reject, red flags, notifications)
 - [x] Auto requests: AGENT_REMITTANCE_1 at VISA_READY_TO_PRINT, OEC_PAYMENT_REQUEST at OEC, DISCOUNT_REQUEST
 
-## Stage 3 (pending)
-- [ ] Agent remittance module (agency vs agent, half payments, payment history)
+## Stage 3 (done)
+- [x] Agent remittance module (agency vs agent, half payments, payment history)
