@@ -289,6 +289,7 @@ export async function createCandidate(input: CandidateInput): Promise<Candidate>
     country_code: input.countryCode,
     position: input.position,
     experience_years: input.experienceYears,
+    experience_country: input.experienceCountry || null,
     languages: input.languages,
     availability_status: input.availabilityStatus,
     children_count: input.childrenCount,
