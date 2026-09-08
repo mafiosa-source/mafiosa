@@ -153,12 +153,13 @@ function AgentsPage() {
                 {view === "list" ? (
                   <Table>
                     <TableHeader><TableRow>
-                      <TableHead>Agent code</TableHead><TableHead>Name</TableHead><TableHead>Contact person</TableHead><TableHead>Phone</TableHead><TableHead className="w-24 text-right">Actions</TableHead>
+                      <TableHead>Agent code</TableHead><TableHead>Name</TableHead><TableHead>Agency</TableHead><TableHead>Contact person</TableHead><TableHead>Phone</TableHead><TableHead className="w-24 text-right">Actions</TableHead>
                     </TableRow></TableHeader>
                     <TableBody>{rows.map((agent) => (
                       <TableRow key={agent.id}>
                         <TableCell className="font-mono text-sm">{agent.agentCode}</TableCell>
                         <TableCell className="font-medium">{agent.name}</TableCell>
+                        <TableCell>{agent.agencyName || "—"}</TableCell>
                         <TableCell>{agent.contactPerson || "—"}</TableCell>
                         <TableCell>{agent.phone || "—"}</TableCell>
                         <TableCell className="text-right"><div className="flex justify-end gap-1">
@@ -183,6 +184,7 @@ function AgentsPage() {
                           </div>
                         </div>
                         <div className="mt-3 space-y-1 text-sm">
+                          <p><span className="text-muted-foreground">Agency: </span>{agent.agencyName || "—"}</p>
                           <p><span className="text-muted-foreground">Contact: </span>{agent.contactPerson || "—"}</p>
                           <p><span className="text-muted-foreground">Phone: </span>{agent.phone || "—"}</p>
                         </div>
