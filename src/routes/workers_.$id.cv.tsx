@@ -10,14 +10,11 @@ import skillLetterhead from "@/assets/letterheads/skill-letterhead.png.asset.jso
 import danetLetterhead from "@/assets/letterheads/danet-letterhead.png.asset.json";
 import fastLetterhead from "@/assets/letterheads/fast-letterhead.png.asset.json";
 import {
-  agentName,
   candidateSerialCode,
   countryArabicName,
   countryName,
   formatDate,
   getCandidate,
-  listAgents,
-  type Agent,
   type Candidate,
 } from "@/lib/cv-management";
 
@@ -64,18 +61,15 @@ const hasSkill = (skills: string[], label: string) => {
 };
 
 function CandidateCVPage() {
-  const { id } = useParams({ from: "/workers/$id/cv" });
+  const { id } = useParams({ from: "/workers_/$id/cv" });
   const [candidate, setCandidate] = useState<Candidate | null>(null);
-  const [agents, setAgents] = useState<Agent[]>([]);
   const [companyId, setCompanyId] = useState("broker");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const [loadedCandidate, loadedAgents] = await Promise.all([getCandidate(id), listAgents()]);
-        setCandidate(loadedCandidate);
-        setAgents(loadedAgents);
+        setCandidate(await getCandidate(id));
       } catch {
         toast.error("Could not load the candidate CV.");
       } finally {
