@@ -396,9 +396,11 @@ export async function updateCandidate(id: string, patch: Partial<CandidateInput>
   if (patch.candidateCode !== undefined && patch.candidateCode.trim())
     row.candidate_code = patch.candidateCode.trim().toUpperCase();
 
-
   const { error } = await supabase.from("candidates").update(row as never).eq("id", id);
-  if (error) throw error;
+  if (error) {
+    if (error.code === "23505") throw new Error("That serial code is already used by another CV");
+    throw error;
+  }
 }
 
 export async function deleteCandidate(id: string): Promise<void> {
