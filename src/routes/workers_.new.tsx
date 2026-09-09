@@ -339,11 +339,24 @@ export function CandidateForm({ editId }: { editId?: string }) {
     if (!countryCode) return toast.error("Could not determine country code");
     if (passportNumber.trim()) {
       try {
-        if (await passportExists(passportNumber)) {
+        if (await passportExists(passportNumber, editId)) {
           return toast.error("This passport number already exists", {
             description: "A CV with the same passport is already in the system. Duplicates are not allowed.",
           });
         }
+      } catch {
+        /* the database also blocks duplicates */
+      }
+    }
+    if (editId && isAdmin) {
+      const code = serialCode.trim().toUpperCase();
+      if (!/^[A-Z]{2}-\d{1,4}$/.test(code))
+        return toast.error("Serial code must look like KE-001");
+      if (!code.startsWith(`${countryCode}-`))
+        return toast.error(`Serial code must start with ${countryCode}- to match the nationality`);
+      try {
+        if (await serialCodeExists(code, editId))
+          return toast.error("That serial code is already used by another CV");
       } catch {
         /* the database also blocks duplicates */
       }
