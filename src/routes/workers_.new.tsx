@@ -20,6 +20,9 @@ import { useAppUser } from "@/lib/app-user";
 import {
   listAgents,
   createCandidate,
+  updateCandidate,
+  getCandidate,
+  serialCodeExists,
   uploadCandidatePhoto,
   uploadPassportScan,
   ageFromDob,
@@ -53,8 +56,13 @@ export const Route = createFileRoute("/workers_/new")({
 const NONE = "__none";
 
 function AddCandidatePage() {
+  return <CandidateForm />;
+}
+
+export function CandidateForm({ editId }: { editId?: string }) {
   const navigate = useNavigate();
-  const { user } = useAppUser();
+  const { user, isAdmin } = useAppUser();
+  const [serialCode, setSerialCode] = useState("");
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -104,15 +112,57 @@ function AddCandidatePage() {
         const all = await listAgents();
         const visible = scope.length ? all.filter((a) => scope.includes(a.id)) : all;
         setAgents(visible);
-        if (visible.length === 1) setAgentId(visible[0]!.id);
+        if (visible.length === 1 && !editId) setAgentId(visible[0]!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not load agents");
+      }
+      if (!editId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const c = await getCandidate(editId);
+        if (!c) {
+          toast.error("CV not found");
+          return;
+        }
+        setSerialCode(c.candidateCode);
+        setFullName(c.fullName);
+        setNationality(c.nationality);
+        setDateOfBirth(c.dateOfBirth ?? "");
+        setPosition(c.position);
+        setExperienceYears(String(c.experienceYears));
+        setExperienceCountry(c.experienceCountry ?? "");
+        setMaritalStatus(c.maritalStatus ?? "");
+        setChildrenCount(String(c.childrenCount));
+        setHeight(c.height ?? "");
+        setWeight(c.weight ?? "");
+        setReligion(c.religion ?? "");
+        setEducation(c.education ?? "");
+        setAgentId(c.agentId ?? "");
+        setSelectedLanguages(c.languages);
+        setSelectedSkills(c.skills);
+        setPhotoUrl(c.photoUrl);
+        setGalleryUrls(c.galleryUrls);
+        setPassportNumber(c.passportNumber ?? "");
+        setPassportIssueDate(c.passportIssueDate ?? "");
+        setPassportExpiryDate(c.passportExpiryDate ?? "");
+        setPassportScanUrl(c.passportScanUrl ?? "");
+        setPlaceOfBirth(c.placeOfBirth ?? "");
+        setContactNumber(c.contactNumber ?? "");
+        setAddress(c.address ?? "");
+        setMonthlySalary(c.monthlySalary ?? "");
+        setNotes(c.notes ?? "");
+        setStatus(c.status);
+        setAvailabilityStatus(c.availabilityStatus);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not load this CV");
       } finally {
         setLoading(false);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scope.join(",")]);
+  }, [scope.join(","), editId]);
 
   const countryCode = nationality ? (COUNTRY_CODE_BY_NAME[nationality] ?? "") : "";
 
@@ -289,11 +339,24 @@ function AddCandidatePage() {
     if (!countryCode) return toast.error("Could not determine country code");
     if (passportNumber.trim()) {
       try {
-        if (await passportExists(passportNumber)) {
+        if (await passportExists(passportNumber, editId)) {
           return toast.error("This passport number already exists", {
             description: "A CV with the same passport is already in the system. Duplicates are not allowed.",
           });
         }
+      } catch {
+        /* the database also blocks duplicates */
+      }
+    }
+    if (editId && isAdmin) {
+      const code = serialCode.trim().toUpperCase();
+      if (!/^[A-Z]{2}-\d{1,4}$/.test(code))
+        return toast.error("Serial code must look like KE-001");
+      if (!code.startsWith(`${countryCode}-`))
+        return toast.error(`Serial code must start with ${countryCode}- to match the nationality`);
+      try {
+        if (await serialCodeExists(code, editId))
+          return toast.error("That serial code is already used by another CV");
       } catch {
         /* the database also blocks duplicates */
       }
@@ -337,11 +400,19 @@ function AddCandidatePage() {
         notes: notes || undefined,
         status: status as CandidateInput["status"],
       };
-      const created = await createCandidate(input);
-      toast.success(`Candidate created · ${created.candidateCode}`);
+      if (editId) {
+        await updateCandidate(editId, {
+          ...input,
+          ...(isAdmin && serialCode.trim() ? { candidateCode: serialCode } : {}),
+        });
+        toast.success("CV updated");
+      } else {
+        const created = await createCandidate(input);
+        toast.success(`Candidate created · ${created.candidateCode}`);
+      }
       navigate({ to: "/workers" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not create candidate");
+      toast.error(e instanceof Error ? e.message : editId ? "Could not save changes" : "Could not create candidate");
     } finally {
       setSaving(false);
     }
@@ -360,8 +431,12 @@ function AddCandidatePage() {
   return (
     <AppLayout>
       <PageHeader
-        title="Add Candidate"
-        description="Create a new domestic worker CV. The candidate code is auto-generated on save."
+        title={editId ? "Edit CV" : "Add Candidate"}
+        description={
+          editId
+            ? "Change any detail of this CV. The serial code stays unique across the system."
+            : "Create a new domestic worker CV. The candidate code is auto-generated on save."
+        }
         action={
           <Button size="sm" variant="outline" onClick={() => navigate({ to: "/workers" })}>
             <ArrowLeft className="h-4 w-4" /> Back
@@ -370,6 +445,30 @@ function AddCandidatePage() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+        {editId && (
+          <Card>
+            <CardHeader><CardTitle className="text-base">Serial Code</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {isAdmin ? (
+                <>
+                  <Field label={`Serial code (format ${countryCode || "KE"}-001)`}>
+                    <Input
+                      value={serialCode}
+                      onChange={(e) => setSerialCode(e.target.value.toUpperCase())}
+                      className="max-w-[200px] font-mono"
+                    />
+                  </Field>
+                  <p className="text-xs text-muted-foreground">
+                    Must be unique. Two CVs can never share a serial code.
+                  </p>
+                </>
+              ) : (
+                <div className="font-mono text-sm">{serialCode || "—"}</div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Upload existing CV (auto-fill everything) */}
         <Card className="border-primary/40">
           <CardHeader>

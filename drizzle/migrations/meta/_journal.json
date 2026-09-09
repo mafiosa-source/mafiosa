@@ -106,6 +106,13 @@
       "when": 1788876018369,
       "tag": "0014_agents_add_agency_name",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1788937450760,
+      "tag": "0015_candidate_code_per_country",
+      "breakpoints": true
     }
   ]
 }
