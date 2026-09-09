@@ -431,8 +431,12 @@ export function CandidateForm({ editId }: { editId?: string }) {
   return (
     <AppLayout>
       <PageHeader
-        title="Add Candidate"
-        description="Create a new domestic worker CV. The candidate code is auto-generated on save."
+        title={editId ? "Edit CV" : "Add Candidate"}
+        description={
+          editId
+            ? "Change any detail of this CV. The serial code stays unique across the system."
+            : "Create a new domestic worker CV. The candidate code is auto-generated on save."
+        }
         action={
           <Button size="sm" variant="outline" onClick={() => navigate({ to: "/workers" })}>
             <ArrowLeft className="h-4 w-4" /> Back
@@ -441,6 +445,30 @@ export function CandidateForm({ editId }: { editId?: string }) {
       />
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+        {editId && (
+          <Card>
+            <CardHeader><CardTitle className="text-base">Serial Code</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {isAdmin ? (
+                <>
+                  <Field label={`Serial code (format ${countryCode || "KE"}-001)`}>
+                    <Input
+                      value={serialCode}
+                      onChange={(e) => setSerialCode(e.target.value.toUpperCase())}
+                      className="max-w-[200px] font-mono"
+                    />
+                  </Field>
+                  <p className="text-xs text-muted-foreground">
+                    Must be unique. Two CVs can never share a serial code.
+                  </p>
+                </>
+              ) : (
+                <div className="font-mono text-sm">{serialCode || "—"}</div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Upload existing CV (auto-fill everything) */}
         <Card className="border-primary/40">
           <CardHeader>
