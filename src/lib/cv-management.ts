@@ -101,9 +101,24 @@ export function countryArabicName(code: string): string {
 }
 
 export function candidateSerialCode(candidate: Pick<Candidate, "countryCode" | "candidateCode">): string {
-  const sequence = candidate.candidateCode.match(/(\\d{1,})$/)?.[1] ?? "001";
-  return `${candidate.countryCode.toUpperCase()}-${sequence.padStart(3, "0")}`;
+  const code = (candidate.candidateCode ?? "").trim();
+  const country = candidate.countryCode.toUpperCase();
+  if (new RegExp(`^${country}-\\d+$`).test(code.toUpperCase())) return code.toUpperCase();
+  const sequence = code.match(/(\d+)$/)?.[1] ?? "001";
+  return `${country}-${sequence.padStart(3, "0")}`;
 }
+
+/** True when another CV already uses this serial code. */
+export async function serialCodeExists(code: string, excludeId?: string): Promise<boolean> {
+  const c = code.trim().toUpperCase();
+  if (!c) return false;
+  let q = supabase.from("candidates").select("id").eq("candidate_code", c);
+  if (excludeId) q = q.neq("id", excludeId);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []).length > 0;
+}
+
 
 export const POSITIONS = [
   "Housemaid",
