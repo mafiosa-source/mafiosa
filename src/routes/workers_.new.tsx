@@ -56,8 +56,13 @@ export const Route = createFileRoute("/workers_/new")({
 const NONE = "__none";
 
 function AddCandidatePage() {
+  return <CandidateForm />;
+}
+
+export function CandidateForm({ editId }: { editId?: string }) {
   const navigate = useNavigate();
-  const { user } = useAppUser();
+  const { user, isAdmin } = useAppUser();
+  const [serialCode, setSerialCode] = useState("");
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
