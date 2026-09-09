@@ -157,14 +157,12 @@ export function CandidateForm({ editId }: { editId?: string }) {
         setAvailabilityStatus(c.availabilityStatus);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not load this CV");
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Could not load agents");
       } finally {
         setLoading(false);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scope.join(",")]);
+  }, [scope.join(","), editId]);
 
   const countryCode = nationality ? (COUNTRY_CODE_BY_NAME[nationality] ?? "") : "";
 
