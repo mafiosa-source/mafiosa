@@ -393,6 +393,9 @@ export async function updateCandidate(id: string, patch: Partial<CandidateInput>
   if (patch.remarks !== undefined) row.remarks = patch.remarks;
   if (patch.notes !== undefined) row.notes = patch.notes;
   if (patch.status !== undefined) row.status = patch.status;
+  if (patch.candidateCode !== undefined && patch.candidateCode.trim())
+    row.candidate_code = patch.candidateCode.trim().toUpperCase();
+
 
   const { error } = await supabase.from("candidates").update(row as never).eq("id", id);
   if (error) throw error;
