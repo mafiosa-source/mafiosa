@@ -20,6 +20,9 @@ import { useAppUser } from "@/lib/app-user";
 import {
   listAgents,
   createCandidate,
+  updateCandidate,
+  getCandidate,
+  serialCodeExists,
   uploadCandidatePhoto,
   uploadPassportScan,
   ageFromDob,
