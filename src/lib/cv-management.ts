@@ -300,6 +300,9 @@ export type CandidateInput = {
   remarks?: string;
   notes?: string;
   status: Candidate["status"];
+  /** Admin-only: override the serial code. Leave unset to keep the auto value. */
+  candidateCode?: string;
+
 };
 
 export async function listCandidates(): Promise<Candidate[]> {
