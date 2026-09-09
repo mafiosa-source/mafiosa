@@ -39,6 +39,7 @@ import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
+import { Route as WorkersIdEditRouteImport } from './routes/workers_.$id.edit'
 import { Route as WorkersIdCvRouteImport } from './routes/workers_.$id.cv'
 import { Route as MonthsYearMonthRouteImport } from './routes/months_.$year.$month'
 
@@ -192,6 +193,11 @@ const AdminActivityRoute = AdminActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AdminRoute,
 } as any)
+const WorkersIdEditRoute = WorkersIdEditRouteImport.update({
+  id: '/workers_/$id/edit',
+  path: '/workers/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkersIdCvRoute = WorkersIdCvRouteImport.update({
   id: '/workers_/$id/cv',
   path: '/workers/$id/cv',
@@ -236,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/recruitment/': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
+  '/workers/$id/edit': typeof WorkersIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -269,6 +276,7 @@ export interface FileRoutesByTo {
   '/recruitment': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
+  '/workers/$id/edit': typeof WorkersIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/recruitment/': typeof RecruitmentIndexRoute
   '/months_/$year/$month': typeof MonthsYearMonthRoute
   '/workers_/$id/cv': typeof WorkersIdCvRoute
+  '/workers_/$id/edit': typeof WorkersIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/recruitment/'
     | '/months/$year/$month'
     | '/workers/$id/cv'
+    | '/workers/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/recruitment'
     | '/months/$year/$month'
     | '/workers/$id/cv'
+    | '/workers/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/recruitment/'
     | '/months_/$year/$month'
     | '/workers_/$id/cv'
+    | '/workers_/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -439,6 +451,7 @@ export interface RootRouteChildren {
   RecruitmentIndexRoute: typeof RecruitmentIndexRoute
   MonthsYearMonthRoute: typeof MonthsYearMonthRoute
   WorkersIdCvRoute: typeof WorkersIdCvRoute
+  WorkersIdEditRoute: typeof WorkersIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -653,6 +666,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminActivityRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/workers_/$id/edit': {
+      id: '/workers_/$id/edit'
+      path: '/workers/$id/edit'
+      fullPath: '/workers/$id/edit'
+      preLoaderRoute: typeof WorkersIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/workers_/$id/cv': {
       id: '/workers_/$id/cv'
       path: '/workers/$id/cv'
@@ -714,6 +734,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecruitmentIndexRoute: RecruitmentIndexRoute,
   MonthsYearMonthRoute: MonthsYearMonthRoute,
   WorkersIdCvRoute: WorkersIdCvRoute,
+  WorkersIdEditRoute: WorkersIdEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
