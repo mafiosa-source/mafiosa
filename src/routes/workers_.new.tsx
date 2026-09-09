@@ -400,11 +400,19 @@ export function CandidateForm({ editId }: { editId?: string }) {
         notes: notes || undefined,
         status: status as CandidateInput["status"],
       };
-      const created = await createCandidate(input);
-      toast.success(`Candidate created · ${created.candidateCode}`);
+      if (editId) {
+        await updateCandidate(editId, {
+          ...input,
+          ...(isAdmin && serialCode.trim() ? { candidateCode: serialCode } : {}),
+        });
+        toast.success("CV updated");
+      } else {
+        const created = await createCandidate(input);
+        toast.success(`Candidate created · ${created.candidateCode}`);
+      }
       navigate({ to: "/workers" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not create candidate");
+      toast.error(e instanceof Error ? e.message : editId ? "Could not save changes" : "Could not create candidate");
     } finally {
       setSaving(false);
     }
