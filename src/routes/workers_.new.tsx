@@ -112,7 +112,51 @@ export function CandidateForm({ editId }: { editId?: string }) {
         const all = await listAgents();
         const visible = scope.length ? all.filter((a) => scope.includes(a.id)) : all;
         setAgents(visible);
-        if (visible.length === 1) setAgentId(visible[0]!.id);
+        if (visible.length === 1 && !editId) setAgentId(visible[0]!.id);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not load agents");
+      }
+      if (!editId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const c = await getCandidate(editId);
+        if (!c) {
+          toast.error("CV not found");
+          return;
+        }
+        setSerialCode(c.candidateCode);
+        setFullName(c.fullName);
+        setNationality(c.nationality);
+        setDateOfBirth(c.dateOfBirth ?? "");
+        setPosition(c.position);
+        setExperienceYears(String(c.experienceYears));
+        setExperienceCountry(c.experienceCountry ?? "");
+        setMaritalStatus(c.maritalStatus ?? "");
+        setChildrenCount(String(c.childrenCount));
+        setHeight(c.height ?? "");
+        setWeight(c.weight ?? "");
+        setReligion(c.religion ?? "");
+        setEducation(c.education ?? "");
+        setAgentId(c.agentId ?? "");
+        setSelectedLanguages(c.languages);
+        setSelectedSkills(c.skills);
+        setPhotoUrl(c.photoUrl);
+        setGalleryUrls(c.galleryUrls);
+        setPassportNumber(c.passportNumber ?? "");
+        setPassportIssueDate(c.passportIssueDate ?? "");
+        setPassportExpiryDate(c.passportExpiryDate ?? "");
+        setPassportScanUrl(c.passportScanUrl ?? "");
+        setPlaceOfBirth(c.placeOfBirth ?? "");
+        setContactNumber(c.contactNumber ?? "");
+        setAddress(c.address ?? "");
+        setMonthlySalary(c.monthlySalary ?? "");
+        setNotes(c.notes ?? "");
+        setStatus(c.status);
+        setAvailabilityStatus(c.availabilityStatus);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not load this CV");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not load agents");
       } finally {
