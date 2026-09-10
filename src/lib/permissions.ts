@@ -37,9 +37,9 @@ export const MODULES: { key: ModuleKey; label: string; group: string }[] = [
   { key: "reconciliation", label: "Reconciliation", group: "Vouchers, Closing & Reports" },
   { key: "months", label: "Month Management", group: "Vouchers, Closing & Reports" },
   { key: "reports", label: "Reports", group: "Vouchers, Closing & Reports" },
-  { key: "workers", label: "CV / Workers", group: "CV Management" },
-  { key: "agents", label: "Agents", group: "CV Management" },
-  { key: "recruitment", label: "Recruitment Pipeline & Sponsors", group: "CV Management" },
+  { key: "workers", label: "CV / Workers", group: "Recruitment" },
+  { key: "agents", label: "Agents", group: "Recruitment" },
+  { key: "recruitment", label: "Recruitment Pipeline & Sponsors", group: "Recruitment" },
 ];
 
 export const MODULE_LABEL: Record<string, string> = MODULES.reduce(
