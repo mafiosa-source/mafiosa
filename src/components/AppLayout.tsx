@@ -70,7 +70,7 @@ const groups: { label: string; items: NavItem[] }[] = [
     ],
   },
   {
-    label: "CV Management",
+    label: "Recruitment",
     items: [
       { to: "/workers", label: "CV / Workers", icon: UserCircle2, module: "workers" },
       { to: "/agents", label: "Agents", icon: Building2, module: "agents" },

@@ -19,7 +19,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Search, Heart, Eye, FileText, MapPin, Loader2, Trash2 } from "lucide-react";
+import { Plus, Search, Heart, Eye, FileText, MapPin, Loader2, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppUser } from "@/lib/app-user";
 import { toast } from "sonner";
@@ -260,7 +260,11 @@ function WorkersPage() {
                     </div>
                   </div>
                   <CardContent className="p-3 space-y-1.5">
-                    <div className="font-mono text-xs text-muted-foreground">{c.candidateCode}</div>
+                    <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+                      <span>{c.candidateCode}</span>
+                      <span>·</span>
+                      <span>{agents.find((agent) => agent.id === c.agentId)?.agentCode || "No agent code"}</span>
+                    </div>
                     <div className="font-semibold text-sm truncate">{c.fullName}</div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
@@ -288,6 +292,13 @@ function WorkersPage() {
                           <FileText className="h-3 w-3" />
                         </Link>
                       </Button>
+                      {isAdmin && (
+                        <Button size="sm" variant="ghost" className="h-7 px-2" title="Edit CV" asChild>
+                          <Link to="/workers/$id/edit" params={{ id: c.id }}>
+                            <Pencil className="h-3 w-3" />
+                          </Link>
+                        </Button>
+                      )}
                       {isAdmin && (
                         <Button
                           size="sm"
@@ -390,7 +401,11 @@ function CandidateDetail({
         <span className="text-xs text-muted-foreground">Added {formatDate(candidate.createdAt.slice(0, 10))}</span>
       </div>
 
-      <div className="font-mono text-xs text-muted-foreground">{candidate.candidateCode}</div>
+      <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+        <span>{candidate.candidateCode}</span>
+        <span>·</span>
+        <span>{agents.find((agent) => agent.id === candidate.agentId)?.agentCode || "No agent code"}</span>
+      </div>
 
       {/* Details list */}
       <div className="space-y-2 rounded-lg border p-3 text-sm">
@@ -439,6 +454,14 @@ function CandidateDetail({
           {shortlisted ? "Shortlisted" : "Shortlist"}
         </Button>
       </div>
+
+      {isAdmin && (
+        <Button size="sm" variant="outline" className="w-full" asChild>
+          <Link to="/workers/$id/edit" params={{ id: candidate.id }}>
+            <Pencil className="h-4 w-4" /> Edit CV
+          </Link>
+        </Button>
+      )}
 
       {isAdmin && onDelete && (
         <Button size="sm" variant="destructive" className="w-full" onClick={onDelete}>

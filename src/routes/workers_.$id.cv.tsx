@@ -179,8 +179,8 @@ function CandidateCVPage() {
       <style>{`
         .okunade-page { width: 200mm; max-width: 100%; min-height: 287mm; padding: 0; font-family: Arial, Helvetica, sans-serif; font-size: 8.2pt; line-height: 1; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
         .okunade-page * { box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-        .okunade-letterhead { height: 31mm; display: flex; align-items: flex-start; justify-content: center; overflow: hidden; }
-        .okunade-letterhead img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center top; }
+        .okunade-letterhead { width: 100%; height: 31mm; display: flex; overflow: hidden; }
+        .okunade-letterhead img { display: block; width: 100%; min-width: 100%; height: 100%; object-fit: fill; }
         .okunade-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .okunade-table th, .okunade-table td { border: 0.75pt solid #111; padding: 1.2mm 1mm; height: 7mm; vertical-align: middle; text-align: center; overflow-wrap: anywhere; }
         .okunade-table th { font-weight: 700; }
