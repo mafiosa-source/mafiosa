@@ -1,5 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useAppUser } from "@/lib/app-user";
@@ -17,21 +16,14 @@ export const Route = createFileRoute("/workers_/$id/edit")({
 
 function EditCandidatePage() {
   const { id } = Route.useParams();
-  const { isAdmin, loading } = useAppUser();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !isAdmin) navigate({ to: "/workers" });
-  }, [loading, isAdmin, navigate]);
-
-  if (loading) return <AppLayout><div className="py-20" /></AppLayout>;
+  const { isAdmin } = useAppUser();
 
   if (!isAdmin) {
     return (
       <AppLayout>
         <PageHeader title="Edit CV" description="Only the administrator can edit a CV." />
-        <Button size="sm" variant="outline" onClick={() => navigate({ to: "/workers" })}>
-          Back to CVs
+        <Button size="sm" variant="outline" asChild>
+          <a href="/workers">Back to CVs</a>
         </Button>
       </AppLayout>
     );

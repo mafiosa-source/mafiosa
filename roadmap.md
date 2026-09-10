@@ -15,7 +15,7 @@
 ## Stage 3 (done)
 - [x] Agent remittance module (agency vs agent, half payments, payment history)
 
-## CV administration (in progress)
+## CV administration (done)
 - [x] Unique country-based CV serial codes and safe re-sequencing
-- [ ] Finish admin CV editing controls and code display
-- [ ] Rename CV Management to Recruitment and fit letterheads to CV width
+- [x] Finish admin CV editing controls and code display
+- [x] Rename CV Management to Recruitment and fit letterheads to CV width
