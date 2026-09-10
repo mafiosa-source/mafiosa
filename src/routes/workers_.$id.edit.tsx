@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useAppUser } from "@/lib/app-user";
@@ -23,7 +23,7 @@ function EditCandidatePage() {
       <AppLayout>
         <PageHeader title="Edit CV" description="Only the administrator can edit a CV." />
         <Button size="sm" variant="outline" asChild>
-          <a href="/workers">Back to CVs</a>
+          <Link to="/workers">Back to CVs</Link>
         </Button>
       </AppLayout>
     );

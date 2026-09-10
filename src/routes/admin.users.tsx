@@ -58,7 +58,7 @@ const PRESETS: Record<string, ModuleKey[]> = {
   "Contract Officer": ["recruitment", "workers"],
   "Finance Officer": ["dashboard", "transactions", "petty-cash", "cards", "transfers", "candidates", "sponsors", "vouchers", "reports", "recruitment"],
   "Operations Officer": ["recruitment", "workers", "agents", "fuel"],
-  "CV management only": ["workers", "agents"],
+  "Recruitment only": ["workers", "agents"],
   "Fuel only": ["fuel"],
   "Agents only": ["agents"],
   "Petty cash only": ["petty-cash"],

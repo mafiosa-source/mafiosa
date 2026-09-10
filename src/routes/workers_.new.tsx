@@ -94,6 +94,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
   const [contactNumber, setContactNumber] = useState("");
   const [address, setAddress] = useState("");
   const [monthlySalary, setMonthlySalary] = useState("");
+  const [remarks, setRemarks] = useState("");
   const [notes, setNotes] = useState("");
   const [scanning, setScanning] = useState(false);
   const [status, setStatus] = useState("Available");
@@ -152,6 +153,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
         setContactNumber(c.contactNumber ?? "");
         setAddress(c.address ?? "");
         setMonthlySalary(c.monthlySalary ?? "");
+        setRemarks(c.remarks ?? "");
         setNotes(c.notes ?? "");
         setStatus(c.status);
         setAvailabilityStatus(c.availabilityStatus);
@@ -350,7 +352,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
     }
     if (editId && isAdmin) {
       const code = serialCode.trim().toUpperCase();
-      if (!/^[A-Z]{2}-\d{1,4}$/.test(code))
+      if (!/^[A-Z]{2}-\d{3,}$/.test(code))
         return toast.error("Serial code must look like KE-001");
       if (!code.startsWith(`${countryCode}-`))
         return toast.error(`Serial code must start with ${countryCode}- to match the nationality`);
@@ -397,6 +399,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
         contactNumber: contactNumber || undefined,
         address: address || undefined,
         monthlySalary: monthlySalary || undefined,
+        remarks: remarks || undefined,
         notes: notes || undefined,
         status: status as CandidateInput["status"],
       };
@@ -784,11 +787,16 @@ export function CandidateForm({ editId }: { editId?: string }) {
           </CardContent>
         </Card>
 
-        {/* Notes */}
+        {/* Remarks and notes */}
         <Card>
-          <CardHeader><CardTitle className="text-base">Notes</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader><CardTitle className="text-base">Remarks &amp; Notes</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <Field label="CV Remarks">
+              <Textarea value={remarks} onChange={(e) => setRemarks(e.target.value)} rows={4} placeholder="Summary shown in the printed CV remarks section..." />
+            </Field>
+            <Field label="Internal Notes">
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Any additional notes..." />
+            </Field>
           </CardContent>
         </Card>
 
