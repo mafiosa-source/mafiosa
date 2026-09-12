@@ -471,6 +471,42 @@ export type Database = {
           },
         ]
       }
+      cvs: {
+        Row: {
+          country: string
+          created_at: string
+          cv_url: string | null
+          experience: string | null
+          id: string
+          is_available: boolean
+          name: string
+          phone_override: string | null
+          position: string
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          cv_url?: string | null
+          experience?: string | null
+          id: string
+          is_available?: boolean
+          name: string
+          phone_override?: string | null
+          position: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          cv_url?: string | null
+          experience?: string | null
+          id?: string
+          is_available?: boolean
+          name?: string
+          phone_override?: string | null
+          position?: string
+        }
+        Relationships: []
+      }
       dm_bank_lines: {
         Row: {
           amount: number

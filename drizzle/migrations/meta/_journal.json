@@ -113,6 +113,20 @@
       "when": 1788937450760,
       "tag": "0015_candidate_code_per_country",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1789191459206,
+      "tag": "0016_create_public_cvs_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1789191490215,
+      "tag": "0017_cv_pdfs_storage_policies",
+      "breakpoints": true
     }
   ]
 }

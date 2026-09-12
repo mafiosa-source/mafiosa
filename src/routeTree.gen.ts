@@ -28,6 +28,7 @@ import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RecruitmentIndexRouteImport } from './routes/recruitment.index'
+import { Route as BrokerIndexRouteImport } from './routes/broker.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as WorkersNewRouteImport } from './routes/workers_.new'
 import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
@@ -37,6 +38,9 @@ import { Route as RecruitmentRequestsRouteImport } from './routes/recruitment.re
 import { Route as RecruitmentRemittanceRouteImport } from './routes/recruitment.remittance'
 import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
+import { Route as BrokerCvsRouteImport } from './routes/broker.cvs'
+import { Route as BrokerContactRouteImport } from './routes/broker.contact'
+import { Route as BrokerAboutRouteImport } from './routes/broker.about'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
 import { Route as WorkersIdEditRouteImport } from './routes/workers_.$id.edit'
@@ -138,6 +142,11 @@ const RecruitmentIndexRoute = RecruitmentIndexRouteImport.update({
   path: '/recruitment/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BrokerIndexRoute = BrokerIndexRouteImport.update({
+  id: '/broker/',
+  path: '/broker/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -181,6 +190,21 @@ const RecruitmentIdRoute = RecruitmentIdRouteImport.update({
 const HousemaidNameRoute = HousemaidNameRouteImport.update({
   id: '/housemaid/$name',
   path: '/housemaid/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrokerCvsRoute = BrokerCvsRouteImport.update({
+  id: '/broker/cvs',
+  path: '/broker/cvs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrokerContactRoute = BrokerContactRouteImport.update({
+  id: '/broker/contact',
+  path: '/broker/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrokerAboutRoute = BrokerAboutRouteImport.update({
+  id: '/broker/about',
+  path: '/broker/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -230,6 +254,9 @@ export interface FileRoutesByFullPath {
   '/workers': typeof WorkersRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
+  '/broker/about': typeof BrokerAboutRoute
+  '/broker/contact': typeof BrokerContactRoute
+  '/broker/cvs': typeof BrokerCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/remittance': typeof RecruitmentRemittanceRoute
@@ -239,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/transactions/$id': typeof TransactionsIdRoute
   '/workers/new': typeof WorkersNewRoute
   '/admin/': typeof AdminIndexRoute
+  '/broker/': typeof BrokerIndexRoute
   '/recruitment/': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
@@ -264,6 +292,9 @@ export interface FileRoutesByTo {
   '/workers': typeof WorkersRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
+  '/broker/about': typeof BrokerAboutRoute
+  '/broker/contact': typeof BrokerContactRoute
+  '/broker/cvs': typeof BrokerCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/remittance': typeof RecruitmentRemittanceRoute
@@ -273,6 +304,7 @@ export interface FileRoutesByTo {
   '/transactions/$id': typeof TransactionsIdRoute
   '/workers/new': typeof WorkersNewRoute
   '/admin': typeof AdminIndexRoute
+  '/broker': typeof BrokerIndexRoute
   '/recruitment': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
@@ -300,6 +332,9 @@ export interface FileRoutesById {
   '/workers': typeof WorkersRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/users': typeof AdminUsersRoute
+  '/broker/about': typeof BrokerAboutRoute
+  '/broker/contact': typeof BrokerContactRoute
+  '/broker/cvs': typeof BrokerCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/remittance': typeof RecruitmentRemittanceRoute
@@ -309,6 +344,7 @@ export interface FileRoutesById {
   '/transactions_/$id': typeof TransactionsIdRoute
   '/workers_/new': typeof WorkersNewRoute
   '/admin/': typeof AdminIndexRoute
+  '/broker/': typeof BrokerIndexRoute
   '/recruitment/': typeof RecruitmentIndexRoute
   '/months_/$year/$month': typeof MonthsYearMonthRoute
   '/workers_/$id/cv': typeof WorkersIdCvRoute
@@ -337,6 +373,9 @@ export interface FileRouteTypes {
     | '/workers'
     | '/admin/activity'
     | '/admin/users'
+    | '/broker/about'
+    | '/broker/contact'
+    | '/broker/cvs'
     | '/housemaid/$name'
     | '/recruitment/$id'
     | '/recruitment/remittance'
@@ -346,6 +385,7 @@ export interface FileRouteTypes {
     | '/transactions/$id'
     | '/workers/new'
     | '/admin/'
+    | '/broker/'
     | '/recruitment/'
     | '/months/$year/$month'
     | '/workers/$id/cv'
@@ -371,6 +411,9 @@ export interface FileRouteTypes {
     | '/workers'
     | '/admin/activity'
     | '/admin/users'
+    | '/broker/about'
+    | '/broker/contact'
+    | '/broker/cvs'
     | '/housemaid/$name'
     | '/recruitment/$id'
     | '/recruitment/remittance'
@@ -380,6 +423,7 @@ export interface FileRouteTypes {
     | '/transactions/$id'
     | '/workers/new'
     | '/admin'
+    | '/broker'
     | '/recruitment'
     | '/months/$year/$month'
     | '/workers/$id/cv'
@@ -406,6 +450,9 @@ export interface FileRouteTypes {
     | '/workers'
     | '/admin/activity'
     | '/admin/users'
+    | '/broker/about'
+    | '/broker/contact'
+    | '/broker/cvs'
     | '/housemaid/$name'
     | '/recruitment/$id'
     | '/recruitment/remittance'
@@ -415,6 +462,7 @@ export interface FileRouteTypes {
     | '/transactions_/$id'
     | '/workers_/new'
     | '/admin/'
+    | '/broker/'
     | '/recruitment/'
     | '/months_/$year/$month'
     | '/workers_/$id/cv'
@@ -440,6 +488,9 @@ export interface RootRouteChildren {
   TransfersRoute: typeof TransfersRoute
   VouchersRoute: typeof VouchersRoute
   WorkersRoute: typeof WorkersRoute
+  BrokerAboutRoute: typeof BrokerAboutRoute
+  BrokerContactRoute: typeof BrokerContactRoute
+  BrokerCvsRoute: typeof BrokerCvsRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
   RecruitmentIdRoute: typeof RecruitmentIdRoute
   RecruitmentRemittanceRoute: typeof RecruitmentRemittanceRoute
@@ -448,6 +499,7 @@ export interface RootRouteChildren {
   SalariesNameRoute: typeof SalariesNameRoute
   TransactionsIdRoute: typeof TransactionsIdRoute
   WorkersNewRoute: typeof WorkersNewRoute
+  BrokerIndexRoute: typeof BrokerIndexRoute
   RecruitmentIndexRoute: typeof RecruitmentIndexRoute
   MonthsYearMonthRoute: typeof MonthsYearMonthRoute
   WorkersIdCvRoute: typeof WorkersIdCvRoute
@@ -589,6 +641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecruitmentIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/broker/': {
+      id: '/broker/'
+      path: '/broker'
+      fullPath: '/broker/'
+      preLoaderRoute: typeof BrokerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -650,6 +709,27 @@ declare module '@tanstack/react-router' {
       path: '/housemaid/$name'
       fullPath: '/housemaid/$name'
       preLoaderRoute: typeof HousemaidNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broker/cvs': {
+      id: '/broker/cvs'
+      path: '/broker/cvs'
+      fullPath: '/broker/cvs'
+      preLoaderRoute: typeof BrokerCvsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broker/contact': {
+      id: '/broker/contact'
+      path: '/broker/contact'
+      fullPath: '/broker/contact'
+      preLoaderRoute: typeof BrokerContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broker/about': {
+      id: '/broker/about'
+      path: '/broker/about'
+      fullPath: '/broker/about'
+      preLoaderRoute: typeof BrokerAboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -723,6 +803,9 @@ const rootRouteChildren: RootRouteChildren = {
   TransfersRoute: TransfersRoute,
   VouchersRoute: VouchersRoute,
   WorkersRoute: WorkersRoute,
+  BrokerAboutRoute: BrokerAboutRoute,
+  BrokerContactRoute: BrokerContactRoute,
+  BrokerCvsRoute: BrokerCvsRoute,
   HousemaidNameRoute: HousemaidNameRoute,
   RecruitmentIdRoute: RecruitmentIdRoute,
   RecruitmentRemittanceRoute: RecruitmentRemittanceRoute,
@@ -731,6 +814,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalariesNameRoute: SalariesNameRoute,
   TransactionsIdRoute: TransactionsIdRoute,
   WorkersNewRoute: WorkersNewRoute,
+  BrokerIndexRoute: BrokerIndexRoute,
   RecruitmentIndexRoute: RecruitmentIndexRoute,
   MonthsYearMonthRoute: MonthsYearMonthRoute,
   WorkersIdCvRoute: WorkersIdCvRoute,
