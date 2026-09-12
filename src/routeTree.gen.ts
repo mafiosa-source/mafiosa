@@ -38,6 +38,7 @@ import { Route as RecruitmentRequestsRouteImport } from './routes/recruitment.re
 import { Route as RecruitmentRemittanceRouteImport } from './routes/recruitment.remittance'
 import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
+import { Route as BrokerCvsRouteImport } from './routes/broker.cvs'
 import { Route as BrokerContactRouteImport } from './routes/broker.contact'
 import { Route as BrokerAboutRouteImport } from './routes/broker.about'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
@@ -191,6 +192,11 @@ const HousemaidNameRoute = HousemaidNameRouteImport.update({
   path: '/housemaid/$name',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BrokerCvsRoute = BrokerCvsRouteImport.update({
+  id: '/broker/cvs',
+  path: '/broker/cvs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BrokerContactRoute = BrokerContactRouteImport.update({
   id: '/broker/contact',
   path: '/broker/contact',
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/broker/about': typeof BrokerAboutRoute
   '/broker/contact': typeof BrokerContactRoute
+  '/broker/cvs': typeof BrokerCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/remittance': typeof RecruitmentRemittanceRoute
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/broker/about': typeof BrokerAboutRoute
   '/broker/contact': typeof BrokerContactRoute
+  '/broker/cvs': typeof BrokerCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/remittance': typeof RecruitmentRemittanceRoute
@@ -326,6 +334,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/broker/about': typeof BrokerAboutRoute
   '/broker/contact': typeof BrokerContactRoute
+  '/broker/cvs': typeof BrokerCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/remittance': typeof RecruitmentRemittanceRoute
@@ -366,6 +375,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/broker/about'
     | '/broker/contact'
+    | '/broker/cvs'
     | '/housemaid/$name'
     | '/recruitment/$id'
     | '/recruitment/remittance'
@@ -403,6 +413,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/broker/about'
     | '/broker/contact'
+    | '/broker/cvs'
     | '/housemaid/$name'
     | '/recruitment/$id'
     | '/recruitment/remittance'
@@ -441,6 +452,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/broker/about'
     | '/broker/contact'
+    | '/broker/cvs'
     | '/housemaid/$name'
     | '/recruitment/$id'
     | '/recruitment/remittance'
@@ -478,6 +490,7 @@ export interface RootRouteChildren {
   WorkersRoute: typeof WorkersRoute
   BrokerAboutRoute: typeof BrokerAboutRoute
   BrokerContactRoute: typeof BrokerContactRoute
+  BrokerCvsRoute: typeof BrokerCvsRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
   RecruitmentIdRoute: typeof RecruitmentIdRoute
   RecruitmentRemittanceRoute: typeof RecruitmentRemittanceRoute
@@ -698,6 +711,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HousemaidNameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/broker/cvs': {
+      id: '/broker/cvs'
+      path: '/broker/cvs'
+      fullPath: '/broker/cvs'
+      preLoaderRoute: typeof BrokerCvsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/broker/contact': {
       id: '/broker/contact'
       path: '/broker/contact'
@@ -785,6 +805,7 @@ const rootRouteChildren: RootRouteChildren = {
   WorkersRoute: WorkersRoute,
   BrokerAboutRoute: BrokerAboutRoute,
   BrokerContactRoute: BrokerContactRoute,
+  BrokerCvsRoute: BrokerCvsRoute,
   HousemaidNameRoute: HousemaidNameRoute,
   RecruitmentIdRoute: RecruitmentIdRoute,
   RecruitmentRemittanceRoute: RecruitmentRemittanceRoute,
