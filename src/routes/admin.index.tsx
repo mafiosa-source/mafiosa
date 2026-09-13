@@ -30,6 +30,12 @@ function AdminPage() {
       description: "Review all changes made by users across the system.",
       icon: History,
     },
+    {
+      to: "/admin/broker-cvs",
+      title: "Broker Website CVs",
+      description: "Add, edit or reserve the worker CVs shown on the public Broker website.",
+      icon: Globe,
+    },
   ] as const;
 
   return (

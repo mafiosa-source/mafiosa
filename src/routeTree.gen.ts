@@ -42,6 +42,7 @@ import { Route as BrokerCvsRouteImport } from './routes/broker.cvs'
 import { Route as BrokerContactRouteImport } from './routes/broker.contact'
 import { Route as BrokerAboutRouteImport } from './routes/broker.about'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminBrokerCvsRouteImport } from './routes/admin.broker-cvs'
 import { Route as AdminActivityRouteImport } from './routes/admin.activity'
 import { Route as WorkersIdEditRouteImport } from './routes/workers_.$id.edit'
 import { Route as WorkersIdCvRouteImport } from './routes/workers_.$id.cv'
@@ -212,6 +213,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBrokerCvsRoute = AdminBrokerCvsRouteImport.update({
+  id: '/broker-cvs',
+  path: '/broker-cvs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminActivityRoute = AdminActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/vouchers': typeof VouchersRoute
   '/workers': typeof WorkersRoute
   '/admin/activity': typeof AdminActivityRoute
+  '/admin/broker-cvs': typeof AdminBrokerCvsRoute
   '/admin/users': typeof AdminUsersRoute
   '/broker/about': typeof BrokerAboutRoute
   '/broker/contact': typeof BrokerContactRoute
@@ -291,6 +298,7 @@ export interface FileRoutesByTo {
   '/vouchers': typeof VouchersRoute
   '/workers': typeof WorkersRoute
   '/admin/activity': typeof AdminActivityRoute
+  '/admin/broker-cvs': typeof AdminBrokerCvsRoute
   '/admin/users': typeof AdminUsersRoute
   '/broker/about': typeof BrokerAboutRoute
   '/broker/contact': typeof BrokerContactRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/vouchers': typeof VouchersRoute
   '/workers': typeof WorkersRoute
   '/admin/activity': typeof AdminActivityRoute
+  '/admin/broker-cvs': typeof AdminBrokerCvsRoute
   '/admin/users': typeof AdminUsersRoute
   '/broker/about': typeof BrokerAboutRoute
   '/broker/contact': typeof BrokerContactRoute
@@ -372,6 +381,7 @@ export interface FileRouteTypes {
     | '/vouchers'
     | '/workers'
     | '/admin/activity'
+    | '/admin/broker-cvs'
     | '/admin/users'
     | '/broker/about'
     | '/broker/contact'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/vouchers'
     | '/workers'
     | '/admin/activity'
+    | '/admin/broker-cvs'
     | '/admin/users'
     | '/broker/about'
     | '/broker/contact'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/vouchers'
     | '/workers'
     | '/admin/activity'
+    | '/admin/broker-cvs'
     | '/admin/users'
     | '/broker/about'
     | '/broker/contact'
@@ -739,6 +751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/broker-cvs': {
+      id: '/admin/broker-cvs'
+      path: '/broker-cvs'
+      fullPath: '/admin/broker-cvs'
+      preLoaderRoute: typeof AdminBrokerCvsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/activity': {
       id: '/admin/activity'
       path: '/activity'
@@ -772,12 +791,14 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminActivityRoute: typeof AdminActivityRoute
+  AdminBrokerCvsRoute: typeof AdminBrokerCvsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminActivityRoute: AdminActivityRoute,
+  AdminBrokerCvsRoute: AdminBrokerCvsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
