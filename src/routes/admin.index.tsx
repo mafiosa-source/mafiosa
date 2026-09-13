@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
-import { ShieldCheck, Users, History, KeyRound } from "lucide-react";
+import { ShieldCheck, Users, History, KeyRound, Globe } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
