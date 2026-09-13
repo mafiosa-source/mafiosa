@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/AppLayout";
-import { ShieldCheck, Users, History, KeyRound } from "lucide-react";
+import { ShieldCheck, Users, History, KeyRound, Globe } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
@@ -29,6 +29,12 @@ function AdminPage() {
       title: "Activity Log",
       description: "Review all changes made by users across the system.",
       icon: History,
+    },
+    {
+      to: "/admin/broker-cvs",
+      title: "Broker Website CVs",
+      description: "Add, edit or reserve the worker CVs shown on the public Broker website.",
+      icon: Globe,
     },
   ] as const;
 
