@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ShieldCheck, Globe2, Users, ArrowRight, BadgeCheck } from "lucide-react";
+import { ShieldCheck, Globe2, Users, ArrowRight, BadgeCheck, MessageCircle } from "lucide-react";
 import { BrokerSite } from "@/components/BrokerSite";
-import { CV_COUNTRIES, COUNTRY_NAME } from "@/lib/public-cvs";
+import { CV_COUNTRIES, COUNTRY_NAME, WHATSAPP_GROUP_URL } from "@/lib/public-cvs";
 
 export const Route = createFileRoute("/broker/")({
   head: () => ({
@@ -51,6 +51,14 @@ function BrokerHome() {
           >
             Talk to us
           </Link>
+          <a
+            href={WHATSAPP_GROUP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-md bg-[#25D366] px-5 py-3 text-sm font-semibold text-white"
+          >
+            <MessageCircle className="h-4 w-4" /> Join WhatsApp Group
+          </a>
         </div>
       </section>
 
