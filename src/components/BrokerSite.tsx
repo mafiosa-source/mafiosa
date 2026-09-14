@@ -1,8 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Phone, MessageCircle, MapPin, Mail } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Mail, Users } from "lucide-react";
 import brokerLogo from "@/assets/broker-logo.jpg.asset.json";
-import { AGENCY_PHONES } from "@/lib/public-cvs";
+import { AGENCY_ADDRESS, AGENCY_MAP_URL, AGENCY_PHONES, WHATSAPP_GROUP_URL } from "@/lib/public-cvs";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -43,6 +43,14 @@ export function BrokerSite({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+            <a
+              href={WHATSAPP_GROUP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-1 inline-flex items-center gap-2 rounded-md bg-[#25D366] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#20bd5a]"
+            >
+              <Users className="h-4 w-4" /> Join WhatsApp Group
+            </a>
           </nav>
         </div>
       </header>
@@ -77,7 +85,16 @@ export function BrokerSite({ children }: { children: ReactNode }) {
           <div>
             <div className="font-semibold text-slate-900">Office</div>
             <ul className="mt-2 space-y-2 text-slate-600">
-              <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#0b5fff]" /> Doha, Qatar</li>
+              <li>
+                <a
+                  href={AGENCY_MAP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-2 hover:text-[#0b5fff]"
+                >
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#0b5fff]" /> {AGENCY_ADDRESS}
+                </a>
+              </li>
               <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#0b5fff]" /> info@alhakeemgroup.com</li>
             </ul>
           </div>

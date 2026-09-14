@@ -76,6 +76,7 @@ export const COUNTRIES: { code: string; name: string; flag: string }[] = [
   { code: "IN", name: "India", flag: "🇮🇳" },
   { code: "LK", name: "Sri Lanka", flag: "🇱🇰" },
   { code: "NP", name: "Nepal", flag: "🇳🇵" },
+  { code: "BD", name: "Bangladesh", flag: "🇧🇩" },
 ];
 
 export const COUNTRY_CODE_BY_NAME: Record<string, string> = COUNTRIES.reduce(
@@ -94,6 +95,7 @@ export const COUNTRY_ARABIC_BY_CODE: Record<string, string> = {
   IN: "الهند",
   LK: "سريلانكا",
   NP: "نيبال",
+  BD: "بنغلاديش",
 };
 
 export function countryArabicName(code: string): string {

@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -119,13 +120,19 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isPublicBrokerPage = pathname === "/broker" || pathname.startsWith("/broker/");
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthGate>
+      {isPublicBrokerPage ? (
+        <Outlet />
+      ) : (
+        <AuthGate>
         <Outlet />
         <UndoShortcuts />
-      </AuthGate>
+        </AuthGate>
+      )}
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );

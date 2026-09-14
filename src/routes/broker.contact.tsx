@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Phone, MessageCircle, MapPin, Mail, Clock } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Mail, Clock, Users } from "lucide-react";
 import { BrokerSite } from "@/components/BrokerSite";
-import { AGENCY_PHONES } from "@/lib/public-cvs";
+import { AGENCY_ADDRESS, AGENCY_MAP_URL, AGENCY_PHONES, WHATSAPP_GROUP_URL } from "@/lib/public-cvs";
 
 export const Route = createFileRoute("/broker/contact")({
   head: () => ({
@@ -27,6 +27,14 @@ function ContactPage() {
       <p className="mt-2 text-sm text-slate-600">
         Send us a message on WhatsApp with the position and nationality you need, and we will reply with available CVs.
       </p>
+      <a
+        href={WHATSAPP_GROUP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-5 inline-flex items-center gap-2 rounded-md bg-[#25D366] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#20bd5a]"
+      >
+        <Users className="h-4 w-4" /> Join WhatsApp Group
+      </a>
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {AGENCY_PHONES.map((p) => (
           <div key={p} className="rounded-[16px] border border-slate-200 bg-white p-6">
@@ -53,7 +61,9 @@ function ContactPage() {
         <div className="rounded-[16px] border border-slate-200 bg-white p-6 text-sm">
           <MapPin className="h-5 w-5 text-[#0b5fff]" />
           <div className="mt-2 font-semibold">Office</div>
-          <p className="text-slate-600">Doha, Qatar</p>
+           <a href={AGENCY_MAP_URL} target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-[#0b5fff]">
+             {AGENCY_ADDRESS}
+           </a>
         </div>
         <div className="rounded-[16px] border border-slate-200 bg-white p-6 text-sm">
           <Mail className="h-5 w-5 text-[#0b5fff]" />
@@ -63,7 +73,7 @@ function ContactPage() {
         <div className="rounded-[16px] border border-slate-200 bg-white p-6 text-sm">
           <Clock className="h-5 w-5 text-[#0b5fff]" />
           <div className="mt-2 font-semibold">Working hours</div>
-          <p className="text-slate-600">Saturday – Thursday, 8:00 – 18:00</p>
+           <p className="text-slate-600">Saturday – Thursday, 8:00 am – 12:00 pm and 4:00 pm – 8:00 pm</p>
         </div>
       </div>
     </BrokerSite>
