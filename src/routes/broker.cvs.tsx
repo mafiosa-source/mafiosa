@@ -112,7 +112,19 @@ function CvsPage() {
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((cv, i) => (
-            <article key={cv.id} className="flex flex-col rounded-[16px] border border-slate-200 bg-white p-5 shadow-sm">
+            <article
+              key={cv.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => setSelected({ cv, index: i })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelected({ cv, index: i });
+                }
+              }}
+              className="flex cursor-pointer flex-col rounded-[16px] border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[#0b5fff] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0b5fff]"
+            >
               <div className="flex items-center justify-between">
                 <span className="rounded-2xl bg-[#0b5fff]/10 px-3 py-1 text-xs font-semibold text-[#0b5fff]">
                   {COUNTRY_NAME[cv.country] ?? cv.country}
@@ -121,11 +133,10 @@ function CvsPage() {
               </div>
 
               {cv.photoUrl ? (
-                <img
+                <BrokerFacePhoto
                   src={cv.photoUrl}
                   alt={`${cv.name}, ${cv.position}`}
-                  loading="lazy"
-                  className="mt-4 h-44 w-full rounded-2xl object-cover"
+                  className="mt-4 h-56 w-full rounded-2xl"
                 />
               ) : null}
 
@@ -151,12 +162,14 @@ function CvsPage() {
                   href={whatsappLink(cv, i)}
                   target="_blank"
                   rel="noopener"
+                  onClick={(e) => e.stopPropagation()}
                   className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-3 py-2.5 text-sm font-semibold text-white"
                 >
                   <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
                 <a
                   href={callLink(cv, i)}
+                  onClick={(e) => e.stopPropagation()}
                   className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0b5fff] px-3 py-2.5 text-sm font-semibold text-white"
                 >
                   <Phone className="h-4 w-4" /> Call
@@ -166,6 +179,11 @@ function CvsPage() {
           ))}
         </div>
       )}
+
+      {selected ? (
+        <BrokerCvDialog cv={selected.cv} index={selected.index} onClose={() => setSelected(null)} />
+      ) : null}
     </BrokerSite>
+
   );
 }
