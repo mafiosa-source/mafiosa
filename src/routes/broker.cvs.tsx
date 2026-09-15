@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { MessageCircle, Phone, Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { BrokerSite } from "@/components/BrokerSite";
+import { BrokerCvDialog } from "@/components/BrokerCvDialog";
+import { BrokerFacePhoto } from "@/components/BrokerFacePhoto";
 import { listPublicCvs } from "@/lib/public-cvs.functions";
 import {
   whatsappLink,
@@ -12,6 +14,7 @@ import {
   COUNTRY_NAME,
   type PublicCv,
 } from "@/lib/public-cvs";
+
 
 export const Route = createFileRoute("/broker/cvs")({
   head: () => ({
