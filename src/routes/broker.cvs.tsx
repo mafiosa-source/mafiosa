@@ -39,6 +39,8 @@ function CvsPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("ALL");
+  const [selected, setSelected] = useState<{ cv: PublicCv; index: number } | null>(null);
+
 
   useEffect(() => {
     listPublicCvs()
