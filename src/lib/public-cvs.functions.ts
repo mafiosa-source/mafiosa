@@ -23,6 +23,15 @@ export type PublicCvRow = {
   languages: string[];
   photoUrl: string | null;
   createdAt: string;
+  candidateCode: string;
+  passportNumber: string | null;
+  address: string | null;
+  dateOfBirth: string | null;
+  placeOfBirth: string | null;
+  monthlySalary: string | null;
+  remarks: string | null;
+  galleryUrls: string[];
+  agentCode: string | null;
 };
 
 export const listPublicCvs = createServerFn({ method: "GET" }).handler(async (): Promise<PublicCvRow[]> => {
@@ -30,7 +39,7 @@ export const listPublicCvs = createServerFn({ method: "GET" }).handler(async ():
   const { data, error } = await supabaseAdmin
     .from("candidates")
     .select(
-      "id,candidate_code,full_name,country_code,nationality,position,experience_years,experience_country,age,marital_status,children_count,height,weight,religion,education,skills,languages,photo_url,created_at",
+      "id,candidate_code,full_name,country_code,nationality,position,experience_years,experience_country,age,marital_status,children_count,height,weight,religion,education,skills,languages,photo_url,gallery_urls,passport_number,address,date_of_birth,place_of_birth,monthly_salary,remarks,created_at,agents(agent_code)",
     )
     .eq("status", "Available")
     .order("created_at", { ascending: false });
@@ -56,5 +65,15 @@ export const listPublicCvs = createServerFn({ method: "GET" }).handler(async ():
     languages: Array.isArray(r.languages) ? (r.languages as string[]) : [],
     photoUrl: (r.photo_url as string) || null,
     createdAt: String(r.created_at ?? ""),
+    candidateCode: String(r.candidate_code ?? ""),
+    passportNumber: (r.passport_number as string) || null,
+    address: (r.address as string) || null,
+    dateOfBirth: (r.date_of_birth as string) || null,
+    placeOfBirth: (r.place_of_birth as string) || null,
+    monthlySalary: (r.monthly_salary as string) || null,
+    remarks: (r.remarks as string) || null,
+    galleryUrls: Array.isArray(r.gallery_urls) ? (r.gallery_urls as string[]) : [],
+    agentCode: ((r.agents as { agent_code?: string } | null)?.agent_code as string) || null,
   }));
 });
+
