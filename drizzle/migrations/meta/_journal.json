@@ -134,6 +134,20 @@
       "when": 1789451833742,
       "tag": "0018_restrict_public_cvs_access",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1789537155565,
+      "tag": "0019_harden_security_definer_role_checks",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1789537189058,
+      "tag": "0020_fix_role_check_self_guard",
+      "breakpoints": true
     }
   ]
 }
