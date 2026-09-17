@@ -57,6 +57,8 @@ export type Candidate = {
   sponsorId?: string;
   pipelineStatus: string;
   experienceAbroad: boolean;
+  /** First-time housemaid (no previous overseas contract). */
+  isFirstTime: boolean;
   poloPickupDate?: string;
   agreedRemittance?: number;
   pipelineNotes?: string;

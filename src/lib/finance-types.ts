@@ -78,6 +78,8 @@ export type WalletKey =
   | "maha-card"
   | "limit-card"
   | "hassan"
+  | "with-staff"
+  | "external-office"
   | "external"; // outside the business (sponsors, POLO, vendors, drivers, staff, etc.)
 
 export type WalletKind = "cash" | "bank" | "company-account" | "card" | "holding" | "person" | "external";
