@@ -340,6 +340,7 @@ export type Database = {
           gallery_urls: string[]
           height: string | null
           id: string
+          is_first_time: boolean
           languages: string[]
           marital_status: string | null
           monthly_salary: string | null
@@ -385,6 +386,7 @@ export type Database = {
           gallery_urls?: string[]
           height?: string | null
           id?: string
+          is_first_time?: boolean
           languages?: string[]
           marital_status?: string | null
           monthly_salary?: string | null
@@ -430,6 +432,7 @@ export type Database = {
           gallery_urls?: string[]
           height?: string | null
           id?: string
+          is_first_time?: boolean
           languages?: string[]
           marital_status?: string | null
           monthly_salary?: string | null
@@ -1011,6 +1014,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      polo_contracts: {
+        Row: {
+          approved_date: string | null
+          attempt: number
+          candidate_id: string
+          created_at: string
+          created_by: string | null
+          expected_date: string | null
+          id: string
+          notes: string | null
+          rejection_reason: string | null
+          status: string
+          submitted_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_date?: string | null
+          attempt?: number
+          candidate_id: string
+          created_at?: string
+          created_by?: string | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submitted_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_date?: string | null
+          attempt?: number
+          candidate_id?: string
+          created_at?: string
+          created_by?: string | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submitted_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "polo_contracts_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: true
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recruitment_requests: {
         Row: {

@@ -78,6 +78,8 @@ export type WalletKey =
   | "maha-card"
   | "limit-card"
   | "hassan"
+  | "with-staff"
+  | "external-office"
   | "external"; // outside the business (sponsors, POLO, vendors, drivers, staff, etc.)
 
 export type WalletKind = "cash" | "bank" | "company-account" | "card" | "holding" | "person" | "external";
@@ -102,6 +104,8 @@ export const WALLETS: { key: WalletKey; name: string; kind: WalletKind; last4?: 
   { key: "maha-card", name: "Maha Petrol Card", kind: "card", last4: "0552", limit: 5000, purpose: "Fuel" },
   { key: "limit-card", name: "Limit Card", kind: "card", last4: "3852", limit: 1000, purpose: "Mixed Expenses" },
   { key: "hassan", name: "MR HASSAN", kind: "person", purpose: "Owner funds in / personal settlements" },
+  { key: "with-staff", name: "With Staff", kind: "person", purpose: "Cash handed to a staff member for a specific payment" },
+  { key: "external-office", name: "External Office", kind: "external", purpose: "Money paid out to an outside office (POLO etc.)" },
   { key: "external", name: "External / Third Party", kind: "external" },
 ];
 

@@ -57,6 +57,8 @@ export type Candidate = {
   sponsorId?: string;
   pipelineStatus: string;
   experienceAbroad: boolean;
+  /** First-time housemaid (no previous overseas contract). */
+  isFirstTime: boolean;
   poloPickupDate?: string;
   agreedRemittance?: number;
   pipelineNotes?: string;
@@ -213,6 +215,7 @@ function candidateFromRow(r: Row): Candidate {
     sponsorId: (r.sponsor_id as string) ?? undefined,
     pipelineStatus: String(r.pipeline_status ?? "CV_UPLOADED"),
     experienceAbroad: Boolean(r.experience_abroad),
+    isFirstTime: Boolean(r.is_first_time),
     poloPickupDate: (r.polo_pickup_date as string) ?? undefined,
     agreedRemittance: r.agreed_remittance == null ? undefined : Number(r.agreed_remittance),
     pipelineNotes: (r.pipeline_notes as string) ?? undefined,
