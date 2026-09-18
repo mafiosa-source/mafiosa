@@ -25,6 +25,7 @@ import {
   stepIndex,
   type Sponsor,
 } from "@/lib/recruitment";
+import { poloMoneyState } from "@/lib/polo-fee";
 
 export const Route = createFileRoute("/recruitment/")({
   head: () => ({
@@ -88,7 +89,12 @@ function PipelinePage() {
           (c.passportNumber ?? "").toLowerCase().includes(k) ||
           (sponsorName(c.sponsorId) ?? "").toLowerCase().includes(k),
       )
-      .map((c) => ({ c, cost: folderTotals(expenseFolder(fin.transactions, c)), step: stepIndex(c) }));
+      .map((c) => ({
+        c,
+        cost: folderTotals(expenseFolder(fin.transactions, c)),
+        step: stepIndex(c),
+        polo: poloMoneyState(fin.transactions, c.id),
+      }));
   }, [candidates, country, status, q, fin.transactions, sponsors]);
 
   const countries = useMemo(() => Array.from(new Set(candidates.map((c) => c.countryCode))).sort(), [candidates]);
