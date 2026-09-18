@@ -170,6 +170,7 @@ function PipelinePage() {
                 <TableHead>Agent</TableHead>
                 <TableHead>Sponsor</TableHead>
                 <TableHead>Stage</TableHead>
+                <TableHead>POLO 160</TableHead>
                 <TableHead className="w-40">Progress</TableHead>
                 <TableHead className="text-right">Cost so far</TableHead>
                 <TableHead className="text-right">Sponsor owes</TableHead>
@@ -178,12 +179,12 @@ function PipelinePage() {
             <TableBody>
               {rows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-10 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">
                     No housemaids match these filters.
                   </TableCell>
                 </TableRow>
               )}
-              {rows.map(({ c, cost, step }) => (
+              {rows.map(({ c, cost, step, polo }) => (
                 <TableRow
                   key={c.id}
                   className="cursor-pointer hover:bg-muted/50"
@@ -199,6 +200,17 @@ function PipelinePage() {
                   <TableCell>
                     <Badge variant="outline" className={cn("font-normal whitespace-nowrap", STATUS_TONE[c.pipelineStatus])}>
                       {statusLabel(c.pipelineStatus)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "font-normal whitespace-nowrap",
+                        polo.alert && "border-destructive/50 bg-destructive/10 text-destructive font-medium",
+                      )}
+                    >
+                      {polo.alert ? "Collect from wallet" : polo.location}
                     </Badge>
                   </TableCell>
                   <TableCell>
