@@ -47,6 +47,7 @@ import {
   type StatusHistoryEntry,
 } from "@/lib/recruitment";
 import { TransactionDetailsDialog } from "@/components/TransactionDetailsDialog";
+import { PoloFeeTracker } from "@/components/PoloFeeTracker";
 import type { Transaction } from "@/lib/finance-types";
 import { REQUEST_TYPE_LABEL, autoRequestForStatus } from "@/lib/recruitment-requests";
 
@@ -377,6 +378,10 @@ function HousemaidFilePage() {
             </Link>
           </CardContent>
         </Card>
+
+        {/* POLO 160 fee tracker */}
+        <PoloFeeTracker candidate={c} sponsorName={sponsor?.fullName} onCandidateChange={() => void load()} />
+
 
         {/* Expense folder */}
         <Card className="lg:col-span-2">

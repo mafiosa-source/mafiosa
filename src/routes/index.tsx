@@ -28,6 +28,7 @@ import type { WalletKey, Company } from "@/lib/finance-types";
 import { qar } from "@/lib/format";
 import { walletLedger } from "@/lib/finance-derived";
 import { currentMonthPeriod } from "@/lib/period";
+import { poloTotals } from "@/lib/polo-fee";
 import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -136,6 +137,7 @@ function Dashboard() {
     [s, period.from, period.to],
   );
 
+  const polo = useMemo(() => poloTotals(s.transactions), [s.transactions]);
   const recent = sortByDateDesc(s.transactions).slice(0, 8);
   const pendingActions = s.transactions.filter((t) => t.status === "Pending");
   const cardExposure = cards.reduce((a, c) => a + c.used, 0);
@@ -252,6 +254,37 @@ function Dashboard() {
           ))}
         </div>
       </Section>
+
+      <Section title="POLO Fee (QAR 160)" hint="Where each housemaid's POLO fee currently sits.">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StatCard label="In Company Accounts" value={polo.inAccounts} icon={Landmark} to="/recruitment" cta="View housemaids" caption="Paid by sponsor" />
+          <StatCard label="In Holding Wallet" value={polo.inWallet} icon={PiggyBank} to="/holding-wallet" cta="View wallet" caption="Waiting with the boss" />
+          <StatCard
+            label="To Collect From Wallet"
+            value={polo.toCollect}
+            icon={TriangleAlert}
+            tone="danger"
+            to="/recruitment"
+            cta="Open housemaids"
+            caption={polo.alerts.length ? `${polo.alerts.length} case(s)` : "No alerts"}
+          />
+          <StatCard label="At External Office" value={polo.atOffice} icon={FileText} to="/recruitment" cta="View housemaids" caption="Paid out" />
+          <StatCard label="Returned (rejected)" value={polo.returned} icon={ArrowLeftRight} to="/recruitment" cta="View housemaids" caption="Back for reuse" />
+        </div>
+        {polo.alerts.length > 0 && (
+          <ul className="mt-3 divide-y rounded-lg border bg-card text-sm">
+            {polo.alerts.map((a) => (
+              <li key={a.candidateId} className="flex items-center justify-between gap-3 px-3 py-2">
+                <Link to="/recruitment/$id" params={{ id: a.candidateId }} className="font-medium text-primary hover:underline">
+                  {a.candidate}
+                </Link>
+                <span className="tabular font-semibold text-[color:var(--destructive)]">{qar(a.amount)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+
 
       <Section title="Held Funds" hint="Money held on behalf of housemaids, candidates and sponsors — not company money.">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

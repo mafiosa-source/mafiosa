@@ -193,7 +193,7 @@ export function PoloFeeTracker({ candidate, sponsorName, onCandidateChange }: Pr
                 size="sm"
                 variant={next === s ? "default" : "outline"}
                 onClick={() => openStep(s)}
-                disabled={s !== "POLO_RETURNED" && next !== s && !state.done.POLO_PAID}
+                disabled={next !== s && !(s === "POLO_RETURNED" && !!state.done.POLO_TO_OFFICE)}
               >
                 {POLO_STEP_LABEL[s]}
               </Button>
