@@ -149,6 +149,111 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_items: {
+        Row: {
+          amount: number
+          bulk_id: string
+          created_at: string
+          fee_transaction_id: string
+          id: string
+          proof: string | null
+          sign_date: string | null
+          sign_status: string
+          signed_by: string | null
+          sponsor_name: string | null
+          transfer_transaction_id: string | null
+          worker_id: string | null
+          worker_name: string | null
+        }
+        Insert: {
+          amount?: number
+          bulk_id: string
+          created_at?: string
+          fee_transaction_id: string
+          id?: string
+          proof?: string | null
+          sign_date?: string | null
+          sign_status?: string
+          signed_by?: string | null
+          sponsor_name?: string | null
+          transfer_transaction_id?: string | null
+          worker_id?: string | null
+          worker_name?: string | null
+        }
+        Update: {
+          amount?: number
+          bulk_id?: string
+          created_at?: string
+          fee_transaction_id?: string
+          id?: string
+          proof?: string | null
+          sign_date?: string | null
+          sign_status?: string
+          signed_by?: string | null
+          sponsor_name?: string | null
+          transfer_transaction_id?: string | null
+          worker_id?: string | null
+          worker_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_items_bulk_id_fkey"
+            columns: ["bulk_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_transfers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_items_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_transfers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          from_account: string
+          id: string
+          note: string | null
+          ref: string
+          status: string
+          to_account: string
+          total: number
+          transfer_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          from_account: string
+          id?: string
+          note?: string | null
+          ref: string
+          status?: string
+          to_account?: string
+          total?: number
+          transfer_date?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          from_account?: string
+          id?: string
+          note?: string | null
+          ref?: string
+          status?: string
+          to_account?: string
+          total?: number
+          transfer_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       candidate_code_counters: {
         Row: {
           agent_id: string
@@ -1015,6 +1120,36 @@ export type Database = {
         }
         Relationships: []
       }
+      polo_batches: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          image: string | null
+          note: string | null
+          scan_date: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image?: string | null
+          note?: string | null
+          scan_date?: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image?: string | null
+          note?: string | null
+          scan_date?: string
+          type?: string
+        }
+        Relationships: []
+      }
       polo_contracts: {
         Row: {
           approved_date: string | null
@@ -1063,6 +1198,66 @@ export type Database = {
             foreignKeyName: "polo_contracts_candidate_id_fkey"
             columns: ["candidate_id"]
             isOneToOne: true
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polo_events: {
+        Row: {
+          attempt_no: number
+          batch_id: string | null
+          created_at: string
+          created_by: string | null
+          event_date: string
+          event_type: string
+          fee_location: string | null
+          id: string
+          note: string | null
+          reference_code: string | null
+          worker_id: string | null
+          worker_name: string
+        }
+        Insert: {
+          attempt_no?: number
+          batch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          event_date?: string
+          event_type: string
+          fee_location?: string | null
+          id?: string
+          note?: string | null
+          reference_code?: string | null
+          worker_id?: string | null
+          worker_name: string
+        }
+        Update: {
+          attempt_no?: number
+          batch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          event_date?: string
+          event_type?: string
+          fee_location?: string | null
+          id?: string
+          note?: string | null
+          reference_code?: string | null
+          worker_id?: string | null
+          worker_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "polo_events_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "polo_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "polo_events_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
             referencedRelation: "candidates"
             referencedColumns: ["id"]
           },
