@@ -28,6 +28,7 @@ import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RecruitmentIndexRouteImport } from './routes/recruitment.index'
+import { Route as PoloIndexRouteImport } from './routes/polo.index'
 import { Route as BrokerIndexRouteImport } from './routes/broker.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as WorkersNewRouteImport } from './routes/workers_.new'
@@ -141,6 +142,11 @@ const IndexRoute = IndexRouteImport.update({
 const RecruitmentIndexRoute = RecruitmentIndexRouteImport.update({
   id: '/recruitment/',
   path: '/recruitment/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoloIndexRoute = PoloIndexRouteImport.update({
+  id: '/polo/',
+  path: '/polo/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrokerIndexRoute = BrokerIndexRouteImport.update({
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/workers/new': typeof WorkersNewRoute
   '/admin/': typeof AdminIndexRoute
   '/broker/': typeof BrokerIndexRoute
+  '/polo/': typeof PoloIndexRoute
   '/recruitment/': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
@@ -313,6 +320,7 @@ export interface FileRoutesByTo {
   '/workers/new': typeof WorkersNewRoute
   '/admin': typeof AdminIndexRoute
   '/broker': typeof BrokerIndexRoute
+  '/polo': typeof PoloIndexRoute
   '/recruitment': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
   '/workers/$id/cv': typeof WorkersIdCvRoute
@@ -354,6 +362,7 @@ export interface FileRoutesById {
   '/workers_/new': typeof WorkersNewRoute
   '/admin/': typeof AdminIndexRoute
   '/broker/': typeof BrokerIndexRoute
+  '/polo/': typeof PoloIndexRoute
   '/recruitment/': typeof RecruitmentIndexRoute
   '/months_/$year/$month': typeof MonthsYearMonthRoute
   '/workers_/$id/cv': typeof WorkersIdCvRoute
@@ -396,6 +405,7 @@ export interface FileRouteTypes {
     | '/workers/new'
     | '/admin/'
     | '/broker/'
+    | '/polo/'
     | '/recruitment/'
     | '/months/$year/$month'
     | '/workers/$id/cv'
@@ -435,6 +445,7 @@ export interface FileRouteTypes {
     | '/workers/new'
     | '/admin'
     | '/broker'
+    | '/polo'
     | '/recruitment'
     | '/months/$year/$month'
     | '/workers/$id/cv'
@@ -475,6 +486,7 @@ export interface FileRouteTypes {
     | '/workers_/new'
     | '/admin/'
     | '/broker/'
+    | '/polo/'
     | '/recruitment/'
     | '/months_/$year/$month'
     | '/workers_/$id/cv'
@@ -512,6 +524,7 @@ export interface RootRouteChildren {
   TransactionsIdRoute: typeof TransactionsIdRoute
   WorkersNewRoute: typeof WorkersNewRoute
   BrokerIndexRoute: typeof BrokerIndexRoute
+  PoloIndexRoute: typeof PoloIndexRoute
   RecruitmentIndexRoute: typeof RecruitmentIndexRoute
   MonthsYearMonthRoute: typeof MonthsYearMonthRoute
   WorkersIdCvRoute: typeof WorkersIdCvRoute
@@ -651,6 +664,13 @@ declare module '@tanstack/react-router' {
       path: '/recruitment'
       fullPath: '/recruitment/'
       preLoaderRoute: typeof RecruitmentIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/polo/': {
+      id: '/polo/'
+      path: '/polo'
+      fullPath: '/polo/'
+      preLoaderRoute: typeof PoloIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/broker/': {
@@ -836,6 +856,7 @@ const rootRouteChildren: RootRouteChildren = {
   TransactionsIdRoute: TransactionsIdRoute,
   WorkersNewRoute: WorkersNewRoute,
   BrokerIndexRoute: BrokerIndexRoute,
+  PoloIndexRoute: PoloIndexRoute,
   RecruitmentIndexRoute: RecruitmentIndexRoute,
   MonthsYearMonthRoute: MonthsYearMonthRoute,
   WorkersIdCvRoute: WorkersIdCvRoute,
