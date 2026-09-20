@@ -38,6 +38,8 @@ import { Route as RecruitmentSponsorsRouteImport } from './routes/recruitment.sp
 import { Route as RecruitmentRequestsRouteImport } from './routes/recruitment.requests'
 import { Route as RecruitmentRemittanceRouteImport } from './routes/recruitment.remittance'
 import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
+import { Route as PoloRefundsRouteImport } from './routes/polo.refunds'
+import { Route as PoloBulkRouteImport } from './routes/polo.bulk'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as BrokerCvsRouteImport } from './routes/broker.cvs'
 import { Route as BrokerContactRouteImport } from './routes/broker.contact'
@@ -194,6 +196,16 @@ const RecruitmentIdRoute = RecruitmentIdRouteImport.update({
   path: '/recruitment/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PoloRefundsRoute = PoloRefundsRouteImport.update({
+  id: '/polo/refunds',
+  path: '/polo/refunds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoloBulkRoute = PoloBulkRouteImport.update({
+  id: '/polo/bulk',
+  path: '/polo/bulk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HousemaidNameRoute = HousemaidNameRouteImport.update({
   id: '/housemaid/$name',
   path: '/housemaid/$name',
@@ -271,6 +283,8 @@ export interface FileRoutesByFullPath {
   '/broker/contact': typeof BrokerContactRoute
   '/broker/cvs': typeof BrokerCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
+  '/polo/bulk': typeof PoloBulkRoute
+  '/polo/refunds': typeof PoloRefundsRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/remittance': typeof RecruitmentRemittanceRoute
   '/recruitment/requests': typeof RecruitmentRequestsRoute
@@ -311,6 +325,8 @@ export interface FileRoutesByTo {
   '/broker/contact': typeof BrokerContactRoute
   '/broker/cvs': typeof BrokerCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
+  '/polo/bulk': typeof PoloBulkRoute
+  '/polo/refunds': typeof PoloRefundsRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/remittance': typeof RecruitmentRemittanceRoute
   '/recruitment/requests': typeof RecruitmentRequestsRoute
@@ -353,6 +369,8 @@ export interface FileRoutesById {
   '/broker/contact': typeof BrokerContactRoute
   '/broker/cvs': typeof BrokerCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
+  '/polo/bulk': typeof PoloBulkRoute
+  '/polo/refunds': typeof PoloRefundsRoute
   '/recruitment/$id': typeof RecruitmentIdRoute
   '/recruitment/remittance': typeof RecruitmentRemittanceRoute
   '/recruitment/requests': typeof RecruitmentRequestsRoute
@@ -396,6 +414,8 @@ export interface FileRouteTypes {
     | '/broker/contact'
     | '/broker/cvs'
     | '/housemaid/$name'
+    | '/polo/bulk'
+    | '/polo/refunds'
     | '/recruitment/$id'
     | '/recruitment/remittance'
     | '/recruitment/requests'
@@ -436,6 +456,8 @@ export interface FileRouteTypes {
     | '/broker/contact'
     | '/broker/cvs'
     | '/housemaid/$name'
+    | '/polo/bulk'
+    | '/polo/refunds'
     | '/recruitment/$id'
     | '/recruitment/remittance'
     | '/recruitment/requests'
@@ -477,6 +499,8 @@ export interface FileRouteTypes {
     | '/broker/contact'
     | '/broker/cvs'
     | '/housemaid/$name'
+    | '/polo/bulk'
+    | '/polo/refunds'
     | '/recruitment/$id'
     | '/recruitment/remittance'
     | '/recruitment/requests'
@@ -516,6 +540,8 @@ export interface RootRouteChildren {
   BrokerContactRoute: typeof BrokerContactRoute
   BrokerCvsRoute: typeof BrokerCvsRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
+  PoloBulkRoute: typeof PoloBulkRoute
+  PoloRefundsRoute: typeof PoloRefundsRoute
   RecruitmentIdRoute: typeof RecruitmentIdRoute
   RecruitmentRemittanceRoute: typeof RecruitmentRemittanceRoute
   RecruitmentRequestsRoute: typeof RecruitmentRequestsRoute
@@ -736,6 +762,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecruitmentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/polo/refunds': {
+      id: '/polo/refunds'
+      path: '/polo/refunds'
+      fullPath: '/polo/refunds'
+      preLoaderRoute: typeof PoloRefundsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/polo/bulk': {
+      id: '/polo/bulk'
+      path: '/polo/bulk'
+      fullPath: '/polo/bulk'
+      preLoaderRoute: typeof PoloBulkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/housemaid/$name': {
       id: '/housemaid/$name'
       path: '/housemaid/$name'
@@ -848,6 +888,8 @@ const rootRouteChildren: RootRouteChildren = {
   BrokerContactRoute: BrokerContactRoute,
   BrokerCvsRoute: BrokerCvsRoute,
   HousemaidNameRoute: HousemaidNameRoute,
+  PoloBulkRoute: PoloBulkRoute,
+  PoloRefundsRoute: PoloRefundsRoute,
   RecruitmentIdRoute: RecruitmentIdRoute,
   RecruitmentRemittanceRoute: RecruitmentRemittanceRoute,
   RecruitmentRequestsRoute: RecruitmentRequestsRoute,
