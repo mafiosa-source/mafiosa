@@ -55,14 +55,13 @@ export const scanPoloSheet = createServerFn({ method: "POST" })
     try {
       const parsed = JSON.parse(raw.slice(start, end + 1)) as { workers?: unknown };
       const list = Array.isArray(parsed.workers) ? parsed.workers : [];
-      const workers = list
-        .map((entry) => {
-          const row = entry as Record<string, unknown>;
-          const name = typeof row.name === "string" ? row.name.trim() : "";
-          const code = typeof row.referenceCode === "string" ? row.referenceCode.trim() : "";
-          return name ? { name, referenceCode: code || undefined } : null;
-        })
-        .filter((w): w is { name: string; referenceCode?: string } => w !== null);
+      const workers: { name: string; referenceCode?: string }[] = [];
+      for (const entry of list) {
+        const row = entry as Record<string, unknown>;
+        const name = typeof row.name === "string" ? row.name.trim() : "";
+        const code = typeof row.referenceCode === "string" ? row.referenceCode.trim() : "";
+        if (name) workers.push(code ? { name, referenceCode: code } : { name });
+      }
       return { workers };
     } catch {
       return { workers: [] };
