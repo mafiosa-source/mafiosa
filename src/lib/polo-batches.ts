@@ -385,6 +385,73 @@ export async function markApproved(row: PoloListRow, date: string): Promise<void
   if (error) throw error;
 }
 
+// ---------- Simplified status (Submitted / Approved / Returned) ----------
+export type PoloSimpleStatus = "Submitted" | "Approved" | "Returned";
+
+/** Label shown in the "Fee location" column: at POLO until it comes back. */
+export const POLO_LOCATION_LABEL = "POLO";
+
+const daysBetween = (from: string, to: string) =>
+  Math.floor((new Date(`${to}T00:00:00`).getTime() - new Date(`${from}T00:00:00`).getTime()) / 86400000);
+
+/**
+ * A submission sits as "Submitted" until it is either returned or, after 7 days
+ * with no return, automatically accepted as "Approved".
+ */
+export function simpleStatusOf(row: PoloListRow, todayDate: string): PoloSimpleStatus {
+  const last = row.last;
+  if (last?.eventType === "returned") return "Returned";
+  if (last?.eventType === "approved") return "Approved";
+  const since = last?.eventDate ? daysBetween(last.eventDate, todayDate) : 0;
+  return since >= 7 ? "Approved" : "Submitted";
+}
+
+export function isReturned(row: PoloListRow): boolean {
+  return row.last?.eventType === "returned";
+}
+
+export function feeLocationLabel(row: PoloListRow, status: PoloSimpleStatus): string {
+  if (status === "Returned") return walletName(row.location ?? HOLDING_WALLET);
+  return POLO_LOCATION_LABEL;
+}
+
+/** Marks one submission as returned and brings the fee back to the holding wallet. */
+export async function markReturned(row: PoloListRow, returnedAt: string, note?: string): Promise<void> {
+  const { error } = await supabase.from("polo_events").insert({
+    worker_id: row.workerId ?? null,
+    worker_name: row.workerName,
+    reference_code: row.referenceCode ?? null,
+    event_type: "returned",
+    event_date: returnedAt,
+    attempt_no: row.attempt,
+    fee_location: HOLDING_WALLET,
+    note: note ?? null,
+    created_by: currentUser() || null,
+  } as never);
+  if (error) throw error;
+
+  const location = row.location;
+  if (location && location !== HOLDING_WALLET) {
+    addTransaction({
+      date: returnedAt,
+      type: "Transfer",
+      classification: "Sponsor Expense",
+      candidate: row.workerName,
+      candidateId: row.workerId,
+      sponsor: row.sponsorName,
+      amount: POLO_FEE_AMOUNT,
+      purpose: `POLO fee ${POLO_FEE_AMOUNT} returned to holding wallet`,
+      purposeCategory: "POLO",
+      status: "Completed",
+      expenseKind: "POLO_RETURNED",
+      description: note ? `Returned — ${note}` : "Returned from POLO",
+      fromWallet: location,
+      toWallet: HOLDING_WALLET,
+    });
+  }
+}
+
+
 // ---------- Bulk transfers ----------
 export function nextBulkRef(fromAccount: WalletKey, existing: BulkTransfer[]): string {
   const prefix = walletName(fromAccount).split(" ")[0].toUpperCase().replace(/[^A-Z0-9]/g, "");
