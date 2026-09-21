@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, ArrowUpDown, CheckCircle2, Loader2, ScanLine, Search } from "lucide-react";
+import { ArrowUpDown, CheckCircle2, Loader2, ScanLine, Search, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { useFinance } from "@/lib/finance-store";
 import { listCandidates, type Candidate } from "@/lib/cv-management";
@@ -24,14 +24,19 @@ import { POLO_FEE_AMOUNT } from "@/lib/polo-fee";
 import {
   buildPoloRows,
   createScanBatch,
+  feeLocationLabel,
   feeRows,
+  isReturned,
   listPoloEvents,
   markApproved,
+  markReturned,
   nameKey,
+  simpleStatusOf,
   walletName,
   type PoloEvent,
   type PoloListRow,
 } from "@/lib/polo-batches";
+
 import { qar, today } from "@/lib/format";
 import { WALLETS } from "@/lib/finance-types";
 
