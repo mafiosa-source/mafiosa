@@ -19,7 +19,8 @@ export type ModuleKey =
   | "reports"
   | "workers"
   | "agents"
-  | "recruitment";
+  | "recruitment"
+  | "polo";
 
 export const MODULES: { key: ModuleKey; label: string; group: string }[] = [
   { key: "dashboard", label: "Dashboard", group: "General" },
@@ -40,6 +41,7 @@ export const MODULES: { key: ModuleKey; label: string; group: string }[] = [
   { key: "workers", label: "CV / Workers", group: "Recruitment" },
   { key: "agents", label: "Agents", group: "Recruitment" },
   { key: "recruitment", label: "Recruitment Pipeline & Sponsors", group: "Recruitment" },
+  { key: "polo", label: "POLO Fee Tracking", group: "Recruitment" },
 ];
 
 export const MODULE_LABEL: Record<string, string> = MODULES.reduce(
@@ -67,6 +69,7 @@ const ROUTE_MODULES: { prefix: string; module: ModuleKey | "admin" }[] = [
   { prefix: "/workers", module: "workers" },
   { prefix: "/agents", module: "agents" },
   { prefix: "/recruitment", module: "recruitment" },
+  { prefix: "/polo", module: "polo" },
   { prefix: "/admin", module: "admin" },
 ];
 

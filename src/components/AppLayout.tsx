@@ -78,6 +78,9 @@ const groups: { label: string; items: NavItem[] }[] = [
       { to: "/recruitment/sponsors", label: "Sponsors Directory", icon: Contact, module: "recruitment" },
       { to: "/recruitment/requests", label: "Official Requests", icon: Inbox, module: "recruitment" },
       { to: "/recruitment/remittance", label: "Agent Remittance", icon: HandCoins, module: "recruitment" },
+      { to: "/polo", label: "POLO Fee Tracking", icon: ReceiptText, module: "polo" },
+      { to: "/polo/bulk", label: "Bulk Transfers", icon: ArrowLeftRight, module: "polo" },
+      { to: "/polo/refunds", label: "POLO Refund Queue", icon: Inbox, module: "polo" },
     ],
   },
 ];
