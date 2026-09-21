@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, ArrowUpDown, CheckCircle2, Loader2, ScanLine, Search } from "lucide-react";
+import { ArrowUpDown, CheckCircle2, Loader2, ScanLine, Search, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { useFinance } from "@/lib/finance-store";
 import { listCandidates, type Candidate } from "@/lib/cv-management";
@@ -24,14 +24,19 @@ import { POLO_FEE_AMOUNT } from "@/lib/polo-fee";
 import {
   buildPoloRows,
   createScanBatch,
+  feeLocationLabel,
   feeRows,
+  isReturned,
   listPoloEvents,
   markApproved,
+  markReturned,
   nameKey,
+  simpleStatusOf,
   walletName,
   type PoloEvent,
   type PoloListRow,
 } from "@/lib/polo-batches";
+
 import { qar, today } from "@/lib/format";
 import { WALLETS } from "@/lib/finance-types";
 
@@ -56,7 +61,14 @@ export const Route = createFileRoute("/polo/")({
   component: PoloListPage,
 });
 
-type SortKey = "date" | "worker" | "status" | "attempt" | "location";
+type SortKey = "date" | "worker" | "status" | "location";
+
+type Decorated = PoloListRow & {
+  simpleStatus: ReturnType<typeof simpleStatusOf>;
+  returned: boolean;
+  locationLabel: string;
+  rowKey: string;
+};
 
 function PoloListPage() {
   const s = useFinance();
@@ -66,13 +78,14 @@ function PoloListPage() {
   const [loading, setLoading] = useState(true);
 
   const [status, setStatus] = useState("all");
-  const [alertOnly, setAlertOnly] = useState(false);
+  const [returnedFilter, setReturnedFilter] = useState("all");
   const [wallet, setWallet] = useState("all");
-  const [attempt, setAttempt] = useState("all");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<SortKey>("date");
   const [asc, setAsc] = useState(false);
   const [open, setOpen] = useState<PoloListRow | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [returnTarget, setReturnTarget] = useState<Decorated[] | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -81,6 +94,7 @@ function PoloListPage() {
       setEvents(ev);
       setCandidates(cs);
       setSponsors(sp);
+      setSelected([]);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not load the list.");
     } finally {
@@ -100,20 +114,29 @@ function PoloListPage() {
     return sponsors.find((x) => x.id === c.sponsorId)?.fullName;
   };
 
-  const rows = useMemo(
-    () => buildPoloRows(events, s.transactions, sponsorNameFor),
-    [events, s.transactions, candidates, sponsors],
-  );
+  const rows = useMemo<Decorated[]>(() => {
+    const now = today();
+    return buildPoloRows(events, s.transactions, sponsorNameFor).map((r) => {
+      const simpleStatus = simpleStatusOf(r, now);
+      return {
+        ...r,
+        simpleStatus,
+        returned: isReturned(r),
+        locationLabel: feeLocationLabel(r, simpleStatus),
+        rowKey: r.workerId ?? `name:${nameKey(r.workerName)}`,
+      };
+    });
+  }, [events, s.transactions, candidates, sponsors]);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const list = rows.filter((r) => {
-      if (status !== "all" && r.status !== status) return false;
-      if (alertOnly && !r.alert) return false;
+      if (status !== "all" && r.simpleStatus !== status) return false;
+      if (returnedFilter === "yes" && !r.returned) return false;
+      if (returnedFilter === "no" && r.returned) return false;
       if (wallet !== "all" && r.location !== wallet) return false;
-      if (attempt !== "all" && String(r.attempt) !== attempt) return false;
       if (needle) {
-        const hay = [r.workerName, r.sponsorName, r.referenceCode, r.statusLabel].join(" ").toLowerCase();
+        const hay = [r.workerName, r.sponsorName, r.referenceCode, r.simpleStatus].join(" ").toLowerCase();
         if (!hay.includes(needle)) return false;
       }
       return true;
@@ -124,22 +147,18 @@ function PoloListPage() {
         case "worker":
           return a.workerName.localeCompare(b.workerName) * dir;
         case "status":
-          return a.statusLabel.localeCompare(b.statusLabel) * dir;
-        case "attempt":
-          return (a.attempt - b.attempt) * dir;
+          return a.simpleStatus.localeCompare(b.simpleStatus) * dir;
         case "location":
-          return walletName(a.location).localeCompare(walletName(b.location)) * dir;
+          return a.locationLabel.localeCompare(b.locationLabel) * dir;
         default:
           return a.date.localeCompare(b.date) * dir;
       }
     });
-  }, [rows, status, alertOnly, wallet, attempt, q, sort, asc]);
+  }, [rows, status, returnedFilter, wallet, q, sort, asc]);
 
-  const attempts = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.attempt))).sort((a, b) => a - b),
-    [rows],
-  );
-  const alerts = rows.filter((r) => r.alert).length;
+  const selectable = filtered.filter((r) => !r.returned);
+  const allSelected = selectable.length > 0 && selectable.every((r) => selected.includes(r.rowKey));
+  const chosen = filtered.filter((r) => selected.includes(r.rowKey) && !r.returned);
 
   const toggleSort = (key: SortKey) => {
     if (sort === key) setAsc((v) => !v);
@@ -153,11 +172,13 @@ function PoloListPage() {
     <AppLayout>
       <PageHeader
         title="POLO Tracking"
-        description={`Every worker's contract submissions, returns and where the QAR ${POLO_FEE_AMOUNT} fee is sitting right now.`}
+        description={`Every worker's contract submission and where the QAR ${POLO_FEE_AMOUNT} fee is sitting right now.`}
         action={
           <div className="flex flex-wrap gap-2">
-            <ScanButton type="submitted" candidates={candidates} transactions={s.transactions} sponsorNameFor={sponsorNameFor} onDone={load} />
-            <ScanButton type="returned" candidates={candidates} transactions={s.transactions} sponsorNameFor={sponsorNameFor} onDone={load} />
+            <ScanButton candidates={candidates} transactions={s.transactions} sponsorNameFor={sponsorNameFor} onDone={load} />
+            <Button size="sm" variant="outline" disabled={chosen.length === 0} onClick={() => setReturnTarget(chosen)}>
+              <Undo2 className="h-4 w-4" /> Mark selected as returned{chosen.length ? ` (${chosen.length})` : ""}
+            </Button>
             <Button size="sm" variant="outline" asChild>
               <Link to="/polo/bulk">Bulk transfer</Link>
             </Button>
@@ -167,16 +188,6 @@ function PoloListPage() {
           </div>
         }
       />
-
-      {alerts > 0 ? (
-        <Card className="mb-4 border-destructive/40 bg-destructive/5">
-          <CardContent className="flex items-center gap-2 py-4 text-sm text-destructive">
-            <AlertTriangle className="h-4 w-4" />
-            {alerts} worker{alerts === 1 ? " has" : "s have"} a submitted contract while the fee is still sitting in a
-            company account. Collect it or record the bulk transfer.
-          </CardContent>
-        </Card>
-      ) : null}
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-2 rounded-md border bg-card px-2">
@@ -192,10 +203,17 @@ function PoloListPage() {
           <SelectTrigger className="h-9 w-[160px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
             <SelectItem value="Submitted">Submitted</SelectItem>
-            <SelectItem value="Returned">Returned</SelectItem>
             <SelectItem value="Approved">Approved</SelectItem>
+            <SelectItem value="Returned">Returned</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={returnedFilter} onValueChange={setReturnedFilter}>
+          <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Returned: any</SelectItem>
+            <SelectItem value="yes">Returned: yes</SelectItem>
+            <SelectItem value="no">Returned: no</SelectItem>
           </SelectContent>
         </Select>
         <Select value={wallet} onValueChange={setWallet}>
@@ -207,19 +225,6 @@ function PoloListPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={attempt} onValueChange={setAttempt}>
-          <SelectTrigger className="h-9 w-[130px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All attempts</SelectItem>
-            {attempts.map((a) => (
-              <SelectItem key={a} value={String(a)}>Attempt {a}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <label className="flex items-center gap-2 text-sm">
-          <Checkbox checked={alertOnly} onCheckedChange={(v) => setAlertOnly(v === true)} />
-          Alerts only
-        </label>
         <span className="ml-auto text-xs text-muted-foreground">
           {filtered.length} of {rows.length}
         </span>
@@ -229,36 +234,53 @@ function PoloListPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={(v) => setSelected(v === true ? selectable.map((r) => r.rowKey) : [])}
+                />
+              </TableHead>
               <TableHead className="w-10">#</TableHead>
               <SortHead label="Date" active={sort === "date"} onClick={() => toggleSort("date")} />
               <SortHead label="Worker" active={sort === "worker"} onClick={() => toggleSort("worker")} />
               <TableHead>Sponsor</TableHead>
               <SortHead label="Status" active={sort === "status"} onClick={() => toggleSort("status")} />
-              <SortHead label="Attempt" active={sort === "attempt"} onClick={() => toggleSort("attempt")} />
               <SortHead label="Fee location" active={sort === "location"} onClick={() => toggleSort("location")} />
               <TableHead className="text-right">Amount</TableHead>
-              <TableHead>Alert</TableHead>
+              <TableHead>Returned?</TableHead>
               <TableHead>Note</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={10} className="py-8 text-center text-muted-foreground">Loading…</TableCell>
+                <TableCell colSpan={11} className="py-8 text-center text-muted-foreground">Loading…</TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="py-8 text-center text-muted-foreground">
-                  No scanned sheets yet. Use “Scan submission sheet” to start.
+                <TableCell colSpan={11} className="py-8 text-center text-muted-foreground">
+                  No submissions yet. Use “Scan submission sheet” to start.
                 </TableCell>
               </TableRow>
             ) : (
               filtered.map((r, i) => (
                 <TableRow
-                  key={`${r.workerId ?? r.workerName}-${i}`}
+                  key={`${r.rowKey}-${i}`}
                   onClick={() => setOpen(r)}
-                  className={r.alert ? "cursor-pointer bg-destructive/10 hover:bg-destructive/15" : "cursor-pointer"}
+                  className={r.returned ? "cursor-pointer bg-destructive/5" : "cursor-pointer"}
                 >
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      disabled={r.returned}
+                      checked={selected.includes(r.rowKey)}
+                      onCheckedChange={(v) =>
+                        setSelected((prev) =>
+                          v === true ? [...new Set([...prev, r.rowKey])] : prev.filter((k) => k !== r.rowKey),
+                        )
+                      }
+                    />
+                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
                   <TableCell className="whitespace-nowrap">{r.date || "—"}</TableCell>
                   <TableCell className="font-medium">
@@ -280,21 +302,29 @@ function PoloListPage() {
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{r.sponsorName ?? "—"}</TableCell>
                   <TableCell>
-                    <Badge variant={r.status === "Approved" ? "default" : "outline"}>{r.statusLabel}</Badge>
+                    <Badge
+                      variant={
+                        r.simpleStatus === "Approved"
+                          ? "default"
+                          : r.simpleStatus === "Returned"
+                            ? "destructive"
+                            : "outline"
+                      }
+                    >
+                      {r.simpleStatus}
+                    </Badge>
                   </TableCell>
-                  <TableCell>{r.attempt}</TableCell>
-                  <TableCell className="text-xs">{walletName(r.location)}</TableCell>
+                  <TableCell className="text-xs">{r.locationLabel}</TableCell>
                   <TableCell className="text-right tabular">{qar(r.amount)}</TableCell>
-                  <TableCell>
-                    {r.alert ? (
-                      <Badge variant="destructive" className="gap-1">
-                        <AlertTriangle className="h-3 w-3" /> Collect
-                      </Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
+                  <TableCell className="text-xs">{r.returned ? "Yes" : "No"}</TableCell>
+                  <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">{r.note ?? "—"}</TableCell>
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    {r.returned ? null : (
+                      <Button size="sm" variant="ghost" onClick={() => setReturnTarget([r])}>
+                        Return
+                      </Button>
                     )}
                   </TableCell>
-                  <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">{r.note ?? "—"}</TableCell>
                 </TableRow>
               ))
             )}
@@ -302,8 +332,74 @@ function PoloListPage() {
         </Table>
       </div>
 
+      <ReturnDialog rows={returnTarget} onClose={() => setReturnTarget(null)} onDone={load} />
       <RowDrawer row={open} onClose={() => setOpen(null)} onChanged={load} />
     </AppLayout>
+  );
+}
+
+function ReturnDialog({
+  rows,
+  onClose,
+  onDone,
+}: {
+  rows: Decorated[] | null;
+  onClose: () => void;
+  onDone: () => Promise<void> | void;
+}) {
+  const [date, setDate] = useState(today());
+  const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (rows) {
+      setDate(today());
+      setNote("");
+    }
+  }, [rows]);
+
+  const save = async () => {
+    if (!rows?.length) return;
+    setSaving(true);
+    try {
+      for (const r of rows) await markReturned(r, date, note || undefined);
+      toast.success(`${rows.length} submission(s) marked as returned — added to the refund queue.`);
+      onClose();
+      await onDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save the return.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={!!rows?.length} onOpenChange={(v) => (v ? null : onClose())}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Mark as returned</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {rows?.map((r) => r.workerName).join(", ")}
+          </p>
+          <div className="space-y-1.5">
+            <Label>Returned on</Label>
+            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Note</Label>
+            <Textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reason for return" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => void save()} disabled={saving}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Mark returned
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -317,6 +413,7 @@ function SortHead({ label, active, onClick }: { label: string; active: boolean; 
     </TableHead>
   );
 }
+
 
 function ScanButton({
   type,
