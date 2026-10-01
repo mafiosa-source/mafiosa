@@ -508,7 +508,7 @@ function ScanButton({
           if (file) void handle(file);
         }}
       />
-      <Button size="sm" variant={type === "submitted" ? "default" : "outline"} disabled={busy} onClick={() => inputRef.current?.click()}>
+      <Button size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
         {busy ? "Reading…" : label}
       </Button>
@@ -516,7 +516,7 @@ function ScanButton({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{type === "submitted" ? "Submission sheet" : "Return sheet"} — check the names</DialogTitle>
+            <DialogTitle>Submission sheet — check the names</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
