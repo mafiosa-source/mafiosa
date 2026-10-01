@@ -416,13 +416,11 @@ function SortHead({ label, active, onClick }: { label: string; active: boolean; 
 
 
 function ScanButton({
-  type,
   candidates,
   transactions,
   sponsorNameFor,
   onDone,
 }: {
-  type: "submitted" | "returned";
   candidates: Candidate[];
   transactions: ReturnType<typeof useFinance>["transactions"];
   sponsorNameFor: (workerId?: string, workerName?: string) => string | undefined;
@@ -437,7 +435,7 @@ function ScanButton({
   const [note, setNote] = useState("");
   const [image, setImage] = useState<string | undefined>();
 
-  const label = type === "submitted" ? "Scan submission sheet" : "Scan return sheet";
+  const label = "Scan submission sheet";
 
   const handle = async (file: File) => {
     setBusy(true);
@@ -476,7 +474,7 @@ function ScanButton({
     setSaving(true);
     try {
       const res = await createScanBatch({
-        type,
+        type: "submitted",
         scanDate: date,
         image,
         note: note || undefined,
@@ -509,7 +507,7 @@ function ScanButton({
           if (file) void handle(file);
         }}
       />
-      <Button size="sm" variant={type === "submitted" ? "default" : "outline"} disabled={busy} onClick={() => inputRef.current?.click()}>
+      <Button size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
         {busy ? "Reading…" : label}
       </Button>
@@ -517,7 +515,7 @@ function ScanButton({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{type === "submitted" ? "Submission sheet" : "Return sheet"} — check the names</DialogTitle>
+            <DialogTitle>Submission sheet — check the names</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
