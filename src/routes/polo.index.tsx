@@ -416,7 +416,6 @@ function SortHead({ label, active, onClick }: { label: string; active: boolean; 
 
 
 function ScanButton({
-  type,
   candidates,
   transactions,
   sponsorNameFor,
