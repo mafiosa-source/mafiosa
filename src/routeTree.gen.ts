@@ -9,126 +9,51 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AgentsRouteImport } from './routes/agents'
-import { Route as CandidatesRouteImport } from './routes/candidates'
-import { Route as CardsRouteImport } from './routes/cards'
-import { Route as DuMondeRouteImport } from './routes/du-monde'
-import { Route as FuelRouteImport } from './routes/fuel'
-import { Route as HoldingWalletRouteImport } from './routes/holding-wallet'
-import { Route as MonthsRouteImport } from './routes/months'
-import { Route as PettyCashRouteImport } from './routes/petty-cash'
-import { Route as ReconciliationRouteImport } from './routes/reconciliation'
-import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as SalariesRouteImport } from './routes/salaries'
-import { Route as SponsorsRouteImport } from './routes/sponsors'
-import { Route as TransactionsRouteImport } from './routes/transactions'
-import { Route as TransfersRouteImport } from './routes/transfers'
-import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as WorkersRouteImport } from './routes/workers'
-import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as AdminActivityRouteImport } from './routes/admin.activity'
-import { Route as AdminBrokerCvsRouteImport } from './routes/admin.broker-cvs'
-import { Route as AdminUsersRouteImport } from './routes/admin.users'
-import { Route as BrokerIndexRouteImport } from './routes/broker.index'
-import { Route as BrokerAboutRouteImport } from './routes/broker.about'
-import { Route as BrokerContactRouteImport } from './routes/broker.contact'
-import { Route as BrokerCvsRouteImport } from './routes/broker.cvs'
-import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
-import { Route as PoloIndexRouteImport } from './routes/polo.index'
-import { Route as PoloBulkRouteImport } from './routes/polo.bulk'
-import { Route as PoloRefundsRouteImport } from './routes/polo.refunds'
+import { Route as VouchersRouteImport } from './routes/vouchers'
+import { Route as TransfersRouteImport } from './routes/transfers'
+import { Route as TransactionsRouteImport } from './routes/transactions'
+import { Route as SponsorsRouteImport } from './routes/sponsors'
+import { Route as SalariesRouteImport } from './routes/salaries'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ReconciliationRouteImport } from './routes/reconciliation'
+import { Route as PettyCashRouteImport } from './routes/petty-cash'
+import { Route as MonthsRouteImport } from './routes/months'
+import { Route as HoldingWalletRouteImport } from './routes/holding-wallet'
+import { Route as FuelRouteImport } from './routes/fuel'
+import { Route as DuMondeRouteImport } from './routes/du-monde'
+import { Route as CardsRouteImport } from './routes/cards'
+import { Route as CandidatesRouteImport } from './routes/candidates'
+import { Route as AgentsRouteImport } from './routes/agents'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as RecruitmentIndexRouteImport } from './routes/recruitment.index'
-import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
-import { Route as RecruitmentRemittanceRouteImport } from './routes/recruitment.remittance'
-import { Route as RecruitmentRequestsRouteImport } from './routes/recruitment.requests'
-import { Route as RecruitmentSponsorsRouteImport } from './routes/recruitment.sponsors'
-import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
-import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
+import { Route as PoloIndexRouteImport } from './routes/polo.index'
+import { Route as BrokerIndexRouteImport } from './routes/broker.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as WorkersNewRouteImport } from './routes/workers_.new'
-import { Route as MonthsYearMonthRouteImport } from './routes/months_.$year.$month'
-import { Route as WorkersIdCvRouteImport } from './routes/workers_.$id.cv'
+import { Route as TransactionsIdRouteImport } from './routes/transactions_.$id'
+import { Route as SalariesNameRouteImport } from './routes/salaries_.$name'
+import { Route as RecruitmentSponsorsRouteImport } from './routes/recruitment.sponsors'
+import { Route as RecruitmentRequestsRouteImport } from './routes/recruitment.requests'
+import { Route as RecruitmentRemittanceRouteImport } from './routes/recruitment.remittance'
+import { Route as RecruitmentIdRouteImport } from './routes/recruitment.$id'
+import { Route as PoloRefundsRouteImport } from './routes/polo.refunds'
+import { Route as PoloBulkRouteImport } from './routes/polo.bulk'
+import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
+import { Route as BrokerCvsRouteImport } from './routes/broker.cvs'
+import { Route as BrokerContactRouteImport } from './routes/broker.contact'
+import { Route as BrokerAboutRouteImport } from './routes/broker.about'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminBrokerCvsRouteImport } from './routes/admin.broker-cvs'
+import { Route as AdminActivityRouteImport } from './routes/admin.activity'
 import { Route as WorkersIdEditRouteImport } from './routes/workers_.$id.edit'
+import { Route as WorkersIdCvRouteImport } from './routes/workers_.$id.cv'
+import { Route as MonthsYearMonthRouteImport } from './routes/months_.$year.$month'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgentsRoute = AgentsRouteImport.update({
-  id: '/agents',
-  path: '/agents',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CandidatesRoute = CandidatesRouteImport.update({
-  id: '/candidates',
-  path: '/candidates',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CardsRoute = CardsRouteImport.update({
-  id: '/cards',
-  path: '/cards',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DuMondeRoute = DuMondeRouteImport.update({
-  id: '/du-monde',
-  path: '/du-monde',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FuelRoute = FuelRouteImport.update({
-  id: '/fuel',
-  path: '/fuel',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HoldingWalletRoute = HoldingWalletRouteImport.update({
-  id: '/holding-wallet',
-  path: '/holding-wallet',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MonthsRoute = MonthsRouteImport.update({
-  id: '/months',
-  path: '/months',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PettyCashRoute = PettyCashRouteImport.update({
-  id: '/petty-cash',
-  path: '/petty-cash',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReconciliationRoute = ReconciliationRouteImport.update({
-  id: '/reconciliation',
-  path: '/reconciliation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReportsRoute = ReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SalariesRoute = SalariesRouteImport.update({
-  id: '/salaries',
-  path: '/salaries',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SponsorsRoute = SponsorsRouteImport.update({
-  id: '/sponsors',
-  path: '/sponsors',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TransactionsRoute = TransactionsRouteImport.update({
-  id: '/transactions',
-  path: '/transactions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TransfersRoute = TransfersRouteImport.update({
-  id: '/transfers',
-  path: '/transfers',
+const WorkersRoute = WorkersRouteImport.update({
+  id: '/workers',
+  path: '/workers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VouchersRoute = VouchersRouteImport.update({
@@ -136,69 +61,84 @@ const VouchersRoute = VouchersRouteImport.update({
   path: '/vouchers',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WorkersRoute = WorkersRouteImport.update({
-  id: '/workers',
-  path: '/workers',
+const TransfersRoute = TransfersRouteImport.update({
+  id: '/transfers',
+  path: '/transfers',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SponsorsRoute = SponsorsRouteImport.update({
+  id: '/sponsors',
+  path: '/sponsors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalariesRoute = SalariesRouteImport.update({
+  id: '/salaries',
+  path: '/salaries',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReconciliationRoute = ReconciliationRouteImport.update({
+  id: '/reconciliation',
+  path: '/reconciliation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PettyCashRoute = PettyCashRouteImport.update({
+  id: '/petty-cash',
+  path: '/petty-cash',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonthsRoute = MonthsRouteImport.update({
+  id: '/months',
+  path: '/months',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HoldingWalletRoute = HoldingWalletRouteImport.update({
+  id: '/holding-wallet',
+  path: '/holding-wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FuelRoute = FuelRouteImport.update({
+  id: '/fuel',
+  path: '/fuel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DuMondeRoute = DuMondeRouteImport.update({
+  id: '/du-monde',
+  path: '/du-monde',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CardsRoute = CardsRouteImport.update({
+  id: '/cards',
+  path: '/cards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CandidatesRoute = CandidatesRouteImport.update({
+  id: '/candidates',
+  path: '/candidates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsRoute = AgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminActivityRoute = AdminActivityRouteImport.update({
-  id: '/activity',
-  path: '/activity',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminBrokerCvsRoute = AdminBrokerCvsRouteImport.update({
-  id: '/broker-cvs',
-  path: '/broker-cvs',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
-} as any)
-const BrokerIndexRoute = BrokerIndexRouteImport.update({
-  id: '/broker/',
-  path: '/broker/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BrokerAboutRoute = BrokerAboutRouteImport.update({
-  id: '/broker/about',
-  path: '/broker/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BrokerContactRoute = BrokerContactRouteImport.update({
-  id: '/broker/contact',
-  path: '/broker/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BrokerCvsRoute = BrokerCvsRouteImport.update({
-  id: '/broker/cvs',
-  path: '/broker/cvs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HousemaidNameRoute = HousemaidNameRouteImport.update({
-  id: '/housemaid/$name',
-  path: '/housemaid/$name',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PoloIndexRoute = PoloIndexRouteImport.update({
-  id: '/polo/',
-  path: '/polo/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PoloBulkRoute = PoloBulkRouteImport.update({
-  id: '/polo/bulk',
-  path: '/polo/bulk',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PoloRefundsRoute = PoloRefundsRouteImport.update({
-  id: '/polo/refunds',
-  path: '/polo/refunds',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecruitmentIndexRoute = RecruitmentIndexRouteImport.update({
@@ -206,29 +146,24 @@ const RecruitmentIndexRoute = RecruitmentIndexRouteImport.update({
   path: '/recruitment/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RecruitmentIdRoute = RecruitmentIdRouteImport.update({
-  id: '/recruitment/$id',
-  path: '/recruitment/$id',
+const PoloIndexRoute = PoloIndexRouteImport.update({
+  id: '/polo/',
+  path: '/polo/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RecruitmentRemittanceRoute = RecruitmentRemittanceRouteImport.update({
-  id: '/recruitment/remittance',
-  path: '/recruitment/remittance',
+const BrokerIndexRoute = BrokerIndexRouteImport.update({
+  id: '/broker/',
+  path: '/broker/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RecruitmentRequestsRoute = RecruitmentRequestsRouteImport.update({
-  id: '/recruitment/requests',
-  path: '/recruitment/requests',
-  getParentRoute: () => rootRouteImport,
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
-const RecruitmentSponsorsRoute = RecruitmentSponsorsRouteImport.update({
-  id: '/recruitment/sponsors',
-  path: '/recruitment/sponsors',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SalariesNameRoute = SalariesNameRouteImport.update({
-  id: '/salaries_/$name',
-  path: '/salaries/$name',
+const WorkersNewRoute = WorkersNewRouteImport.update({
+  id: '/workers_/new',
+  path: '/workers/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TransactionsIdRoute = TransactionsIdRouteImport.update({
@@ -236,14 +171,79 @@ const TransactionsIdRoute = TransactionsIdRouteImport.update({
   path: '/transactions/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WorkersNewRoute = WorkersNewRouteImport.update({
-  id: '/workers_/new',
-  path: '/workers/new',
+const SalariesNameRoute = SalariesNameRouteImport.update({
+  id: '/salaries_/$name',
+  path: '/salaries/$name',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MonthsYearMonthRoute = MonthsYearMonthRouteImport.update({
-  id: '/months_/$year/$month',
-  path: '/months/$year/$month',
+const RecruitmentSponsorsRoute = RecruitmentSponsorsRouteImport.update({
+  id: '/recruitment/sponsors',
+  path: '/recruitment/sponsors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecruitmentRequestsRoute = RecruitmentRequestsRouteImport.update({
+  id: '/recruitment/requests',
+  path: '/recruitment/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecruitmentRemittanceRoute = RecruitmentRemittanceRouteImport.update({
+  id: '/recruitment/remittance',
+  path: '/recruitment/remittance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecruitmentIdRoute = RecruitmentIdRouteImport.update({
+  id: '/recruitment/$id',
+  path: '/recruitment/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoloRefundsRoute = PoloRefundsRouteImport.update({
+  id: '/polo/refunds',
+  path: '/polo/refunds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoloBulkRoute = PoloBulkRouteImport.update({
+  id: '/polo/bulk',
+  path: '/polo/bulk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HousemaidNameRoute = HousemaidNameRouteImport.update({
+  id: '/housemaid/$name',
+  path: '/housemaid/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrokerCvsRoute = BrokerCvsRouteImport.update({
+  id: '/broker/cvs',
+  path: '/broker/cvs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrokerContactRoute = BrokerContactRouteImport.update({
+  id: '/broker/contact',
+  path: '/broker/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrokerAboutRoute = BrokerAboutRouteImport.update({
+  id: '/broker/about',
+  path: '/broker/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBrokerCvsRoute = AdminBrokerCvsRouteImport.update({
+  id: '/broker-cvs',
+  path: '/broker-cvs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminActivityRoute = AdminActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AdminRoute,
+} as any)
+const WorkersIdEditRoute = WorkersIdEditRouteImport.update({
+  id: '/workers_/$id/edit',
+  path: '/workers/$id/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkersIdCvRoute = WorkersIdCvRouteImport.update({
@@ -251,9 +251,9 @@ const WorkersIdCvRoute = WorkersIdCvRouteImport.update({
   path: '/workers/$id/cv',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WorkersIdEditRoute = WorkersIdEditRouteImport.update({
-  id: '/workers_/$id/edit',
-  path: '/workers/$id/edit',
+const MonthsYearMonthRoute = MonthsYearMonthRouteImport.update({
+  id: '/months_/$year/$month',
+  path: '/months/$year/$month',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -559,116 +559,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agents': {
-      id: '/agents'
-      path: '/agents'
-      fullPath: '/agents'
-      preLoaderRoute: typeof AgentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/candidates': {
-      id: '/candidates'
-      path: '/candidates'
-      fullPath: '/candidates'
-      preLoaderRoute: typeof CandidatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cards': {
-      id: '/cards'
-      path: '/cards'
-      fullPath: '/cards'
-      preLoaderRoute: typeof CardsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/du-monde': {
-      id: '/du-monde'
-      path: '/du-monde'
-      fullPath: '/du-monde'
-      preLoaderRoute: typeof DuMondeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/fuel': {
-      id: '/fuel'
-      path: '/fuel'
-      fullPath: '/fuel'
-      preLoaderRoute: typeof FuelRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/holding-wallet': {
-      id: '/holding-wallet'
-      path: '/holding-wallet'
-      fullPath: '/holding-wallet'
-      preLoaderRoute: typeof HoldingWalletRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/months': {
-      id: '/months'
-      path: '/months'
-      fullPath: '/months'
-      preLoaderRoute: typeof MonthsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/petty-cash': {
-      id: '/petty-cash'
-      path: '/petty-cash'
-      fullPath: '/petty-cash'
-      preLoaderRoute: typeof PettyCashRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reconciliation': {
-      id: '/reconciliation'
-      path: '/reconciliation'
-      fullPath: '/reconciliation'
-      preLoaderRoute: typeof ReconciliationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reports': {
-      id: '/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof ReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/salaries': {
-      id: '/salaries'
-      path: '/salaries'
-      fullPath: '/salaries'
-      preLoaderRoute: typeof SalariesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sponsors': {
-      id: '/sponsors'
-      path: '/sponsors'
-      fullPath: '/sponsors'
-      preLoaderRoute: typeof SponsorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/transactions': {
-      id: '/transactions'
-      path: '/transactions'
-      fullPath: '/transactions'
-      preLoaderRoute: typeof TransactionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/transfers': {
-      id: '/transfers'
-      path: '/transfers'
-      fullPath: '/transfers'
-      preLoaderRoute: typeof TransfersRouteImport
+    '/workers': {
+      id: '/workers'
+      path: '/workers'
+      fullPath: '/workers'
+      preLoaderRoute: typeof WorkersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/vouchers': {
@@ -678,95 +573,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VouchersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/workers': {
-      id: '/workers'
-      path: '/workers'
-      fullPath: '/workers'
-      preLoaderRoute: typeof WorkersRouteImport
+    '/transfers': {
+      id: '/transfers'
+      path: '/transfers'
+      fullPath: '/transfers'
+      preLoaderRoute: typeof TransfersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sponsors': {
+      id: '/sponsors'
+      path: '/sponsors'
+      fullPath: '/sponsors'
+      preLoaderRoute: typeof SponsorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/salaries': {
+      id: '/salaries'
+      path: '/salaries'
+      fullPath: '/salaries'
+      preLoaderRoute: typeof SalariesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reconciliation': {
+      id: '/reconciliation'
+      path: '/reconciliation'
+      fullPath: '/reconciliation'
+      preLoaderRoute: typeof ReconciliationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/petty-cash': {
+      id: '/petty-cash'
+      path: '/petty-cash'
+      fullPath: '/petty-cash'
+      preLoaderRoute: typeof PettyCashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/months': {
+      id: '/months'
+      path: '/months'
+      fullPath: '/months'
+      preLoaderRoute: typeof MonthsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/holding-wallet': {
+      id: '/holding-wallet'
+      path: '/holding-wallet'
+      fullPath: '/holding-wallet'
+      preLoaderRoute: typeof HoldingWalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fuel': {
+      id: '/fuel'
+      path: '/fuel'
+      fullPath: '/fuel'
+      preLoaderRoute: typeof FuelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/du-monde': {
+      id: '/du-monde'
+      path: '/du-monde'
+      fullPath: '/du-monde'
+      preLoaderRoute: typeof DuMondeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cards': {
+      id: '/cards'
+      path: '/cards'
+      fullPath: '/cards'
+      preLoaderRoute: typeof CardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidates': {
+      id: '/candidates'
+      path: '/candidates'
+      fullPath: '/candidates'
+      preLoaderRoute: typeof CandidatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
       path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/activity': {
-      id: '/admin/activity'
-      path: '/activity'
-      fullPath: '/admin/activity'
-      preLoaderRoute: typeof AdminActivityRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/broker-cvs': {
-      id: '/admin/broker-cvs'
-      path: '/broker-cvs'
-      fullPath: '/admin/broker-cvs'
-      preLoaderRoute: typeof AdminBrokerCvsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/broker/': {
-      id: '/broker/'
-      path: '/broker'
-      fullPath: '/broker/'
-      preLoaderRoute: typeof BrokerIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/broker/about': {
-      id: '/broker/about'
-      path: '/broker/about'
-      fullPath: '/broker/about'
-      preLoaderRoute: typeof BrokerAboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/broker/contact': {
-      id: '/broker/contact'
-      path: '/broker/contact'
-      fullPath: '/broker/contact'
-      preLoaderRoute: typeof BrokerContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/broker/cvs': {
-      id: '/broker/cvs'
-      path: '/broker/cvs'
-      fullPath: '/broker/cvs'
-      preLoaderRoute: typeof BrokerCvsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/housemaid/$name': {
-      id: '/housemaid/$name'
-      path: '/housemaid/$name'
-      fullPath: '/housemaid/$name'
-      preLoaderRoute: typeof HousemaidNameRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/polo/': {
-      id: '/polo/'
-      path: '/polo'
-      fullPath: '/polo/'
-      preLoaderRoute: typeof PoloIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/polo/bulk': {
-      id: '/polo/bulk'
-      path: '/polo/bulk'
-      fullPath: '/polo/bulk'
-      preLoaderRoute: typeof PoloBulkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/polo/refunds': {
-      id: '/polo/refunds'
-      path: '/polo/refunds'
-      fullPath: '/polo/refunds'
-      preLoaderRoute: typeof PoloRefundsRouteImport
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recruitment/': {
@@ -776,39 +692,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecruitmentIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/recruitment/$id': {
-      id: '/recruitment/$id'
-      path: '/recruitment/$id'
-      fullPath: '/recruitment/$id'
-      preLoaderRoute: typeof RecruitmentIdRouteImport
+    '/polo/': {
+      id: '/polo/'
+      path: '/polo'
+      fullPath: '/polo/'
+      preLoaderRoute: typeof PoloIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/recruitment/remittance': {
-      id: '/recruitment/remittance'
-      path: '/recruitment/remittance'
-      fullPath: '/recruitment/remittance'
-      preLoaderRoute: typeof RecruitmentRemittanceRouteImport
+    '/broker/': {
+      id: '/broker/'
+      path: '/broker'
+      fullPath: '/broker/'
+      preLoaderRoute: typeof BrokerIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/recruitment/requests': {
-      id: '/recruitment/requests'
-      path: '/recruitment/requests'
-      fullPath: '/recruitment/requests'
-      preLoaderRoute: typeof RecruitmentRequestsRouteImport
-      parentRoute: typeof rootRouteImport
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
-    '/recruitment/sponsors': {
-      id: '/recruitment/sponsors'
-      path: '/recruitment/sponsors'
-      fullPath: '/recruitment/sponsors'
-      preLoaderRoute: typeof RecruitmentSponsorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/salaries_/$name': {
-      id: '/salaries_/$name'
-      path: '/salaries/$name'
-      fullPath: '/salaries/$name'
-      preLoaderRoute: typeof SalariesNameRouteImport
+    '/workers_/new': {
+      id: '/workers_/new'
+      path: '/workers/new'
+      fullPath: '/workers/new'
+      preLoaderRoute: typeof WorkersNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/transactions_/$id': {
@@ -818,18 +727,109 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TransactionsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/workers_/new': {
-      id: '/workers_/new'
-      path: '/workers/new'
-      fullPath: '/workers/new'
-      preLoaderRoute: typeof WorkersNewRouteImport
+    '/salaries_/$name': {
+      id: '/salaries_/$name'
+      path: '/salaries/$name'
+      fullPath: '/salaries/$name'
+      preLoaderRoute: typeof SalariesNameRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/months_/$year/$month': {
-      id: '/months_/$year/$month'
-      path: '/months/$year/$month'
-      fullPath: '/months/$year/$month'
-      preLoaderRoute: typeof MonthsYearMonthRouteImport
+    '/recruitment/sponsors': {
+      id: '/recruitment/sponsors'
+      path: '/recruitment/sponsors'
+      fullPath: '/recruitment/sponsors'
+      preLoaderRoute: typeof RecruitmentSponsorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recruitment/requests': {
+      id: '/recruitment/requests'
+      path: '/recruitment/requests'
+      fullPath: '/recruitment/requests'
+      preLoaderRoute: typeof RecruitmentRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recruitment/remittance': {
+      id: '/recruitment/remittance'
+      path: '/recruitment/remittance'
+      fullPath: '/recruitment/remittance'
+      preLoaderRoute: typeof RecruitmentRemittanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recruitment/$id': {
+      id: '/recruitment/$id'
+      path: '/recruitment/$id'
+      fullPath: '/recruitment/$id'
+      preLoaderRoute: typeof RecruitmentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/polo/refunds': {
+      id: '/polo/refunds'
+      path: '/polo/refunds'
+      fullPath: '/polo/refunds'
+      preLoaderRoute: typeof PoloRefundsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/polo/bulk': {
+      id: '/polo/bulk'
+      path: '/polo/bulk'
+      fullPath: '/polo/bulk'
+      preLoaderRoute: typeof PoloBulkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/housemaid/$name': {
+      id: '/housemaid/$name'
+      path: '/housemaid/$name'
+      fullPath: '/housemaid/$name'
+      preLoaderRoute: typeof HousemaidNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broker/cvs': {
+      id: '/broker/cvs'
+      path: '/broker/cvs'
+      fullPath: '/broker/cvs'
+      preLoaderRoute: typeof BrokerCvsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broker/contact': {
+      id: '/broker/contact'
+      path: '/broker/contact'
+      fullPath: '/broker/contact'
+      preLoaderRoute: typeof BrokerContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broker/about': {
+      id: '/broker/about'
+      path: '/broker/about'
+      fullPath: '/broker/about'
+      preLoaderRoute: typeof BrokerAboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/broker-cvs': {
+      id: '/admin/broker-cvs'
+      path: '/broker-cvs'
+      fullPath: '/admin/broker-cvs'
+      preLoaderRoute: typeof AdminBrokerCvsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/activity': {
+      id: '/admin/activity'
+      path: '/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AdminActivityRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/workers_/$id/edit': {
+      id: '/workers_/$id/edit'
+      path: '/workers/$id/edit'
+      fullPath: '/workers/$id/edit'
+      preLoaderRoute: typeof WorkersIdEditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/workers_/$id/cv': {
@@ -839,11 +839,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkersIdCvRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/workers_/$id/edit': {
-      id: '/workers_/$id/edit'
-      path: '/workers/$id/edit'
-      fullPath: '/workers/$id/edit'
-      preLoaderRoute: typeof WorkersIdEditRouteImport
+    '/months_/$year/$month': {
+      id: '/months_/$year/$month'
+      path: '/months/$year/$month'
+      fullPath: '/months/$year/$month'
+      preLoaderRoute: typeof MonthsYearMonthRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
