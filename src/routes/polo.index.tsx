@@ -422,7 +422,6 @@ function ScanButton({
   sponsorNameFor,
   onDone,
 }: {
-  type: "submitted" | "returned";
   candidates: Candidate[];
   transactions: ReturnType<typeof useFinance>["transactions"];
   sponsorNameFor: (workerId?: string, workerName?: string) => string | undefined;
@@ -437,7 +436,7 @@ function ScanButton({
   const [note, setNote] = useState("");
   const [image, setImage] = useState<string | undefined>();
 
-  const label = type === "submitted" ? "Scan submission sheet" : "Scan return sheet";
+  const label = "Scan submission sheet";
 
   const handle = async (file: File) => {
     setBusy(true);
@@ -476,7 +475,7 @@ function ScanButton({
     setSaving(true);
     try {
       const res = await createScanBatch({
-        type,
+        type: "submitted",
         scanDate: date,
         image,
         note: note || undefined,
