@@ -43,6 +43,7 @@ export type PoloBatch = {
   scanDate: string;
   image?: string;
   note?: string;
+  orgName?: string;
   createdAt: string;
 };
 
@@ -57,6 +58,7 @@ export type PoloEvent = {
   attemptNo: number;
   feeLocation?: string;
   note?: string;
+  orgName?: string;
   createdAt: string;
 };
 
@@ -95,6 +97,7 @@ const batchFromRow = (r: Row): PoloBatch => ({
   scanDate: String(r.scan_date ?? ""),
   image: (r.image as string) ?? undefined,
   note: (r.note as string) ?? undefined,
+  orgName: (r.org_name as string) ?? undefined,
   createdAt: String(r.created_at ?? ""),
 });
 
@@ -109,6 +112,7 @@ const eventFromRow = (r: Row): PoloEvent => ({
   attemptNo: Number(r.attempt_no ?? 1),
   feeLocation: (r.fee_location as string) ?? undefined,
   note: (r.note as string) ?? undefined,
+  orgName: (r.org_name as string) ?? undefined,
   createdAt: String(r.created_at ?? ""),
 });
 
@@ -221,6 +225,7 @@ export type PoloListRow = {
   workerName: string;
   referenceCode?: string;
   sponsorName?: string;
+  orgName?: string;
   events: PoloEvent[];
   last?: PoloEvent;
   status: PoloStatus;
@@ -255,6 +260,7 @@ export function buildPoloRows(
       workerName: last?.workerName ?? "—",
       referenceCode: sorted.find((e) => e.referenceCode)?.referenceCode,
       sponsorName: sponsorNameFor(last?.workerId, last?.workerName),
+      orgName: [...sorted].reverse().find((e) => e.orgName)?.orgName,
       events: sorted,
       last,
       status,
@@ -290,6 +296,7 @@ export async function createScanBatch(input: {
   scanDate: string;
   image?: string;
   note?: string;
+  orgName?: string;
   workers: ScannedWorker[];
   candidates: Candidate[];
   transactions: Transaction[];
@@ -302,6 +309,7 @@ export async function createScanBatch(input: {
       scan_date: input.scanDate,
       image: input.image ?? null,
       note: input.note ?? null,
+      org_name: input.orgName ?? null,
       created_by: currentUser() || null,
     } as never)
     .select("id")
@@ -334,6 +342,7 @@ export async function createScanBatch(input: {
         event_date: input.scanDate,
         attempt_no: attempt,
         fee_location: location ?? null,
+        org_name: input.orgName ?? null,
         created_by: currentUser() || null,
       } as never)
       .select("*")

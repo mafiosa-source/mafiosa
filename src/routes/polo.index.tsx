@@ -136,7 +136,7 @@ function PoloListPage() {
       if (returnedFilter === "no" && r.returned) return false;
       if (wallet !== "all" && r.location !== wallet) return false;
       if (needle) {
-        const hay = [r.workerName, r.sponsorName, r.referenceCode, r.simpleStatus].join(" ").toLowerCase();
+        const hay = [r.workerName, r.sponsorName, r.referenceCode, r.simpleStatus, r.orgName].join(" ").toLowerCase();
         if (!hay.includes(needle)) return false;
       }
       return true;
@@ -243,6 +243,7 @@ function PoloListPage() {
               <TableHead className="w-10">#</TableHead>
               <SortHead label="Date" active={sort === "date"} onClick={() => toggleSort("date")} />
               <SortHead label="Worker" active={sort === "worker"} onClick={() => toggleSort("worker")} />
+              <TableHead>Company</TableHead>
               <TableHead>Sponsor</TableHead>
               <SortHead label="Status" active={sort === "status"} onClick={() => toggleSort("status")} />
               <SortHead label="Fee location" active={sort === "location"} onClick={() => toggleSort("location")} />
@@ -255,11 +256,11 @@ function PoloListPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-8 text-center text-muted-foreground">Loading…</TableCell>
+                <TableCell colSpan={12} className="py-8 text-center text-muted-foreground">Loading…</TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={12} className="py-8 text-center text-muted-foreground">
                   No submissions yet. Use “Scan submission sheet” to start.
                 </TableCell>
               </TableRow>
@@ -300,6 +301,7 @@ function PoloListPage() {
                       <div className="text-xs text-muted-foreground">{r.referenceCode}</div>
                     ) : null}
                   </TableCell>
+                  <TableCell className="text-xs">{r.orgName ?? "—"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{r.sponsorName ?? "—"}</TableCell>
                   <TableCell>
                     <Badge
@@ -433,6 +435,7 @@ function ScanButton({
   const [lines, setLines] = useState("");
   const [date, setDate] = useState(today());
   const [note, setNote] = useState("");
+  const [company, setCompany] = useState("");
   const [image, setImage] = useState<string | undefined>();
 
   const label = "Scan submission sheet";
@@ -446,6 +449,7 @@ function ScanButton({
       setLines(result.workers.map((w) => [w.name, w.referenceCode].filter(Boolean).join(" | ")).join("\n"));
       setDate(today());
       setNote("");
+      setCompany(result.company ?? "");
       setOpen(true);
       if (result.workers.length) toast.success(`Read ${result.workers.length} name(s) — please check them.`);
       else toast.warning("No names could be read. Type them in by hand.");
@@ -478,6 +482,7 @@ function ScanButton({
         scanDate: date,
         image,
         note: note || undefined,
+        orgName: company.trim() || undefined,
         workers,
         candidates,
         transactions,
@@ -521,6 +526,10 @@ function ScanButton({
             <div className="space-y-1.5">
               <Label>Sheet date</Label>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Company</Label>
+              <Input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. FAST RECRUITMENT AGENCY" />
             </div>
             <div className="space-y-1.5">
               <Label>Workers — one per line, optional code after “|”</Label>
@@ -588,6 +597,7 @@ function RowDrawer({
             </SheetHeader>
             <div className="mt-4 space-y-4 px-4 pb-6">
               <div className="grid grid-cols-2 gap-2 text-sm">
+                <Info label="Company" value={row.orgName ?? "—"} />
                 <Info label="Sponsor" value={row.sponsorName ?? "—"} />
                 <Info label="Reference code" value={row.referenceCode ?? "—"} />
                 <Info label="Attempt" value={String(row.attempt)} />
