@@ -225,6 +225,7 @@ export type PoloListRow = {
   workerName: string;
   referenceCode?: string;
   sponsorName?: string;
+  orgName?: string;
   events: PoloEvent[];
   last?: PoloEvent;
   status: PoloStatus;
@@ -259,6 +260,7 @@ export function buildPoloRows(
       workerName: last?.workerName ?? "—",
       referenceCode: sorted.find((e) => e.referenceCode)?.referenceCode,
       sponsorName: sponsorNameFor(last?.workerId, last?.workerName),
+      orgName: [...sorted].reverse().find((e) => e.orgName)?.orgName,
       events: sorted,
       last,
       status,
@@ -294,6 +296,7 @@ export async function createScanBatch(input: {
   scanDate: string;
   image?: string;
   note?: string;
+  orgName?: string;
   workers: ScannedWorker[];
   candidates: Candidate[];
   transactions: Transaction[];
@@ -306,6 +309,7 @@ export async function createScanBatch(input: {
       scan_date: input.scanDate,
       image: input.image ?? null,
       note: input.note ?? null,
+      org_name: input.orgName ?? null,
       created_by: currentUser() || null,
     } as never)
     .select("id")
@@ -338,6 +342,7 @@ export async function createScanBatch(input: {
         event_date: input.scanDate,
         attempt_no: attempt,
         fee_location: location ?? null,
+        org_name: input.orgName ?? null,
         created_by: currentUser() || null,
       } as never)
       .select("*")
