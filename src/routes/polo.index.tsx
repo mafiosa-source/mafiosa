@@ -136,7 +136,7 @@ function PoloListPage() {
       if (returnedFilter === "no" && r.returned) return false;
       if (wallet !== "all" && r.location !== wallet) return false;
       if (needle) {
-        const hay = [r.workerName, r.sponsorName, r.referenceCode, r.simpleStatus].join(" ").toLowerCase();
+        const hay = [r.workerName, r.sponsorName, r.referenceCode, r.simpleStatus, r.orgName].join(" ").toLowerCase();
         if (!hay.includes(needle)) return false;
       }
       return true;
@@ -243,6 +243,7 @@ function PoloListPage() {
               <TableHead className="w-10">#</TableHead>
               <SortHead label="Date" active={sort === "date"} onClick={() => toggleSort("date")} />
               <SortHead label="Worker" active={sort === "worker"} onClick={() => toggleSort("worker")} />
+              <TableHead>Company</TableHead>
               <TableHead>Sponsor</TableHead>
               <SortHead label="Status" active={sort === "status"} onClick={() => toggleSort("status")} />
               <SortHead label="Fee location" active={sort === "location"} onClick={() => toggleSort("location")} />
@@ -255,11 +256,11 @@ function PoloListPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-8 text-center text-muted-foreground">Loading…</TableCell>
+                <TableCell colSpan={12} className="py-8 text-center text-muted-foreground">Loading…</TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={12} className="py-8 text-center text-muted-foreground">
                   No submissions yet. Use “Scan submission sheet” to start.
                 </TableCell>
               </TableRow>
@@ -300,6 +301,7 @@ function PoloListPage() {
                       <div className="text-xs text-muted-foreground">{r.referenceCode}</div>
                     ) : null}
                   </TableCell>
+                  <TableCell className="text-xs">{r.orgName ?? "—"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{r.sponsorName ?? "—"}</TableCell>
                   <TableCell>
                     <Badge
