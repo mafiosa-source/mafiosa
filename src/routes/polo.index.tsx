@@ -435,6 +435,7 @@ function ScanButton({
   const [lines, setLines] = useState("");
   const [date, setDate] = useState(today());
   const [note, setNote] = useState("");
+  const [company, setCompany] = useState("");
   const [image, setImage] = useState<string | undefined>();
 
   const label = "Scan submission sheet";
@@ -448,6 +449,7 @@ function ScanButton({
       setLines(result.workers.map((w) => [w.name, w.referenceCode].filter(Boolean).join(" | ")).join("\n"));
       setDate(today());
       setNote("");
+      setCompany(result.company ?? "");
       setOpen(true);
       if (result.workers.length) toast.success(`Read ${result.workers.length} name(s) — please check them.`);
       else toast.warning("No names could be read. Type them in by hand.");
@@ -480,6 +482,7 @@ function ScanButton({
         scanDate: date,
         image,
         note: note || undefined,
+        orgName: company.trim() || undefined,
         workers,
         candidates,
         transactions,
@@ -523,6 +526,10 @@ function ScanButton({
             <div className="space-y-1.5">
               <Label>Sheet date</Label>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Company</Label>
+              <Input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. FAST RECRUITMENT AGENCY" />
             </div>
             <div className="space-y-1.5">
               <Label>Workers — one per line, optional code after “|”</Label>
@@ -590,6 +597,7 @@ function RowDrawer({
             </SheetHeader>
             <div className="mt-4 space-y-4 px-4 pb-6">
               <div className="grid grid-cols-2 gap-2 text-sm">
+                <Info label="Company" value={row.orgName ?? "—"} />
                 <Info label="Sponsor" value={row.sponsorName ?? "—"} />
                 <Info label="Reference code" value={row.referenceCode ?? "—"} />
                 <Info label="Attempt" value={String(row.attempt)} />
