@@ -6,11 +6,12 @@ const inputSchema = z.object({
   mimeType: z.string().min(3),
 });
 
-export type ScanSheetResult = { workers: { name: string; referenceCode?: string }[] };
+export type ScanSheetResult = { workers: { name: string; referenceCode?: string }[]; company?: string };
 
 const PROMPT = `You read printed or handwritten worker lists from an office sheet photo.
-Return ONLY JSON: {"workers":[{"name":"FULL NAME","referenceCode":"CODE"}]}
+Return ONLY JSON: {"company":"COMPANY","workers":[{"name":"FULL NAME","referenceCode":"CODE"}]}
 Rules:
+- company: the agency / organization name printed in the sheet header or letterhead (e.g. FAST RECRUITMENT AGENCY, BROKER, SKILL, DANET). Omit the key when no company name is visible.
 - One entry per worker line, in the order they appear.
 - name: the person's full name in uppercase, no titles, no numbering.
 - referenceCode: the reference / serial / code printed next to the name; omit the key when there is none.
