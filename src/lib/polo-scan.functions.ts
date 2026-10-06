@@ -54,8 +54,9 @@ export const scanPoloSheet = createServerFn({ method: "POST" })
     if (start === -1 || end === -1) return { workers: [] };
 
     try {
-      const parsed = JSON.parse(raw.slice(start, end + 1)) as { workers?: unknown };
+      const parsed = JSON.parse(raw.slice(start, end + 1)) as { workers?: unknown; company?: unknown };
       const list = Array.isArray(parsed.workers) ? parsed.workers : [];
+      const company = typeof parsed.company === "string" && parsed.company.trim() ? parsed.company.trim() : undefined;
       const workers: { name: string; referenceCode?: string }[] = [];
       for (const entry of list) {
         const row = entry as Record<string, unknown>;
@@ -63,7 +64,7 @@ export const scanPoloSheet = createServerFn({ method: "POST" })
         const code = typeof row.referenceCode === "string" ? row.referenceCode.trim() : "";
         if (name) workers.push(code ? { name, referenceCode: code } : { name });
       }
-      return { workers };
+      return { workers, company };
     } catch {
       return { workers: [] };
     }
