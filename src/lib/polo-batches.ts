@@ -43,6 +43,7 @@ export type PoloBatch = {
   scanDate: string;
   image?: string;
   note?: string;
+  orgName?: string;
   createdAt: string;
 };
 
@@ -57,6 +58,7 @@ export type PoloEvent = {
   attemptNo: number;
   feeLocation?: string;
   note?: string;
+  orgName?: string;
   createdAt: string;
 };
 
@@ -95,6 +97,7 @@ const batchFromRow = (r: Row): PoloBatch => ({
   scanDate: String(r.scan_date ?? ""),
   image: (r.image as string) ?? undefined,
   note: (r.note as string) ?? undefined,
+  orgName: (r.org_name as string) ?? undefined,
   createdAt: String(r.created_at ?? ""),
 });
 
@@ -109,6 +112,7 @@ const eventFromRow = (r: Row): PoloEvent => ({
   attemptNo: Number(r.attempt_no ?? 1),
   feeLocation: (r.fee_location as string) ?? undefined,
   note: (r.note as string) ?? undefined,
+  orgName: (r.org_name as string) ?? undefined,
   createdAt: String(r.created_at ?? ""),
 });
 
