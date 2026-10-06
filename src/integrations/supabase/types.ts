@@ -1127,6 +1127,7 @@ export type Database = {
           id: string
           image: string | null
           note: string | null
+          org_name: string | null
           scan_date: string
           type: string
         }
@@ -1136,6 +1137,7 @@ export type Database = {
           id?: string
           image?: string | null
           note?: string | null
+          org_name?: string | null
           scan_date?: string
           type: string
         }
@@ -1145,6 +1147,7 @@ export type Database = {
           id?: string
           image?: string | null
           note?: string | null
+          org_name?: string | null
           scan_date?: string
           type?: string
         }
@@ -1214,6 +1217,7 @@ export type Database = {
           fee_location: string | null
           id: string
           note: string | null
+          org_name: string | null
           reference_code: string | null
           worker_id: string | null
           worker_name: string
@@ -1228,6 +1232,7 @@ export type Database = {
           fee_location?: string | null
           id?: string
           note?: string | null
+          org_name?: string | null
           reference_code?: string | null
           worker_id?: string | null
           worker_name: string
@@ -1242,6 +1247,7 @@ export type Database = {
           fee_location?: string | null
           id?: string
           note?: string | null
+          org_name?: string | null
           reference_code?: string | null
           worker_id?: string | null
           worker_name?: string
