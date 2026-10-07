@@ -668,6 +668,39 @@ function RowDrawer({
             </div>
           </>
         ) : null}
+        <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete this submission?</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              This removes {row?.workerName ?? "this worker"}'s submission and its timeline from POLO tracking.
+              Money records in the ledger are not touched.
+            </p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancel</Button>
+              <Button
+                variant="destructive"
+                disabled={busy}
+                onClick={() => {
+                  if (!row) return;
+                  setBusy(true);
+                  deleteSubmission(row)
+                    .then(async () => {
+                      toast.success("Submission deleted.");
+                      setConfirmDelete(false);
+                      onClose();
+                      await onChanged();
+                    })
+                    .catch((e) => toast.error(e instanceof Error ? e.message : "Could not delete."))
+                    .finally(() => setBusy(false));
+                }}
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </SheetContent>
     </Sheet>
   );
