@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowUpDown, CheckCircle2, Loader2, ScanLine, Search, Undo2 } from "lucide-react";
+import { ArrowUpDown, CheckCircle2, Loader2, ScanLine, Search, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { useFinance } from "@/lib/finance-store";
 import { listCandidates, type Candidate } from "@/lib/cv-management";
@@ -28,6 +28,7 @@ import {
   feeRows,
   isReturned,
   listPoloEvents,
+  deleteSubmission,
   markApproved,
   markReturned,
   nameKey,
@@ -563,6 +564,7 @@ function RowDrawer({
 }) {
   const s = useFinance();
   const [busy, setBusy] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const fees = useMemo(
     () => (row ? feeRows(s.transactions, row.workerId, row.workerName) : []),
     [row, s.transactions],
@@ -604,11 +606,22 @@ function RowDrawer({
                 <Info label="Fee location" value={walletName(row.location)} />
               </div>
 
-              {row.status !== "Approved" ? (
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => void approve()}>
-                  <CheckCircle2 className="h-4 w-4" /> Mark approved
+              <div className="flex flex-wrap gap-2">
+                {row.status !== "Approved" ? (
+                  <Button size="sm" variant="outline" disabled={busy} onClick={() => void approve()}>
+                    <CheckCircle2 className="h-4 w-4" /> Mark approved
+                  </Button>
+                ) : null}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-destructive"
+                  disabled={busy}
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="h-4 w-4" /> Delete submission
                 </Button>
-              ) : null}
+              </div>
 
               <Tabs defaultValue="timeline">
                 <TabsList>
@@ -655,6 +668,39 @@ function RowDrawer({
             </div>
           </>
         ) : null}
+        <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete this submission?</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              This removes {row?.workerName ?? "this worker"}'s submission and its timeline from POLO tracking.
+              Money records in the ledger are not touched.
+            </p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancel</Button>
+              <Button
+                variant="destructive"
+                disabled={busy}
+                onClick={() => {
+                  if (!row) return;
+                  setBusy(true);
+                  deleteSubmission(row)
+                    .then(async () => {
+                      toast.success("Submission deleted.");
+                      setConfirmDelete(false);
+                      onClose();
+                      await onChanged();
+                    })
+                    .catch((e) => toast.error(e instanceof Error ? e.message : "Could not delete."))
+                    .finally(() => setBusy(false));
+                }}
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </SheetContent>
     </Sheet>
   );
