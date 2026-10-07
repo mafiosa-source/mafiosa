@@ -377,6 +377,32 @@ export async function createScanBatch(input: {
   return { batchId, saved, moved };
 }
 
+/**
+ * Removes a worker's submission from the tracking list: deletes all their
+ * POLO events and any scan batch that becomes empty. Money records in the
+ * master ledger are never touched.
+ */
+export async function deleteSubmission(row: PoloListRow): Promise<void> {
+  const batchIds = [...new Set(row.events.map((e) => e.batchId).filter((b): b is string => !!b))];
+
+  let q = supabase.from("polo_events").delete();
+  q = row.workerId ? q.eq("worker_id", row.workerId) : q.eq("worker_name", row.workerName);
+  const { error } = await q;
+  if (error) throw error;
+
+  for (const batchId of batchIds) {
+    const { count, error: countError } = await supabase
+      .from("polo_events")
+      .select("id", { count: "exact", head: true })
+      .eq("batch_id", batchId);
+    if (countError) throw countError;
+    if ((count ?? 0) === 0) {
+      const { error: delError } = await supabase.from("polo_batches").delete().eq("id", batchId);
+      if (delError) throw delError;
+    }
+  }
+}
+
 /** Records an approval (no money movement). */
 export async function markApproved(row: PoloListRow, date: string): Promise<void> {
   const { error } = await supabase
