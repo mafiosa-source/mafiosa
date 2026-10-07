@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowUpDown, CheckCircle2, Loader2, ScanLine, Search, Undo2 } from "lucide-react";
+import { ArrowUpDown, CheckCircle2, Loader2, ScanLine, Search, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { useFinance } from "@/lib/finance-store";
 import { listCandidates, type Candidate } from "@/lib/cv-management";
@@ -28,6 +28,7 @@ import {
   feeRows,
   isReturned,
   listPoloEvents,
+  deleteSubmission,
   markApproved,
   markReturned,
   nameKey,
