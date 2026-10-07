@@ -6,15 +6,16 @@ const inputSchema = z.object({
   mimeType: z.string().min(3),
 });
 
-export type ScanSheetResult = { workers: { name: string; referenceCode?: string }[]; company?: string };
+export type ScanSheetResult = { workers: { name: string; referenceCode?: string; sponsorName?: string }[]; company?: string };
 
 const PROMPT = `You read printed or handwritten worker lists from an office sheet photo.
-Return ONLY JSON: {"company":"COMPANY","workers":[{"name":"FULL NAME","referenceCode":"CODE"}]}
+Return ONLY JSON: {"company":"COMPANY","workers":[{"name":"FULL NAME","referenceCode":"CODE","sponsorName":"SPONSOR FULL NAME"}]}
 Rules:
 - company: the agency / organization name printed in the sheet header or letterhead (e.g. FAST RECRUITMENT AGENCY, BROKER, SKILL, DANET). Omit the key when no company name is visible.
 - One entry per worker line, in the order they appear.
 - name: the person's full name in uppercase, no titles, no numbering.
 - referenceCode: the reference / serial / code printed next to the name; omit the key when there is none.
+- sponsorName: the sponsor / employer name on the same line (column like NAME OF SPONSOR); omit when absent.
 - Ignore headers, totals, signatures and stamps.
 No explanation, no markdown fences.`;
 
@@ -57,12 +58,13 @@ export const scanPoloSheet = createServerFn({ method: "POST" })
       const parsed = JSON.parse(raw.slice(start, end + 1)) as { workers?: unknown; company?: unknown };
       const list = Array.isArray(parsed.workers) ? parsed.workers : [];
       const company = typeof parsed.company === "string" && parsed.company.trim() ? parsed.company.trim() : undefined;
-      const workers: { name: string; referenceCode?: string }[] = [];
+      const workers: { name: string; referenceCode?: string; sponsorName?: string }[] = [];
       for (const entry of list) {
         const row = entry as Record<string, unknown>;
         const name = typeof row.name === "string" ? row.name.trim() : "";
         const code = typeof row.referenceCode === "string" ? row.referenceCode.trim() : "";
-        if (name) workers.push(code ? { name, referenceCode: code } : { name });
+        const sponsor = typeof row.sponsorName === "string" ? row.sponsorName.trim() : "";
+        if (name) workers.push({ name, ...(code ? { referenceCode: code } : {}), ...(sponsor ? { sponsorName: sponsor } : {}) });
       }
       return { workers, company };
     } catch {

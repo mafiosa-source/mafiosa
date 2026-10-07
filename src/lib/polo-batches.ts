@@ -53,6 +53,7 @@ export type PoloEvent = {
   workerId?: string;
   workerName: string;
   referenceCode?: string;
+  sponsorName?: string;
   eventType: PoloEventType;
   eventDate: string;
   attemptNo: number;
@@ -107,6 +108,7 @@ const eventFromRow = (r: Row): PoloEvent => ({
   workerId: (r.worker_id as string) ?? undefined,
   workerName: String(r.worker_name ?? ""),
   referenceCode: (r.reference_code as string) ?? undefined,
+  sponsorName: (r.sponsor_name as string) ?? undefined,
   eventType: (r.event_type as PoloEventType) ?? "submitted",
   eventDate: String(r.event_date ?? ""),
   attemptNo: Number(r.attempt_no ?? 1),
@@ -259,7 +261,9 @@ export function buildPoloRows(
       workerId: last?.workerId,
       workerName: last?.workerName ?? "—",
       referenceCode: sorted.find((e) => e.referenceCode)?.referenceCode,
-      sponsorName: sponsorNameFor(last?.workerId, last?.workerName),
+      sponsorName:
+        sponsorNameFor(last?.workerId, last?.workerName) ??
+        [...sorted].reverse().find((e) => e.sponsorName)?.sponsorName,
       orgName: [...sorted].reverse().find((e) => e.orgName)?.orgName,
       events: sorted,
       last,
@@ -276,7 +280,7 @@ export function buildPoloRows(
 }
 
 // ---------- Scan → batch + events ----------
-export type ScannedWorker = { name: string; referenceCode?: string };
+export type ScannedWorker = { name: string; referenceCode?: string; sponsorName?: string };
 
 /** Matches a scanned line to an existing worker by reference code, then by name. */
 export function matchWorker(candidates: Candidate[], scan: ScannedWorker): Candidate | undefined {
@@ -338,6 +342,7 @@ export async function createScanBatch(input: {
         worker_id: workerId ?? null,
         worker_name: workerName,
         reference_code: scan.referenceCode ?? match?.candidateCode ?? null,
+        sponsor_name: scan.sponsorName ?? input.sponsorNameFor(workerId, workerName) ?? null,
         event_type: input.type,
         event_date: input.scanDate,
         attempt_no: attempt,
@@ -359,7 +364,7 @@ export async function createScanBatch(input: {
         classification: "Sponsor Expense",
         candidate: workerName,
         candidateId: workerId,
-        sponsor: input.sponsorNameFor(workerId, workerName),
+        sponsor: input.sponsorNameFor(workerId, workerName) ?? scan.sponsorName,
         passport: match?.passportNumber,
         amount: POLO_FEE_AMOUNT,
         purpose: `POLO fee ${POLO_FEE_AMOUNT} returned to holding wallet`,
