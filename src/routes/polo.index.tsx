@@ -606,11 +606,22 @@ function RowDrawer({
                 <Info label="Fee location" value={walletName(row.location)} />
               </div>
 
-              {row.status !== "Approved" ? (
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => void approve()}>
-                  <CheckCircle2 className="h-4 w-4" /> Mark approved
+              <div className="flex flex-wrap gap-2">
+                {row.status !== "Approved" ? (
+                  <Button size="sm" variant="outline" disabled={busy} onClick={() => void approve()}>
+                    <CheckCircle2 className="h-4 w-4" /> Mark approved
+                  </Button>
+                ) : null}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-destructive"
+                  disabled={busy}
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="h-4 w-4" /> Delete submission
                 </Button>
-              ) : null}
+              </div>
 
               <Tabs defaultValue="timeline">
                 <TabsList>
