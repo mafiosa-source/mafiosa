@@ -451,7 +451,7 @@ function ScanButton({
       const base64 = await fileToBase64(file);
       const result = await scanPoloSheet({ data: { imageBase64: base64, mimeType: file.type || "image/jpeg" } });
       setImage(`data:${file.type || "image/jpeg"};base64,${base64}`);
-      setLines(result.workers.map((w) => [w.name, w.referenceCode].filter(Boolean).join(" | ")).join("\n"));
+      setLines(result.workers.map((w) => [w.name, w.referenceCode ?? "", w.sponsorName ?? ""].join(" | ").replace(/( \| )+$/, "")).join("\n"));
       setDate(today());
       setNote("");
       setCompany(result.company ?? "");
@@ -472,8 +472,8 @@ function ScanButton({
       .map((l) => l.trim())
       .filter(Boolean)
       .map((l) => {
-        const [name, code] = l.split("|").map((p) => p.trim());
-        return code ? { name, referenceCode: code } : { name };
+        const [name, code, sponsor] = l.split("|").map((p) => p.trim());
+        return { name, ...(code ? { referenceCode: code } : {}), ...(sponsor ? { sponsorName: sponsor } : {}) };
       })
       .filter((w) => !!w.name);
     if (workers.length === 0) {
@@ -537,7 +537,7 @@ function ScanButton({
               <Input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. FAST RECRUITMENT AGENCY" />
             </div>
             <div className="space-y-1.5">
-              <Label>Workers — one per line, optional code after “|”</Label>
+              <Label>Workers — one per line: Name | Code | Sponsor</Label>
               <Textarea rows={10} value={lines} onChange={(e) => setLines(e.target.value)} />
             </div>
             <div className="space-y-1.5">
@@ -557,18 +557,50 @@ function ScanButton({
   );
 }
 
-function openScan(dataUrl: string) {
-  try {
-    const [head, b64] = dataUrl.split(",");
-    const mime = head.match(/data:(.*?);/)?.[1] ?? "application/octet-stream";
-    const bin = atob(b64);
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
-    window.open(url, "_blank");
-  } catch {
-    window.open(dataUrl, "_blank");
-  }
+function toBlobUrl(dataUrl: string): { url: string; mime: string } {
+  const [head, b64] = dataUrl.split(",");
+  const mime = head.match(/data:(.*?);/)?.[1] ?? "application/octet-stream";
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return { url: URL.createObjectURL(new Blob([bytes], { type: mime })), mime };
+}
+
+/** Shows the original scan inside the app (pop-up tabs get blocked by the browser). */
+function ScanLink({ src }: { src: string }) {
+  const [file, setFile] = useState<{ url: string; mime: string } | null>(null);
+  useEffect(() => () => { if (file) URL.revokeObjectURL(file.url); }, [file]);
+  return (
+    <>
+      <Button size="sm" variant="link" className="h-auto px-0 text-xs" onClick={() => setFile(toBlobUrl(src))}>
+        <FileText className="h-3 w-3" /> View original scan
+      </Button>
+      <Dialog open={!!file} onOpenChange={(v) => (v ? null : setFile(null))}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Original scan</DialogTitle>
+          </DialogHeader>
+          {file ? (
+            file.mime.startsWith("image/") ? (
+              <img src={file.url} alt="Original scan" className="max-h-[75vh] w-full object-contain" />
+            ) : (
+              <object data={file.url} type={file.mime} className="h-[75vh] w-full">
+                <p className="text-sm">Preview not available.</p>
+              </object>
+            )
+          ) : null}
+          <DialogFooter>
+            {file ? (
+              <Button variant="outline" asChild>
+                <a href={file.url} download={`scan.${file.mime.includes("pdf") ? "pdf" : "jpg"}`}>Download</a>
+              </Button>
+            ) : null}
+            <Button onClick={() => setFile(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
 function RowDrawer({
@@ -664,9 +696,7 @@ function RowDrawer({
                       {(() => {
                         const img = batches.find((b) => b.id === e.batchId)?.image;
                         return img ? (
-                          <Button size="sm" variant="link" className="h-auto px-0 text-xs" onClick={() => openScan(img)}>
-                            <FileText className="h-3 w-3" /> View original scan
-                          </Button>
+                          <ScanLink src={img} />
                         ) : null;
                       })()}
                     </div>

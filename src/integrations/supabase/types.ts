@@ -1219,6 +1219,7 @@ export type Database = {
           note: string | null
           org_name: string | null
           reference_code: string | null
+          sponsor_name: string | null
           worker_id: string | null
           worker_name: string
         }
@@ -1234,6 +1235,7 @@ export type Database = {
           note?: string | null
           org_name?: string | null
           reference_code?: string | null
+          sponsor_name?: string | null
           worker_id?: string | null
           worker_name: string
         }
@@ -1249,6 +1251,7 @@ export type Database = {
           note?: string | null
           org_name?: string | null
           reference_code?: string | null
+          sponsor_name?: string | null
           worker_id?: string | null
           worker_name?: string
         }

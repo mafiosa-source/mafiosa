@@ -1,0 +1,1 @@
+ALTER TABLE public.polo_events ADD COLUMN IF NOT EXISTS sponsor_name text;
