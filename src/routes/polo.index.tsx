@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowUpDown, CheckCircle2, Loader2, ScanLine, Search, Trash2, Undo2 } from "lucide-react";
+import { ArrowUpDown, CheckCircle2, Loader2, FileText, ScanLine, Search, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { useFinance } from "@/lib/finance-store";
 import { listCandidates, type Candidate } from "@/lib/cv-management";
@@ -27,7 +27,9 @@ import {
   feeLocationLabel,
   feeRows,
   isReturned,
+  listPoloBatches,
   listPoloEvents,
+  type PoloBatch,
   deleteSubmission,
   markApproved,
   markReturned,
@@ -74,6 +76,7 @@ type Decorated = PoloListRow & {
 function PoloListPage() {
   const s = useFinance();
   const [events, setEvents] = useState<PoloEvent[]>([]);
+  const [batches, setBatches] = useState<PoloBatch[]>([]);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,8 +94,9 @@ function PoloListPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [ev, cs, sp] = await Promise.all([listPoloEvents(), listCandidates(), listSponsors()]);
+      const [ev, cs, sp, bt] = await Promise.all([listPoloEvents(), listCandidates(), listSponsors(), listPoloBatches()]);
       setEvents(ev);
+      setBatches(bt);
       setCandidates(cs);
       setSponsors(sp);
       setSelected([]);
@@ -336,7 +340,7 @@ function PoloListPage() {
       </div>
 
       <ReturnDialog rows={returnTarget} onClose={() => setReturnTarget(null)} onDone={load} />
-      <RowDrawer row={open} onClose={() => setOpen(null)} onChanged={load} />
+      <RowDrawer row={open} batches={batches} onClose={() => setOpen(null)} onChanged={load} />
     </AppLayout>
   );
 }
@@ -455,7 +459,7 @@ function ScanButton({
       if (result.workers.length) toast.success(`Read ${result.workers.length} name(s) — please check them.`);
       else toast.warning("No names could be read. Type them in by hand.");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not read that photo.");
+      toast.error(e instanceof Error ? e.message : "Could not read that file.");
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -506,7 +510,7 @@ function ScanButton({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,application/pdf"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -553,12 +557,28 @@ function ScanButton({
   );
 }
 
+function openScan(dataUrl: string) {
+  try {
+    const [head, b64] = dataUrl.split(",");
+    const mime = head.match(/data:(.*?);/)?.[1] ?? "application/octet-stream";
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
+    window.open(url, "_blank");
+  } catch {
+    window.open(dataUrl, "_blank");
+  }
+}
+
 function RowDrawer({
   row,
+  batches,
   onClose,
   onChanged,
 }: {
   row: PoloListRow | null;
+  batches: PoloBatch[];
   onClose: () => void;
   onChanged: () => Promise<void> | void;
 }) {
@@ -641,6 +661,14 @@ function RowDrawer({
                         Fee at: {walletName(e.feeLocation)}
                         {e.note ? ` · ${e.note}` : ""}
                       </div>
+                      {(() => {
+                        const img = batches.find((b) => b.id === e.batchId)?.image;
+                        return img ? (
+                          <Button size="sm" variant="link" className="h-auto px-0 text-xs" onClick={() => openScan(img)}>
+                            <FileText className="h-3 w-3" /> View original scan
+                          </Button>
+                        ) : null;
+                      })()}
                     </div>
                   ))}
                 </TabsContent>
