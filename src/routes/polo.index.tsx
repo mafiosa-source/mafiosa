@@ -564,6 +564,7 @@ function RowDrawer({
 }) {
   const s = useFinance();
   const [busy, setBusy] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const fees = useMemo(
     () => (row ? feeRows(s.transactions, row.workerId, row.workerName) : []),
     [row, s.transactions],
