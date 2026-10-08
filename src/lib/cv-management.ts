@@ -30,6 +30,7 @@ export type Candidate = {
   position: string;
   experienceYears: number;
   experienceCountry?: string;
+  experiencePosition?: string;
   languages: string[];
   availabilityStatus: "Available" | "Reserved" | "Unavailable";
   maritalStatus?: string;
@@ -189,6 +190,7 @@ function candidateFromRow(r: Row): Candidate {
     position: String(r.position ?? "Housemaid"),
     experienceYears: Number(r.experience_years ?? 0),
     experienceCountry: (r.experience_country as string) ?? undefined,
+    experiencePosition: (r.experience_position as string) ?? undefined,
     languages: Array.isArray(r.languages) ? (r.languages as string[]) : [],
     availabilityStatus: (r.availability_status as Candidate["availabilityStatus"]) ?? "Available",
     maritalStatus: (r.marital_status as string) ?? undefined,
@@ -284,6 +286,7 @@ export type CandidateInput = {
   position: string;
   experienceYears: number;
   experienceCountry?: string;
+  experiencePosition?: string;
   languages: string[];
   availabilityStatus: Candidate["availabilityStatus"];
   maritalStatus?: string;
@@ -335,6 +338,7 @@ export async function createCandidate(input: CandidateInput): Promise<Candidate>
     position: input.position,
     experience_years: input.experienceYears,
     experience_country: input.experienceCountry || null,
+    experience_position: input.experiencePosition || null,
     languages: input.languages,
     availability_status: input.availabilityStatus,
     children_count: input.childrenCount,
@@ -377,6 +381,7 @@ export async function updateCandidate(id: string, patch: Partial<CandidateInput>
   if (patch.position !== undefined) row.position = patch.position;
   if (patch.experienceYears !== undefined) row.experience_years = patch.experienceYears;
   if (patch.experienceCountry !== undefined) row.experience_country = patch.experienceCountry || null;
+  if (patch.experiencePosition !== undefined) row.experience_position = patch.experiencePosition || null;
   if (patch.languages !== undefined) row.languages = patch.languages;
   if (patch.availabilityStatus !== undefined) row.availability_status = patch.availabilityStatus;
   if (patch.maritalStatus !== undefined) row.marital_status = patch.maritalStatus;

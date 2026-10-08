@@ -651,15 +651,25 @@ export function CandidateForm({ editId }: { editId?: string }) {
                 <Input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
               </Field>
               <Field label="Position">
-                <Select value={position} onValueChange={setPosition}>
+                <Select
+                  value={(POSITIONS as readonly string[]).includes(position) ? position : "__custom"}
+                  onValueChange={(v) => setPosition(v === "__custom" ? "" : v)}
+                >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {POSITIONS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    <SelectItem value="__custom">Custom…</SelectItem>
                   </SelectContent>
                 </Select>
+                {!(POSITIONS as readonly string[]).includes(position) ? (
+                  <Input className="mt-2" value={position} onChange={(e) => setPosition(e.target.value)} placeholder="Type the position applied for" />
+                ) : null}
               </Field>
               <Field label="Experience (years)">
                 <Input type="number" step="0.1" min="0" value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} />
+              </Field>
+              <Field label="Previous Job Position">
+                <Input value={experiencePosition} onChange={(e) => setExperiencePosition(e.target.value)} placeholder="e.g. Housemaid, Nanny" />
               </Field>
               <Field label="Experience Country">
                 <Input value={experienceCountry} onChange={(e) => setExperienceCountry(e.target.value)} placeholder="e.g. Saudi Arabia" />
