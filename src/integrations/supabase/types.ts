@@ -440,6 +440,7 @@ export type Database = {
           education: string | null
           experience_abroad: boolean
           experience_country: string | null
+          experience_position: string | null
           experience_years: number
           full_name: string
           gallery_urls: string[]
@@ -486,6 +487,7 @@ export type Database = {
           education?: string | null
           experience_abroad?: boolean
           experience_country?: string | null
+          experience_position?: string | null
           experience_years?: number
           full_name: string
           gallery_urls?: string[]
@@ -532,6 +534,7 @@ export type Database = {
           education?: string | null
           experience_abroad?: boolean
           experience_country?: string | null
+          experience_position?: string | null
           experience_years?: number
           full_name?: string
           gallery_urls?: string[]
