@@ -566,6 +566,45 @@ function toBlobUrl(dataUrl: string): { url: string; mime: string } {
   return { url: URL.createObjectURL(new Blob([bytes], { type: mime })), mime };
 }
 
+/** Renders every PDF page as an image (the browser's built-in PDF viewer is blocked inside frames). */
+function PdfPages({ url }: { url: string }) {
+  const [pages, setPages] = useState<string[]>([]);
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const pdfjs = await import("pdfjs-dist");
+        const worker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+        pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
+        const doc = await pdfjs.getDocument(url).promise;
+        const out: string[] = [];
+        for (let i = 1; i <= doc.numPages; i++) {
+          const page = await doc.getPage(i);
+          const vp = page.getViewport({ scale: 1.6 });
+          const canvas = document.createElement("canvas");
+          canvas.width = vp.width;
+          canvas.height = vp.height;
+          await page.render({ canvasContext: canvas.getContext("2d")!, viewport: vp }).promise;
+          out.push(canvas.toDataURL("image/png"));
+        }
+        if (!cancelled) setPages(out);
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setError(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [url]);
+  if (error) return <p className="text-sm">Preview not available — use Download.</p>;
+  if (!pages.length) return <div className="flex h-40 items-center justify-center"><Loader2 className="h-5 w-5 animate-spin" /></div>;
+  return (
+    <div className="max-h-[75vh] space-y-3 overflow-auto">
+      {pages.map((p, i) => <img key={i} src={p} alt={`Scan page ${i + 1}`} className="w-full border" />)}
+    </div>
+  );
+}
+
 /** Shows the original scan inside the app (pop-up tabs get blocked by the browser). */
 function ScanLink({ src }: { src: string }) {
   const [file, setFile] = useState<{ url: string; mime: string } | null>(null);
@@ -584,9 +623,7 @@ function ScanLink({ src }: { src: string }) {
             file.mime.startsWith("image/") ? (
               <img src={file.url} alt="Original scan" className="max-h-[75vh] w-full object-contain" />
             ) : (
-              <object data={file.url} type={file.mime} className="h-[75vh] w-full">
-                <p className="text-sm">Preview not available.</p>
-              </object>
+              <PdfPages url={file.url} />
             )
           ) : null}
           <DialogFooter>
