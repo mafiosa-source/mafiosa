@@ -18,6 +18,7 @@ export type CvScanResult = {
   position?: string;
   experienceYears?: number;
   experienceCountry?: string;
+  experiencePosition?: string;
   maritalStatus?: string;
   childrenCount?: number;
   heightCm?: string;
@@ -42,9 +43,10 @@ Extract every detail you can find and return ONLY JSON with these keys (omit a k
  "dateOfBirth": "YYYY-MM-DD",
  "placeOfBirth": "town/city",
  "nationality": "country name in English (Kenya, Philippines, Ethiopia, Uganda, Nepal, Sri Lanka, India...)",
- "position": "one of: Housemaid, Nanny, Cook, Cleaner, Caregiver, Driver, Babysitter, Housekeeper, Laundry, Gardener, Other",
+ "position": "the position applied for, exactly as written on the CV (e.g. Housemaid, Nanny, Cook, Caregiver, Driver)",
  "experienceYears": number (total years of experience; 0 if none),
- "experienceCountry": "country/countries where she worked before (e.g. Saudi Arabia, UAE, Kuwait)",
+ "experienceCountry": "country/countries of previous employment, from the PREVIOUS EMPLOYMENT / WORK EXPERIENCE section (column often labeled COUNTRY)",
+ "experiencePosition": "position/job title held in previous employment, from the PREVIOUS EMPLOYMENT / WORK EXPERIENCE section (column often labeled POSITION)",
  "maritalStatus": "one of: Single, Married, Divorced, Widowed, Separated",
  "childrenCount": number,
  "heightCm": "height in cm as a number string",
@@ -133,6 +135,7 @@ export const scanCv = createServerFn({ method: "POST" })
         position: str("position"),
         experienceYears: num("experienceYears"),
         experienceCountry: str("experienceCountry"),
+        experiencePosition: str("experiencePosition"),
         maritalStatus: str("maritalStatus"),
         childrenCount: num("childrenCount"),
         heightCm: str("heightCm")?.replace(/[^\d.]/g, "") || undefined,
