@@ -135,6 +135,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
         setPosition(c.position);
         setExperienceYears(String(c.experienceYears));
         setExperienceCountry(c.experienceCountry ?? "");
+        setExperiencePosition(c.experiencePosition ?? "");
         setMaritalStatus(c.maritalStatus ?? "");
         setChildrenCount(String(c.childrenCount));
         setHeight(c.height ?? "");
@@ -256,6 +257,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
       if (pos) setPosition(pos);
       if (r.experienceYears !== undefined) { setExperienceYears(String(r.experienceYears)); filled.push("experience"); }
       if (r.experienceCountry) setExperienceCountry(r.experienceCountry);
+      if (r.experiencePosition) setExperiencePosition(r.experiencePosition);
       const ms = pick(MARITAL_STATUSES, r.maritalStatus);
       if (ms) setMaritalStatus(ms);
       if (r.childrenCount !== undefined) setChildrenCount(String(r.childrenCount));
