@@ -74,6 +74,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
   const [position, setPosition] = useState("Housemaid");
   const [experienceYears, setExperienceYears] = useState("0");
   const [experienceCountry, setExperienceCountry] = useState("");
+  const [experiencePosition, setExperiencePosition] = useState("");
   const [maritalStatus, setMaritalStatus] = useState("");
   const [childrenCount, setChildrenCount] = useState("0");
   const [height, setHeight] = useState("");
@@ -381,6 +382,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
         position,
         experienceYears: Number(experienceYears) || 0,
         experienceCountry: experienceCountry || undefined,
+        experiencePosition: experiencePosition || undefined,
         languages: selectedLanguages,
         availabilityStatus: availabilityStatus as CandidateInput["availabilityStatus"],
         maritalStatus: maritalStatus || undefined,
