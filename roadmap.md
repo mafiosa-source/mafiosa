@@ -1,9 +1,9 @@
 # Roadmap — Housemaid recruitment flow
 
 ## Broker language and header
-- [ ] Enlarge company name and add mobile-visible English/Arabic toggle
-- [ ] Translate public Broker pages and enable remembered RTL Arabic
-- [ ] Verify language switching, persistence, and desktop/mobile layout
+- [x] Enlarge company name and add mobile-visible English/Arabic toggle
+- [x] Translate public Broker pages and enable remembered RTL Arabic
+- [x] Verify language switching, persistence, and desktop/mobile layout
 
 ## Stage 1 (done)
 - [x] Migration: sponsors, pipeline fields on candidates, status history, expense tags on transactions
