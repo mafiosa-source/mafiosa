@@ -34,6 +34,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-broker-heading: var(--broker-heading);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -47,6 +48,7 @@
 }
 
 :root {
+  --broker-heading: #0F172A;
   --radius: 0.5rem;
 
   /* Neutral surfaces - finance app: cool grays with slight blue */
@@ -111,4 +113,8 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+}
+
+.broker-site:lang(ar) {
+  font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif;
 }

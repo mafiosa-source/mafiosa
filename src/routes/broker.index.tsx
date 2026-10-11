@@ -1,3 +1,4 @@
+import { useBrokerLanguage } from "@/lib/broker-i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ShieldCheck, Globe2, Users, ArrowRight, BadgeCheck, MessageCircle } from "lucide-react";
 import { BrokerSite } from "@/components/BrokerSite";
@@ -25,31 +26,31 @@ export const Route = createFileRoute("/broker/")({
 });
 
 function BrokerHome() {
+  const { t } = useBrokerLanguage();
   return (
     <BrokerSite>
       <section className="rounded-[16px] bg-gradient-to-br from-[#0b5fff] to-[#0a3ea8] px-6 py-12 text-white sm:px-10">
         <span className="inline-flex items-center gap-2 rounded-2xl bg-white/15 px-3 py-1 text-xs font-medium">
-          <BadgeCheck className="h-4 w-4" /> Licensed by Ministry of Labour
+          <BadgeCheck className="h-4 w-4" /> {t("Licensed by Ministry of Labour")}
         </span>
         <h1 className="mt-4 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">
-          Reliable domestic and skilled workers for families and companies in Qatar
+          {t("Reliable domestic and skilled workers for families and companies in Qatar")}
         </h1>
         <p className="mt-4 max-w-2xl text-white/85">
-          We recruit, screen and document workers from the Philippines, Kenya, Ethiopia, Nigeria, Tanzania, Uganda and
-          India — with full Ministry of Labour compliance.
+          {t("We recruit, screen and document workers from the Philippines, Kenya, Ethiopia, Nigeria, Tanzania, Uganda and India — with full Ministry of Labour compliance.")}
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
             to="/broker/cvs"
             className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0b5fff]"
           >
-            View available CVs <ArrowRight className="h-4 w-4" />
+            {t("View available CVs")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
           </Link>
           <Link
             to="/broker/contact"
             className="inline-flex items-center gap-2 rounded-2xl border border-white/40 px-5 py-3 text-sm font-semibold text-white"
           >
-            Talk to us
+            {t("Talk to us")}
           </Link>
           <a
             href={WHATSAPP_GROUP_URL}
@@ -57,7 +58,7 @@ function BrokerHome() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-md bg-[#25D366] px-5 py-3 text-sm font-semibold text-white"
           >
-            <MessageCircle className="h-4 w-4" /> Join WhatsApp Group
+            <MessageCircle className="h-4 w-4" /> {t("Join WhatsApp Group")}
           </a>
         </div>
       </section>
@@ -70,18 +71,18 @@ function BrokerHome() {
         ].map((c) => (
           <div key={c.title} className="rounded-[16px] border border-slate-200 bg-white p-6">
             <c.icon className="h-6 w-6 text-[#0b5fff]" />
-            <div className="mt-3 font-semibold">{c.title}</div>
-            <p className="mt-1 text-sm text-slate-600">{c.text}</p>
+            <div className="mt-3 font-semibold">{t(c.title)}</div>
+            <p className="mt-1 text-sm text-slate-600">{t(c.text)}</p>
           </div>
         ))}
       </section>
 
       <section className="mt-8 rounded-[16px] border border-slate-200 bg-white p-6">
-        <h2 className="text-lg font-semibold">Where our workers come from</h2>
+        <h2 className="text-lg font-semibold">{t("Where our workers come from")}</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           {CV_COUNTRIES.map((c) => (
             <span key={c} className="rounded-2xl bg-slate-100 px-3 py-1.5 text-sm text-slate-700">
-              {COUNTRY_NAME[c]} <span className="text-slate-400">({c})</span>
+              {t(COUNTRY_NAME[c] ?? c)} <span className="text-slate-400">({c})</span>
             </span>
           ))}
         </div>
