@@ -46,17 +46,19 @@ export function BrokerSite({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+            <div className="flex flex-wrap items-center gap-1">
             <a
               href={WHATSAPP_GROUP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="ms-1 inline-flex items-center gap-2 rounded-md bg-[#25D366] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#20bd5a]"
+              className="inline-flex items-center gap-2 rounded-md bg-[#25D366] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#20bd5a]"
             >
               <Users className="h-4 w-4" /> {t("Join WhatsApp Group")}
             </a>
             <Button type="button" variant="outline" onClick={() => setLanguage(language === "en" ? "ar" : "en")} aria-label={language === "en" ? "Switch to Arabic" : "Switch to English"} className="h-9 shrink-0 border-slate-200 bg-white text-broker-heading hover:bg-slate-100" dir="ltr">
               <Languages aria-hidden="true" /> <span lang="en" className={language === "en" ? "font-extrabold" : "font-normal"}>EN</span><span aria-hidden="true">|</span><span lang="ar" className={language === "ar" ? "font-extrabold" : "font-normal"}>عربي</span>
             </Button>
+            </div>
           </nav>
         </div>
       </header>
@@ -77,7 +79,7 @@ export function BrokerSite({ children }: { children: ReactNode }) {
               {AGENCY_PHONES.map((p) => (
                 <li key={p} className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-[#0b5fff]" />
-                  <a href={`tel:${p}`} className="hover:text-[#0b5fff]">{p}</a>
+                  <a href={`tel:${p}`} dir="ltr" className="hover:text-[#0b5fff]">{p}</a>
                 </li>
               ))}
               <li className="flex items-center gap-2">

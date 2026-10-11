@@ -36,7 +36,7 @@ export const Route = createFileRoute("/broker/cvs")({
 });
 
 function CvsPage() {
-  const { t } = useBrokerLanguage();
+  const { t, language } = useBrokerLanguage();
   const [cvs, setCvs] = useState<PublicCv[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -67,13 +67,13 @@ function CvsPage() {
             .toLowerCase()
             .includes(q)),
     );
-  }, [cvs, query, country]);
+  }, [cvs, query, country, language]);
 
   return (
     <BrokerSite>
       <h1 className="text-2xl font-bold">{t("Available CVs")}</h1>
       <p className="mt-2 text-sm text-slate-600">
-        Only workers currently available are shown. Reserved workers are removed automatically.
+         {t("Only workers currently available are shown. Reserved workers are removed automatically.")}
       </p>
 
       <div className="mt-6 flex flex-wrap items-center gap-3 rounded-[16px] border border-slate-200 bg-white p-4">

@@ -43,6 +43,9 @@ export const BROKER_AR: Record<string, string> = {
   "Housemaid": "عاملة منزلية", "Nanny": "مربية أطفال", "Cook": "طاهية", "Driver": "سائق", "Cleaner": "عامل تنظيف", "Caregiver": "مقدم رعاية",
   "Cleaning": "التنظيف", "Cooking": "الطبخ", "Ironing": "الكي", "Laundry": "غسل الملابس", "Childcare": "رعاية الأطفال", "Baby care": "رعاية الرضع", "Elderly care": "رعاية كبار السن",
   "Single": "عزباء", "Married": "متزوجة", "Divorced": "مطلقة", "Widowed": "أرملة", "Christian": "مسيحية", "Muslim": "مسلمة",
+  "Other": "أخرى", "Urdu": "الأردية", "Tagalog": "التاغالوغية", "Amharic": "الأمهرية", "French": "الفرنسية",
+  "Baby Sitting": "رعاية الأطفال", "Baby Care": "رعاية الرضع", "Elderly Care": "رعاية كبار السن", "Washing": "الغسيل", "Sewing": "الخياطة",
+  "Saudi Arabia": "السعودية", "Qatar": "قطر", "Kuwait": "الكويت", "Oman": "عُمان", "Bahrain": "البحرين", "UAE": "الإمارات",
 };
 
 const BrokerLanguageContext = createContext<{
@@ -72,5 +75,5 @@ export function BrokerLanguageProvider({ children }: { children: ReactNode }) {
 
 export function useBrokerLanguage() {
   const context = useContext(BrokerLanguageContext);
-  return { ...context, t: (text: string) => context.language === "ar" ? BROKER_AR[text] ?? text : text };
+  return { ...context, t: (text: string) => context.language === "ar" ? BROKER_AR[text] ?? Object.entries(BROKER_AR).find(([key]) => key.toLowerCase() === text.toLowerCase())?.[1] ?? text : text };
 }

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, MessageCircle, Phone, X } from "lucide-react";
 import { BrokerFacePhoto } from "@/components/BrokerFacePhoto";
 import { printPublicCv } from "@/lib/public-cv-print";
-import { COUNTRY_NAME, callLink, experienceLabel, whatsappLink, type PublicCv } from "@/lib/public-cvs";
+import { COUNTRY_NAME, callLink, whatsappLink, type PublicCv } from "@/lib/public-cvs";
 
 export function BrokerCvDialog({
   cv,
