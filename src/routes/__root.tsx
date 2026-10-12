@@ -123,7 +123,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const isPublicBrokerPage = pathname === "/broker" || pathname.startsWith("/broker/");
+  const isPublicBrokerPage = pathname === "/broker" || pathname.startsWith("/broker/") || pathname === "/fast" || pathname.startsWith("/fast/");
 
   return (
     <QueryClientProvider client={queryClient}>

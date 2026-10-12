@@ -2,6 +2,7 @@ import { useBrokerLanguage } from "@/lib/broker-i18n";
 import { Button } from "@/components/ui/button";
 import { FileText, MessageCircle, Phone, X } from "lucide-react";
 import { BrokerFacePhoto } from "@/components/BrokerFacePhoto";
+import { useAgency } from "@/lib/agency";
 import { printPublicCv } from "@/lib/public-cv-print";
 import { COUNTRY_NAME, callLink, whatsappLink, type PublicCv } from "@/lib/public-cvs";
 
@@ -14,6 +15,7 @@ export function BrokerCvDialog({
   index: number;
   onClose: () => void;
 }) {
+  const agency = useAgency();
   const { t, language } = useBrokerLanguage();
   const facts: Array<[string, string]> = [
     ["Reference", cv.code],
@@ -111,13 +113,13 @@ export function BrokerCvDialog({
         <div className="mt-6 flex flex-wrap gap-2">
           <Button
             type="button"
-            onClick={() => printPublicCv(cv)}
+            onClick={() => printPublicCv(cv, agency.key === "fast" ? "fast_letterhead" : "broker_letterhead")}
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[#0b5fff] px-3 py-2.5 text-sm font-semibold text-[#0b5fff] hover:bg-[#0b5fff]/5"
           >
             <FileText className="h-4 w-4" /> {t("View PDF")}
           </Button>
           <a
-            href={whatsappLink(cv, index)}
+            href={whatsappLink(cv, index, agency.phones, agency.greeting)}
             target="_blank"
             rel="noopener"
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-3 py-2.5 text-sm font-semibold text-white"
@@ -125,7 +127,7 @@ export function BrokerCvDialog({
             <MessageCircle className="h-4 w-4" /> {t("WhatsApp")}
           </a>
           <a
-            href={callLink(cv, index)}
+            href={callLink(cv, index, agency.phones)}
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0b5fff] px-3 py-2.5 text-sm font-semibold text-white"
           >
             <Phone className="h-4 w-4" /> {t("Call")}

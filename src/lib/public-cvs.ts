@@ -19,20 +19,20 @@ export const AGENCY_MAP_URL = "https://maps.google.com/?q=Al+Bustan+Building+37+
 export const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/GExPmgL1ySzH1JvuRTORkt";
 
 /** Even positions use the first line, odd positions the second. */
-export function phoneForCv(_cv: PublicCv, index: number): string {
-  return AGENCY_PHONES[index % 2]!;
+export function phoneForCv(_cv: PublicCv, index: number, phones: readonly string[] = AGENCY_PHONES): string {
+  return phones[index % phones.length]!;
 }
 
-export function whatsappLink(cv: PublicCv, index: number): string {
-  const phone = phoneForCv(cv, index).replace(/[^0-9]/g, "");
-  const text = `Hello Broker, interested in ${cv.name} ${cv.code} ${cv.position} ${
+export function whatsappLink(cv: PublicCv, index: number, phones: readonly string[] = AGENCY_PHONES, greeting = "Hello Broker"): string {
+  const phone = phoneForCv(cv, index, phones).replace(/[^0-9]/g, "");
+  const text = `${greeting}, interested in ${cv.name} ${cv.code} ${cv.position} ${
     COUNTRY_NAME[cv.country] ?? cv.country
   }`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 }
 
-export function callLink(cv: PublicCv, index: number): string {
-  return `tel:${phoneForCv(cv, index).replace(/[^0-9+]/g, "")}`;
+export function callLink(cv: PublicCv, index: number, phones: readonly string[] = AGENCY_PHONES): string {
+  return `tel:${phoneForCv(cv, index, phones).replace(/[^0-9+]/g, "")}`;
 }
 
 export function experienceLabel(cv: PublicCv): string {

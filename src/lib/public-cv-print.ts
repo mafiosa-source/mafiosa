@@ -2,6 +2,10 @@
 // with the BROKER letterhead. The ONLY difference from the ERP sheet is that the
 // "Contact number" row is hidden for public visitors.
 import brokerLetterhead from "@/assets/letterheads/broker-letterhead.png.asset.json";
+import fastLetterhead from "@/assets/letterheads/fast-letterhead.png.asset.json";
+
+export type PublicCvTemplate = "broker_letterhead" | "fast_letterhead";
+let activeTemplate: PublicCvTemplate = "broker_letterhead";
 import { countryArabicName, countryName, formatDate } from "@/lib/cv-management";
 import type { PublicCv } from "./public-cvs";
 
@@ -74,7 +78,7 @@ const sectionRow = (label: string, arabic: string) =>
   `<tr><td colspan="3" class="section-title">${esc(label)}<span dir="rtl">${arabic}</span></td></tr>`;
 
 function letterheadUrl(): string {
-  const url = brokerLetterhead.url;
+  const url = activeTemplate === "fast_letterhead" ? fastLetterhead.url : brokerLetterhead.url;
   if (typeof window === "undefined" || /^https?:/i.test(url)) return url;
   return `${window.location.origin}${url}`;
 }
@@ -98,7 +102,7 @@ function publicCvBody(cv: PublicCv): string {
 
   return `
 <div class="okunade-page">
-  <div class="okunade-letterhead"><img src="${esc(letterheadUrl())}" alt="BROKER letterhead" /></div>
+  <div class="okunade-letterhead"><img src="${esc(letterheadUrl())}" alt="${activeTemplate === "fast_letterhead" ? "FAST" : "BROKER"} letterhead" /></div>
   <table class="okunade-table">
     <colgroup>
       <col class="col-left-label" /><col class="col-left-value" /><col class="col-left-arabic" />
@@ -144,8 +148,9 @@ function publicCvBody(cv: PublicCv): string {
 }
 
 /** Opens the ERP-style CV (BROKER letterhead) in a print window. */
-export function printPublicCv(cv: PublicCv) {
+export function printPublicCv(cv: PublicCv, template: PublicCvTemplate = "broker_letterhead") {
   if (typeof window === "undefined") return;
+  activeTemplate = template;
   const win = window.open("", "_blank", "width=1000,height=1300");
   if (!win) return;
   win.document.write(
