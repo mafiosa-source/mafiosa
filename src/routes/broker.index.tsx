@@ -1,8 +1,9 @@
 import { useBrokerLanguage } from "@/lib/broker-i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ShieldCheck, Globe2, Users, ArrowRight, BadgeCheck, MessageCircle } from "lucide-react";
+import { useAgency } from "@/lib/agency";
 import { BrokerSite } from "@/components/BrokerSite";
-import { CV_COUNTRIES, COUNTRY_NAME, WHATSAPP_GROUP_URL } from "@/lib/public-cvs";
+import { CV_COUNTRIES, COUNTRY_NAME } from "@/lib/public-cvs";
 
 export const Route = createFileRoute("/broker/")({
   head: () => ({
@@ -25,8 +26,9 @@ export const Route = createFileRoute("/broker/")({
   component: BrokerHome,
 });
 
-function BrokerHome() {
+export function BrokerHome() {
   const { t } = useBrokerLanguage();
+  const agency = useAgency();
   return (
     <BrokerSite>
       <section className="rounded-[16px] bg-gradient-to-br from-[#0b5fff] to-[#0a3ea8] px-6 py-12 text-white sm:px-10">
@@ -41,19 +43,19 @@ function BrokerHome() {
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
-            to="/broker/cvs"
+            to={`${agency.base}/cvs` as "/broker/cvs"}
             className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0b5fff]"
           >
             {t("View available CVs")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
           </Link>
           <Link
-            to="/broker/contact"
+            to={`${agency.base}/contact` as "/broker/contact"}
             className="inline-flex items-center gap-2 rounded-2xl border border-white/40 px-5 py-3 text-sm font-semibold text-white"
           >
             {t("Talk to us")}
           </Link>
           <a
-            href={WHATSAPP_GROUP_URL}
+            href={agency.whatsappGroup}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-md bg-[#25D366] px-5 py-3 text-sm font-semibold text-white"

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { BrokerSite } from "@/components/BrokerSite";
 import { BrokerCvDialog } from "@/components/BrokerCvDialog";
 import { BrokerFacePhoto } from "@/components/BrokerFacePhoto";
+import { useAgency } from "@/lib/agency";
 import { listPublicCvs } from "@/lib/public-cvs.functions";
 import {
   whatsappLink,
@@ -35,7 +36,8 @@ export const Route = createFileRoute("/broker/cvs")({
   component: CvsPage,
 });
 
-function CvsPage() {
+export function CvsPage() {
+  const agency = useAgency();
   const { t, language } = useBrokerLanguage();
   const [cvs, setCvs] = useState<PublicCv[]>([]);
   const [loading, setLoading] = useState(true);
@@ -161,7 +163,7 @@ function CvsPage() {
 
               <div className="mt-5 flex gap-2">
                 <a
-                  href={whatsappLink(cv, i)}
+                  href={whatsappLink(cv, i, agency.phones, agency.greeting)}
                   target="_blank"
                   rel="noopener"
                   onClick={(e) => e.stopPropagation()}
@@ -170,7 +172,7 @@ function CvsPage() {
                   <MessageCircle className="h-4 w-4" /> {t("WhatsApp")}
                 </a>
                 <a
-                  href={callLink(cv, i)}
+                  href={callLink(cv, i, agency.phones)}
                   onClick={(e) => e.stopPropagation()}
                   className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0b5fff] px-3 py-2.5 text-sm font-semibold text-white"
                 >

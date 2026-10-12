@@ -1,5 +1,6 @@
 import { useBrokerLanguage } from "@/lib/broker-i18n";
 import { createFileRoute } from "@tanstack/react-router";
+import { useAgency } from "@/lib/agency";
 import { BrokerSite } from "@/components/BrokerSite";
 
 export const Route = createFileRoute("/broker/about")({
@@ -23,15 +24,16 @@ export const Route = createFileRoute("/broker/about")({
   component: AboutPage,
 });
 
-function AboutPage() {
+export function AboutPage() {
   const { t } = useBrokerLanguage();
+  const agency = useAgency();
   return (
     <BrokerSite>
       <h1 className="text-2xl font-bold">{t("About us")}</h1>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <div className="rounded-[16px] border border-slate-200 bg-white p-6 text-sm leading-relaxed text-slate-700">
           <p>
-            {t('Broker Recruitment Agency is a manpower recruitment company based in Doha, Qatar, licensed by the Ministry of Labour. We work with families, households and companies to place domestic and skilled workers who are properly documented and prepared for work in Qatar.')}
+            {agency.key === 'fast' ? t('Broker Recruitment Agency is a manpower recruitment company based in Doha, Qatar, licensed by the Ministry of Labour. We work with families, households and companies to place domestic and skilled workers who are properly documented and prepared for work in Qatar.').replace('Broker Recruitment Agency', 'Fast Recruitment Agency').replace('وكالة بروكر للاستقدام', 'وكالة فاست للاستقدام') : t('Broker Recruitment Agency is a manpower recruitment company based in Doha, Qatar, licensed by the Ministry of Labour. We work with families, households and companies to place domestic and skilled workers who are properly documented and prepared for work in Qatar.')}
           </p>
           <p className="mt-4">
             {t('Every worker we present has been interviewed by our partner agency, has a valid passport, and comes with a clear CV covering experience, languages and skills. We handle the paperwork end to end: visa, medical, POLO or embassy requirements where applicable, contract signing and arrival.')}
