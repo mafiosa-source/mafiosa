@@ -35,6 +35,10 @@ import { Route as BrokerIndexRouteImport } from './routes/broker.index'
 import { Route as BrokerAboutRouteImport } from './routes/broker.about'
 import { Route as BrokerContactRouteImport } from './routes/broker.contact'
 import { Route as BrokerCvsRouteImport } from './routes/broker.cvs'
+import { Route as FastIndexRouteImport } from './routes/fast.index'
+import { Route as FastAboutRouteImport } from './routes/fast.about'
+import { Route as FastContactRouteImport } from './routes/fast.contact'
+import { Route as FastCvsRouteImport } from './routes/fast.cvs'
 import { Route as HousemaidNameRouteImport } from './routes/housemaid.$name'
 import { Route as PoloIndexRouteImport } from './routes/polo.index'
 import { Route as PoloBulkRouteImport } from './routes/polo.bulk'
@@ -181,6 +185,26 @@ const BrokerCvsRoute = BrokerCvsRouteImport.update({
   path: '/broker/cvs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FastIndexRoute = FastIndexRouteImport.update({
+  id: '/fast/',
+  path: '/fast/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FastAboutRoute = FastAboutRouteImport.update({
+  id: '/fast/about',
+  path: '/fast/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FastContactRoute = FastContactRouteImport.update({
+  id: '/fast/contact',
+  path: '/fast/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FastCvsRoute = FastCvsRouteImport.update({
+  id: '/fast/cvs',
+  path: '/fast/cvs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HousemaidNameRoute = HousemaidNameRouteImport.update({
   id: '/housemaid/$name',
   path: '/housemaid/$name',
@@ -282,6 +306,9 @@ export interface FileRoutesByFullPath {
   '/broker/about': typeof BrokerAboutRoute
   '/broker/contact': typeof BrokerContactRoute
   '/broker/cvs': typeof BrokerCvsRoute
+  '/fast/about': typeof FastAboutRoute
+  '/fast/contact': typeof FastContactRoute
+  '/fast/cvs': typeof FastCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/polo/bulk': typeof PoloBulkRoute
   '/polo/refunds': typeof PoloRefundsRoute
@@ -294,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/workers/new': typeof WorkersNewRoute
   '/admin/': typeof AdminIndexRoute
   '/broker/': typeof BrokerIndexRoute
+  '/fast/': typeof FastIndexRoute
   '/polo/': typeof PoloIndexRoute
   '/recruitment/': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
@@ -324,6 +352,9 @@ export interface FileRoutesByTo {
   '/broker/about': typeof BrokerAboutRoute
   '/broker/contact': typeof BrokerContactRoute
   '/broker/cvs': typeof BrokerCvsRoute
+  '/fast/about': typeof FastAboutRoute
+  '/fast/contact': typeof FastContactRoute
+  '/fast/cvs': typeof FastCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/polo/bulk': typeof PoloBulkRoute
   '/polo/refunds': typeof PoloRefundsRoute
@@ -336,6 +367,7 @@ export interface FileRoutesByTo {
   '/workers/new': typeof WorkersNewRoute
   '/admin': typeof AdminIndexRoute
   '/broker': typeof BrokerIndexRoute
+  '/fast': typeof FastIndexRoute
   '/polo': typeof PoloIndexRoute
   '/recruitment': typeof RecruitmentIndexRoute
   '/months/$year/$month': typeof MonthsYearMonthRoute
@@ -368,6 +400,9 @@ export interface FileRoutesById {
   '/broker/about': typeof BrokerAboutRoute
   '/broker/contact': typeof BrokerContactRoute
   '/broker/cvs': typeof BrokerCvsRoute
+  '/fast/about': typeof FastAboutRoute
+  '/fast/contact': typeof FastContactRoute
+  '/fast/cvs': typeof FastCvsRoute
   '/housemaid/$name': typeof HousemaidNameRoute
   '/polo/bulk': typeof PoloBulkRoute
   '/polo/refunds': typeof PoloRefundsRoute
@@ -380,6 +415,7 @@ export interface FileRoutesById {
   '/workers_/new': typeof WorkersNewRoute
   '/admin/': typeof AdminIndexRoute
   '/broker/': typeof BrokerIndexRoute
+  '/fast/': typeof FastIndexRoute
   '/polo/': typeof PoloIndexRoute
   '/recruitment/': typeof RecruitmentIndexRoute
   '/months_/$year/$month': typeof MonthsYearMonthRoute
@@ -413,6 +449,9 @@ export interface FileRouteTypes {
     | '/broker/about'
     | '/broker/contact'
     | '/broker/cvs'
+    | '/fast/about'
+    | '/fast/contact'
+    | '/fast/cvs'
     | '/housemaid/$name'
     | '/polo/bulk'
     | '/polo/refunds'
@@ -425,6 +464,7 @@ export interface FileRouteTypes {
     | '/workers/new'
     | '/admin/'
     | '/broker/'
+    | '/fast/'
     | '/polo/'
     | '/recruitment/'
     | '/months/$year/$month'
@@ -455,6 +495,9 @@ export interface FileRouteTypes {
     | '/broker/about'
     | '/broker/contact'
     | '/broker/cvs'
+    | '/fast/about'
+    | '/fast/contact'
+    | '/fast/cvs'
     | '/housemaid/$name'
     | '/polo/bulk'
     | '/polo/refunds'
@@ -467,6 +510,7 @@ export interface FileRouteTypes {
     | '/workers/new'
     | '/admin'
     | '/broker'
+    | '/fast'
     | '/polo'
     | '/recruitment'
     | '/months/$year/$month'
@@ -498,6 +542,9 @@ export interface FileRouteTypes {
     | '/broker/about'
     | '/broker/contact'
     | '/broker/cvs'
+    | '/fast/about'
+    | '/fast/contact'
+    | '/fast/cvs'
     | '/housemaid/$name'
     | '/polo/bulk'
     | '/polo/refunds'
@@ -510,6 +557,7 @@ export interface FileRouteTypes {
     | '/workers_/new'
     | '/admin/'
     | '/broker/'
+    | '/fast/'
     | '/polo/'
     | '/recruitment/'
     | '/months_/$year/$month'
@@ -539,6 +587,9 @@ export interface RootRouteChildren {
   BrokerAboutRoute: typeof BrokerAboutRoute
   BrokerContactRoute: typeof BrokerContactRoute
   BrokerCvsRoute: typeof BrokerCvsRoute
+  FastAboutRoute: typeof FastAboutRoute
+  FastContactRoute: typeof FastContactRoute
+  FastCvsRoute: typeof FastCvsRoute
   HousemaidNameRoute: typeof HousemaidNameRoute
   PoloBulkRoute: typeof PoloBulkRoute
   PoloRefundsRoute: typeof PoloRefundsRoute
@@ -550,6 +601,7 @@ export interface RootRouteChildren {
   TransactionsIdRoute: typeof TransactionsIdRoute
   WorkersNewRoute: typeof WorkersNewRoute
   BrokerIndexRoute: typeof BrokerIndexRoute
+  FastIndexRoute: typeof FastIndexRoute
   PoloIndexRoute: typeof PoloIndexRoute
   RecruitmentIndexRoute: typeof RecruitmentIndexRoute
   MonthsYearMonthRoute: typeof MonthsYearMonthRoute
@@ -741,6 +793,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BrokerCvsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fast/': {
+      id: '/fast/'
+      path: '/fast'
+      fullPath: '/fast/'
+      preLoaderRoute: typeof FastIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fast/about': {
+      id: '/fast/about'
+      path: '/fast/about'
+      fullPath: '/fast/about'
+      preLoaderRoute: typeof FastAboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fast/contact': {
+      id: '/fast/contact'
+      path: '/fast/contact'
+      fullPath: '/fast/contact'
+      preLoaderRoute: typeof FastContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fast/cvs': {
+      id: '/fast/cvs'
+      path: '/fast/cvs'
+      fullPath: '/fast/cvs'
+      preLoaderRoute: typeof FastCvsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/housemaid/$name': {
       id: '/housemaid/$name'
       path: '/housemaid/$name'
@@ -887,6 +967,9 @@ const rootRouteChildren: RootRouteChildren = {
   BrokerAboutRoute: BrokerAboutRoute,
   BrokerContactRoute: BrokerContactRoute,
   BrokerCvsRoute: BrokerCvsRoute,
+  FastAboutRoute: FastAboutRoute,
+  FastContactRoute: FastContactRoute,
+  FastCvsRoute: FastCvsRoute,
   HousemaidNameRoute: HousemaidNameRoute,
   PoloBulkRoute: PoloBulkRoute,
   PoloRefundsRoute: PoloRefundsRoute,
@@ -898,6 +981,7 @@ const rootRouteChildren: RootRouteChildren = {
   TransactionsIdRoute: TransactionsIdRoute,
   WorkersNewRoute: WorkersNewRoute,
   BrokerIndexRoute: BrokerIndexRoute,
+  FastIndexRoute: FastIndexRoute,
   PoloIndexRoute: PoloIndexRoute,
   RecruitmentIndexRoute: RecruitmentIndexRoute,
   MonthsYearMonthRoute: MonthsYearMonthRoute,
