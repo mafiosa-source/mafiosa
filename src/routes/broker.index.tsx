@@ -43,13 +43,13 @@ export function BrokerHome() {
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
-            to={agency.base === "/fast" ? "/fast/cvs" : "/broker/cvs"}
+            to={`${agency.base}/cvs` as "/broker/cvs"}
             className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0b5fff]"
           >
             {t("View available CVs")} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
           </Link>
           <Link
-            to={agency.base === "/fast" ? "/fast/contact" : "/broker/contact"}
+            to={`${agency.base}/contact` as "/broker/contact"}
             className="inline-flex items-center gap-2 rounded-2xl border border-white/40 px-5 py-3 text-sm font-semibold text-white"
           >
             {t("Talk to us")}

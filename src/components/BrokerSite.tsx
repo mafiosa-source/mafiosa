@@ -22,7 +22,7 @@ export function BrokerSite({ children }: { children: ReactNode }) {
     <div lang={language} dir={language === "ar" ? "rtl" : "ltr"} className="broker-site min-h-screen bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-          <Link to={agency.base} className="flex min-w-0 items-center gap-3">
+          <Link to={agency.base as "/broker"} className="flex min-w-0 items-center gap-3">
             <img src={agency.logo} alt={`${agency.name} logo`} className="h-[42px] w-[42px] shrink-0 rounded-2xl object-contain" />
             <span>
               <span className="block text-[18px] font-extrabold leading-tight text-broker-heading md:text-[22px]">{t(agency.name)}</span>
