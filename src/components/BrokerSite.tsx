@@ -19,14 +19,14 @@ export function BrokerSite({ children }: { children: ReactNode }) {
   const agency = useAgency();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <div lang={language} dir={language === "ar" ? "rtl" : "ltr"} className="broker-site min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div lang={language} dir={language === "ar" ? "rtl" : "ltr"} className={cn("broker-site min-h-screen bg-agency-background text-agency-foreground", agency.key === "fast" && "fast-site")}>
+      <header className="sticky top-0 z-30 border-b border-agency-border bg-agency-surface/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <Link to={agency.base as "/broker"} className="flex min-w-0 items-center gap-3">
-            <img src={agency.logo} alt={`${agency.name} logo`} className="h-[42px] w-[42px] shrink-0 rounded-2xl object-contain" />
+            <img src={agency.logo} alt={`${agency.name} logo`} className={cn("shrink-0 object-contain", agency.key === "fast" ? "h-[64px] w-[120px] md:h-[76px] md:w-[160px]" : "h-[42px] w-[42px] rounded-2xl")} />
             <span>
-              <span className="block text-[18px] font-extrabold leading-tight text-broker-heading md:text-[22px]">{t(agency.name)}</span>
-              <span className="block text-[11px] font-medium uppercase tracking-wide text-slate-500">
+              <span className="block text-[18px] font-extrabold leading-tight text-agency-heading md:text-[22px]">{t(agency.name)}</span>
+              <span className="block text-[11px] font-medium uppercase tracking-wide text-agency-subtle">
                 {t("Licensed by Ministry of Labour")}
               </span>
             </span>
@@ -41,7 +41,7 @@ export function BrokerSite({ children }: { children: ReactNode }) {
                   to={to}
                   className={cn(
                     "rounded-2xl px-3 py-2 text-sm font-medium transition-colors",
-                    active ? "bg-[#0b5fff] text-white" : "text-slate-600 hover:bg-slate-100",
+                    active ? "bg-agency-primary text-agency-on-primary" : "text-agency-secondary hover:bg-agency-muted",
                   )}
                 >
                   {t(n.label)}
@@ -53,11 +53,11 @@ export function BrokerSite({ children }: { children: ReactNode }) {
               href={agency.whatsappGroup}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-md bg-[#25D366] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#20bd5a]"
+              className="inline-flex items-center gap-2 rounded-md bg-agency-social px-3 py-2 text-sm font-semibold text-agency-on-primary transition-colors hover:bg-agency-social-hover"
             >
               <Users className="h-4 w-4" /> {t("Join WhatsApp Group")}
             </a>
-            <Button type="button" variant="outline" onClick={() => setLanguage(language === "en" ? "ar" : "en")} aria-label={language === "en" ? "Switch to Arabic" : "Switch to English"} className="h-9 shrink-0 border-slate-200 bg-white text-broker-heading hover:bg-slate-100" dir="ltr">
+            <Button type="button" variant="outline" onClick={() => setLanguage(language === "en" ? "ar" : "en")} aria-label={language === "en" ? "Switch to Arabic" : "Switch to English"} className="h-9 shrink-0 border-agency-border bg-agency-surface text-agency-heading hover:bg-agency-muted" dir="ltr">
               <Languages aria-hidden="true" /> <span lang="en" className={language === "en" ? "font-extrabold" : "font-normal"}>EN</span><span aria-hidden="true">|</span><span lang="ar" className={language === "ar" ? "font-extrabold" : "font-normal"}>عربي</span>
             </Button>
             </div>
@@ -67,49 +67,49 @@ export function BrokerSite({ children }: { children: ReactNode }) {
 
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
 
-      <footer className="mt-10 border-t border-slate-200 bg-white">
+      <footer className="mt-10 border-t border-agency-border bg-agency-surface">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 text-sm sm:grid-cols-3">
           <div>
-            <div className="font-semibold text-slate-900">{t(agency.name)}</div>
-            <p className="mt-2 text-slate-600">
+            <div className="font-semibold text-agency-foreground">{t(agency.name)}</div>
+            <p className="mt-2 text-agency-secondary">
               {t("Licensed by the Ministry of Labour, State of Qatar. Domestic and skilled worker recruitment.")}
             </p>
           </div>
           <div>
-            <div className="font-semibold text-slate-900">{t("Contact")}</div>
-            <ul className="mt-2 space-y-2 text-slate-600">
+            <div className="font-semibold text-agency-foreground">{t("Contact")}</div>
+            <ul className="mt-2 space-y-2 text-agency-secondary">
               {agency.phones.map((p) => (
                 <li key={p} className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-[#0b5fff]" />
-                  <a href={`tel:${p}`} dir="ltr" className="hover:text-[#0b5fff]">{p}</a>
+                  <Phone className="h-4 w-4 text-agency-primary" />
+                  <a href={`tel:${p}`} dir="ltr" className="hover:text-agency-primary">{p}</a>
                 </li>
               ))}
               <li className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4 text-[#0b5fff]" />
-                <a href={`https://wa.me/${agency.phones[0].replace("+", "")}`} className="hover:text-[#0b5fff]">
+                <MessageCircle className="h-4 w-4 text-agency-primary" />
+                <a href={`https://wa.me/${agency.phones[0].replace("+", "")}`} className="hover:text-agency-primary">
                   {t("WhatsApp us")}
                 </a>
               </li>
             </ul>
           </div>
           <div>
-            <div className="font-semibold text-slate-900">{t("Office")}</div>
-            <ul className="mt-2 space-y-2 text-slate-600">
+            <div className="font-semibold text-agency-foreground">{t("Office")}</div>
+            <ul className="mt-2 space-y-2 text-agency-secondary">
               <li>
                 <a
                   href={AGENCY_MAP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-start gap-2 hover:text-[#0b5fff]"
+                  className="flex items-start gap-2 hover:text-agency-primary"
                 >
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#0b5fff]" /> {t(AGENCY_ADDRESS)}
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-agency-primary" /> {t(AGENCY_ADDRESS)}
                 </a>
               </li>
-              <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#0b5fff]" /> info@alhakeemgroup.com</li>
+              <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-agency-primary" /> info@alhakeemgroup.com</li>
             </ul>
           </div>
         </div>
-        <div className="border-t border-slate-100 py-4 text-center text-xs text-slate-500">
+        <div className="border-t border-agency-muted py-4 text-center text-xs text-agency-subtle">
           © {new Date().getFullYear()} {t(agency.name)} · {t("Licensed by Ministry of Labour")}
         </div>
       </footer>

@@ -1,5 +1,10 @@
 # Roadmap — Housemaid recruitment flow
 
+## FAST public website
+- [x] Apply black-and-white styling without changing Broker
+- [x] Enlarge FAST logo and reuse ERP FAST CV header
+- [x] Verify public pages, CV preview/print, and mobile layout
+
 ## Broker language and header
 - [x] Enlarge company name and add mobile-visible English/Arabic toggle
 - [x] Translate public Broker pages and enable remembered RTL Arabic

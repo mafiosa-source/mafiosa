@@ -31,7 +31,7 @@ export function AboutPage() {
     <BrokerSite>
       <h1 className="text-2xl font-bold">{t("About us")}</h1>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[16px] border border-slate-200 bg-white p-6 text-sm leading-relaxed text-slate-700">
+        <div className="rounded-[16px] border border-agency-border bg-agency-surface p-6 text-sm leading-relaxed text-agency-secondary">
           <p>
             {agency.key === 'fast' ? t('Broker Recruitment Agency is a manpower recruitment company based in Doha, Qatar, licensed by the Ministry of Labour. We work with families, households and companies to place domestic and skilled workers who are properly documented and prepared for work in Qatar.').replace('Broker Recruitment Agency', 'Fast Recruitment Agency').replace('وكالة بروكر للاستقدام', 'فاست لجلب الأيدي العاملة') : t('Broker Recruitment Agency is a manpower recruitment company based in Doha, Qatar, licensed by the Ministry of Labour. We work with families, households and companies to place domestic and skilled workers who are properly documented and prepared for work in Qatar.')}
           </p>
@@ -39,9 +39,9 @@ export function AboutPage() {
             {t('Every worker we present has been interviewed by our partner agency, has a valid passport, and comes with a clear CV covering experience, languages and skills. We handle the paperwork end to end: visa, medical, POLO or embassy requirements where applicable, contract signing and arrival.')}
           </p>
         </div>
-        <div className="rounded-[16px] border border-slate-200 bg-white p-6">
+        <div className="rounded-[16px] border border-agency-border bg-agency-surface p-6">
           <h2 className="font-semibold">{t("How the process works")}</h2>
-          <ol className="mt-4 space-y-3 text-sm text-slate-700">
+          <ol className="mt-4 space-y-3 text-sm text-agency-secondary">
             {[
               "Tell us the position, nationality and budget you need.",
               "We send shortlisted CVs for your review.",
@@ -50,7 +50,7 @@ export function AboutPage() {
               "The worker arrives in Qatar and joins your household or company.",
             ].map((s, i) => (
               <li key={s} className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0b5fff] text-xs font-semibold text-white">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-agency-primary text-xs font-semibold text-agency-on-primary">
                   {i + 1}
                 </span>
                 {t(s)}
