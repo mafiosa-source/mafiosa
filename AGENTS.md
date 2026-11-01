@@ -12,3 +12,5 @@
 - Public Broker localization lives in a shared translation context scoped to Broker routes; it restores English/LTR on exit so the internal ERP is unaffected.
 - Store only the public site's language preference in browser storage; business and finance records remain cloud-backed.
 - Keep the existing ERP public PDF layout unchanged by website language selection because it is the shared bilingual document format.
+- Public agency colors are scoped through shared semantic tokens on the agency site wrapper, so FAST branding cannot change Broker or ERP styling.
+- FAST public CV previews and printouts import the same letterhead asset as the ERP CV page, preventing header drift.
