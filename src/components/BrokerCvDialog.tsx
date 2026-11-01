@@ -55,6 +55,7 @@ export function BrokerCvDialog({
           </div>
           <Button
             type="button"
+            variant="ghost"
             onClick={onClose}
             aria-label={t("Close")}
             className="rounded-2xl p-2 text-agency-subtle hover:bg-agency-muted"
@@ -115,8 +116,9 @@ export function BrokerCvDialog({
         <div className="mt-6 flex flex-wrap gap-2">
           <Button
             type="button"
+            variant="outline"
             onClick={() => printPublicCv(cv, agency.key === "fast" ? "fast_letterhead" : "broker_letterhead")}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-agency-primary px-3 py-2.5 text-sm font-semibold text-agency-primary hover:bg-agency-primary/5"
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-agency-primary bg-agency-surface px-3 py-2.5 text-sm font-semibold text-agency-primary hover:bg-agency-muted hover:text-agency-primary"
           >
             <FileText className="h-4 w-4" /> {t("View PDF")}
           </Button>
