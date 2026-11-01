@@ -2,7 +2,7 @@
 // with the BROKER letterhead. The ONLY difference from the ERP sheet is that the
 // "Contact number" row is hidden for public visitors.
 import brokerLetterhead from "@/assets/letterheads/broker-letterhead.png.asset.json";
-import fastLetterhead from "@/assets/letterheads/fast-letterhead.png.asset.json";
+import fastLetterhead from "@/assets/letterheads/fast-letterhead-doc.png";
 
 export type PublicCvTemplate = "broker_letterhead" | "fast_letterhead";
 let activeTemplate: PublicCvTemplate = "broker_letterhead";
@@ -78,7 +78,7 @@ const sectionRow = (label: string, arabic: string) =>
   `<tr><td colspan="3" class="section-title">${esc(label)}<span dir="rtl">${arabic}</span></td></tr>`;
 
 function letterheadUrl(): string {
-  const url = activeTemplate === "fast_letterhead" ? fastLetterhead.url : brokerLetterhead.url;
+  const url = activeTemplate === "fast_letterhead" ? fastLetterhead : brokerLetterhead.url;
   if (typeof window === "undefined" || /^https?:/i.test(url)) return url;
   return `${window.location.origin}${url}`;
 }
