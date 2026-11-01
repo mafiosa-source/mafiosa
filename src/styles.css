@@ -35,6 +35,19 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-broker-heading: var(--broker-heading);
+  --color-agency-background: var(--agency-background);
+  --color-agency-surface: var(--agency-surface);
+  --color-agency-foreground: var(--agency-foreground);
+  --color-agency-heading: var(--agency-heading);
+  --color-agency-secondary: var(--agency-secondary);
+  --color-agency-subtle: var(--agency-subtle);
+  --color-agency-border: var(--agency-border);
+  --color-agency-muted: var(--agency-muted);
+  --color-agency-primary: var(--agency-primary);
+  --color-agency-on-primary: var(--agency-on-primary);
+  --color-agency-hero-end: var(--agency-hero-end);
+  --color-agency-social: var(--agency-social);
+  --color-agency-social-hover: var(--agency-social-hover);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -117,4 +130,36 @@
 
 .broker-site:lang(ar) {
   font-family: "Tajawal", ui-sans-serif, system-ui, sans-serif;
+}
+
+.broker-site {
+  --agency-background: #f8fafc;
+  --agency-surface: #fff;
+  --agency-foreground: #0f172a;
+  --agency-heading: #0f172a;
+  --agency-secondary: #475569;
+  --agency-subtle: #64748b;
+  --agency-border: #e2e8f0;
+  --agency-muted: #f1f5f9;
+  --agency-primary: #0b5fff;
+  --agency-on-primary: #fff;
+  --agency-hero-end: #0a3ea8;
+  --agency-social: #25d366;
+  --agency-social-hover: #20bd5a;
+}
+
+.fast-site {
+  --agency-background: #fafafa;
+  --agency-surface: #fff;
+  --agency-foreground: #111;
+  --agency-heading: #000;
+  --agency-secondary: #444;
+  --agency-subtle: #666;
+  --agency-border: #dedede;
+  --agency-muted: #f1f1f1;
+  --agency-primary: #000;
+  --agency-on-primary: #fff;
+  --agency-hero-end: #000;
+  --agency-social: #111;
+  --agency-social-hover: #333;
 }
