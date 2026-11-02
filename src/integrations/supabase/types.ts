@@ -157,6 +157,7 @@ export type Database = {
           fee_transaction_id: string
           id: string
           proof: string | null
+          reversal_transaction_id: string | null
           sign_date: string | null
           sign_status: string
           signed_by: string | null
@@ -172,6 +173,7 @@ export type Database = {
           fee_transaction_id: string
           id?: string
           proof?: string | null
+          reversal_transaction_id?: string | null
           sign_date?: string | null
           sign_status?: string
           signed_by?: string | null
@@ -187,6 +189,7 @@ export type Database = {
           fee_transaction_id?: string
           id?: string
           proof?: string | null
+          reversal_transaction_id?: string | null
           sign_date?: string | null
           sign_status?: string
           signed_by?: string | null
@@ -225,6 +228,9 @@ export type Database = {
           total: number
           transfer_date: string
           updated_at: string
+          void_kind: string | null
+          void_reason: string | null
+          voided_at: string | null
         }
         Insert: {
           created_at?: string
@@ -238,6 +244,9 @@ export type Database = {
           total?: number
           transfer_date?: string
           updated_at?: string
+          void_kind?: string | null
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Update: {
           created_at?: string
@@ -251,6 +260,9 @@ export type Database = {
           total?: number
           transfer_date?: string
           updated_at?: string
+          void_kind?: string | null
+          void_reason?: string | null
+          voided_at?: string | null
         }
         Relationships: []
       }
@@ -1213,6 +1225,7 @@ export type Database = {
         Row: {
           attempt_no: number
           batch_id: string | null
+          corrected_worker_name: string | null
           created_at: string
           created_by: string | null
           event_date: string
@@ -1229,6 +1242,7 @@ export type Database = {
         Insert: {
           attempt_no?: number
           batch_id?: string | null
+          corrected_worker_name?: string | null
           created_at?: string
           created_by?: string | null
           event_date?: string
@@ -1245,6 +1259,7 @@ export type Database = {
         Update: {
           attempt_no?: number
           batch_id?: string | null
+          corrected_worker_name?: string | null
           created_at?: string
           created_by?: string | null
           event_date?: string
@@ -1566,12 +1581,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      correct_polo_worker_name: {
+        Args: { p_event_ids: string[]; p_name: string }
+        Returns: undefined
+      }
       get_next_candidate_code: {
         Args: { p_agent_id: string; p_country_code: string }
         Returns: string
       }
       is_app_admin: { Args: { _uid: string }; Returns: boolean }
       is_app_member: { Args: { _uid: string }; Returns: boolean }
+      sign_polo_bulk_item: {
+        Args: {
+          p_bulk_id: string
+          p_date: string
+          p_item_id: string
+          p_proof: string
+        }
+        Returns: undefined
+      }
+      void_polo_bulk: {
+        Args: {
+          p_action: string
+          p_bulk_id: string
+          p_date: string
+          p_reason: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
