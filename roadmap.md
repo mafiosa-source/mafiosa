@@ -1,5 +1,11 @@
 # Roadmap — Housemaid recruitment flow
 
+## POLO corrections and transfer controls
+- [ ] Edit scanned worker names after saving, without changing recruitment or finance names
+- [ ] Add confirmed unsigned bulk deletion and history-preserving signed bulk reversal (approved)
+- [ ] Correct FAST office name in both languages, keeping the existing map pin
+- [ ] Test safeguards and verify the signed-in controls
+
 ## FAST public website
 - [x] Apply black-and-white styling without changing Broker
 - [x] Enlarge FAST logo and reuse ERP FAST CV header
