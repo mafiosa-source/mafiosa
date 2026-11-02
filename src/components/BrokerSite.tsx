@@ -1,8 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Phone, MessageCircle, MapPin, Mail, Users, Languages } from "lucide-react";
-import { useAgency } from "@/lib/agency";
-import { AGENCY_ADDRESS, AGENCY_MAP_URL } from "@/lib/public-cvs";
+import { agencyOfficeAddress, useAgency } from "@/lib/agency";
+import { AGENCY_MAP_URL } from "@/lib/public-cvs";
 import { Button } from "@/components/ui/button";
 import { useBrokerLanguage } from "@/lib/broker-i18n";
 import { cn } from "@/lib/utils";
@@ -102,7 +102,7 @@ export function BrokerSite({ children }: { children: ReactNode }) {
                   rel="noopener noreferrer"
                   className="flex items-start gap-2 hover:text-agency-primary"
                 >
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-agency-primary" /> {t(AGENCY_ADDRESS)}
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-agency-primary" /> {t(agencyOfficeAddress(agency))}
                 </a>
               </li>
               <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-agency-primary" /> info@alhakeemgroup.com</li>
