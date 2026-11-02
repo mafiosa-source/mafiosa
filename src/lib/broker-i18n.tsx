@@ -5,6 +5,7 @@ export type BrokerLanguage = "en" | "ar";
 export const BROKER_AR: Record<string, string> = {
   "Broker Recruitment Agency": "وكالة بروكر للاستقدام",
   "Fast Recruitment Agency": "فاست لجلب الأيدي العاملة",
+  "Fast Recruitment Agency, Al Bustan Building 37, Al Sadd, Doha, 4th floor, 404-A": "فاست لجلب الأيدي العاملة، مبنى البستان ٣٧، السد، الدوحة، الطابق الرابع، ٤٠٤-A",
   "Licensed by Ministry of Labour": "مرخصة من وزارة العمل",
   "Home": "الرئيسية", "Available CVs": "السير الذاتية المتاحة", "About": "من نحن", "Contact": "اتصل بنا",
   "Reliable domestic and skilled workers for families and companies in Qatar": "عمالة منزلية ومهنية موثوقة للعائلات والشركات في قطر",

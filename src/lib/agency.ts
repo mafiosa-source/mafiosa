@@ -19,3 +19,7 @@ export function agencyForPath(pathname: string): Agency {
 export function useAgency(): Agency {
   return agencyForPath(useRouterState({ select: (s) => s.location.pathname }));
 }
+
+export function agencyOfficeAddress(agency: Agency): string {
+  return `${agency.name}, Al Bustan Building 37, Al Sadd, Doha, 4th floor, 404-A`;
+}

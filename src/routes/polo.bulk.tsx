@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Check, Download, Loader2, Printer, Upload } from "lucide-react";
+import { Check, Download, Loader2, Printer, Trash2, Undo2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { MultiSelect } from "@/components/MultiSelect";
 import { useFinance } from "@/lib/finance-store";
@@ -25,6 +25,7 @@ import {
   refundToPetty,
   signBulkItem,
   transferableFees,
+  voidBulk,
   walletName,
   type BulkItem,
   type BulkTransfer,
@@ -78,7 +79,7 @@ function BulkPage() {
     void load();
   }, []);
 
-  const available = useMemo(() => transferableFees(s.transactions, from, items), [s.transactions, from, items]);
+  const available = useMemo(() => transferableFees(s.transactions, from, items.filter((i) => bulks.some((b) => b.id === i.bulkId && !b.voidedAt))), [s.transactions, from, items, bulks]);
   const ref = useMemo(() => nextBulkRef(from, bulks), [from, bulks]);
   const selected = available.filter((t) => picked.includes(t.id));
   const total = selected.reduce((sum, t) => sum + t.amount, 0);
@@ -106,8 +107,9 @@ function BulkPage() {
     }
   };
 
-  const pending = bulks.filter((b) => b.status === "pending");
-  const done = bulks.filter((b) => b.status === "completed");
+  const pending = bulks.filter((b) => b.status === "pending" && !b.voidedAt);
+  const done = bulks.filter((b) => b.status === "completed" && !b.voidedAt);
+  const voided = bulks.filter((b) => b.voidedAt);
 
   return (
     <AppLayout>
@@ -225,6 +227,8 @@ function BulkPage() {
 
       <h2 className="mb-3 mt-6 text-sm font-semibold">Completed bulks</h2>
       <BulkList bulks={done} items={items} onOpen={setOpenBulk} empty="No completed bulk transfers yet." />
+      <h2 className="mb-3 mt-6 text-sm font-semibold">Cancelled / reversed history</h2>
+      <BulkList bulks={voided} items={items} onOpen={setOpenBulk} empty="No cancelled or reversed bulks." />
 
       <BulkDialog bulk={openBulk} onClose={() => setOpenBulk(null)} onChanged={load} />
     </AppLayout>
@@ -276,7 +280,7 @@ function BulkList({
                   <TableCell>{signed}/{own.length}</TableCell>
                   <TableCell className="text-right tabular">{qar(b.total)}</TableCell>
                   <TableCell>
-                    <Badge variant={b.status === "completed" ? "default" : "outline"}>{b.status}</Badge>
+                    <Badge variant={b.voidedAt ? "secondary" : b.status === "completed" ? "default" : "outline"}>{b.voidedAt ? b.voidKind === "reverse" ? "Reversed" : "Cancelled" : b.status}</Badge>
                   </TableCell>
                 </TableRow>
               );
@@ -300,12 +304,18 @@ function BulkDialog({
   const s = useFinance();
   const [items, setItems] = useState<BulkItem[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [voidAction, setVoidAction] = useState<"delete" | "reverse" | null>(null);
+  const [voidDate, setVoidDate] = useState(today());
+  const [voidReason, setVoidReason] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const pendingItem = useRef<BulkItem | null>(null);
 
   const load = async () => {
     if (!bulk) return;
+    setLoaded(false);
     setItems(await listBulkItems(bulk.id));
+    setLoaded(true);
   };
 
   useEffect(() => {
@@ -313,7 +323,7 @@ function BulkDialog({
   }, [bulk?.id]);
 
   const sign = async (item: BulkItem, proof?: string) => {
-    if (!bulk) return;
+    if (!bulk || bulk.voidedAt || busy) return;
     setBusy(item.id);
     try {
       const fee = s.transactions.find((t) => t.id === item.feeTransactionId);
@@ -371,12 +381,13 @@ function BulkDialog({
             <DialogHeader>
               <DialogTitle className="flex flex-wrap items-center gap-2">
                 {bulk.ref}
-                <Badge variant={bulk.status === "completed" ? "default" : "outline"}>{bulk.status}</Badge>
+                <Badge variant={bulk.voidedAt ? "secondary" : bulk.status === "completed" ? "default" : "outline"}>{bulk.voidedAt ? bulk.voidKind === "reverse" ? "Reversed" : "Cancelled" : bulk.status}</Badge>
                 <span className="text-sm font-normal text-muted-foreground">
                   {walletName(bulk.fromAccount)} → {walletName(bulk.toAccount)} · {qar(bulk.total)}
                 </span>
               </DialogTitle>
             </DialogHeader>
+            {bulk.voidedAt ? <p className="text-sm text-muted-foreground">{bulk.voidReason} · {bulk.voidedAt.slice(0, 10)}</p> : null}
 
             <input
               ref={fileRef}
@@ -424,12 +435,12 @@ function BulkDialog({
                     </TableCell>
                     <TableCell className="text-xs">{i.proof ? "Attached" : "—"}</TableCell>
                     <TableCell className="text-right">
-                      {i.signStatus === "signed" ? null : (
+                      {i.signStatus === "signed" || bulk.voidedAt ? null : (
                         <div className="flex justify-end gap-2">
                           <Button
                             size="sm"
                             variant="outline"
-                            disabled={busy === i.id}
+                            disabled={!!busy}
                             onClick={() => {
                               pendingItem.current = i;
                               fileRef.current?.click();
@@ -437,7 +448,7 @@ function BulkDialog({
                           >
                             <Upload className="h-3.5 w-3.5" /> Proof
                           </Button>
-                          <Button size="sm" disabled={busy === i.id} onClick={() => void sign(i)}>
+                          <Button size="sm" disabled={!!busy} onClick={() => void sign(i)}>
                             {busy === i.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Confirm & sign in
                           </Button>
                         </div>
@@ -449,7 +460,15 @@ function BulkDialog({
             </Table>
 
             <DialogFooter className="flex-wrap gap-2">
-              {bulk.status === "completed" ? (
+              {!bulk.voidedAt && loaded ? (
+                <Button size="sm" variant="outline" disabled={!!busy} onClick={() => {
+                  setVoidAction(items.some((i) => i.signStatus === "signed" || i.transferTransactionId) ? "reverse" : "delete");
+                  setVoidDate(today()); setVoidReason("");
+                }}>
+                  {items.some((i) => i.signStatus === "signed" || i.transferTransactionId) ? <><Undo2 className="h-4 w-4" /> Reverse bulk</> : <><Trash2 className="h-4 w-4" /> Delete bulk</>}
+                </Button>
+              ) : null}
+              {bulk.status === "completed" && !bulk.voidedAt ? (
                 <Button
                   size="sm"
                   variant="outline"
@@ -477,6 +496,31 @@ function BulkDialog({
             </DialogFooter>
           </>
         ) : null}
+        <Dialog open={!!voidAction} onOpenChange={(v) => { if (!v && !busy) setVoidAction(null); }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle>{voidAction === "reverse" ? "Reverse this bulk?" : "Delete this unsigned bulk?"}</DialogTitle></DialogHeader>
+            <p className="text-sm text-muted-foreground">{voidAction === "reverse"
+              ? "Signed amounts move from Holding back to the original source account. Original transfers, signatures and proofs remain. Reversal is blocked if later fee activity exists."
+              : "This removes the unsigned bulk from pending signatures and releases its workers for another bulk. A cancelled copy stays in history; no money moves."}</p>
+            <Label htmlFor="bulk-void-date">Date</Label>
+            <Input id="bulk-void-date" type="date" value={voidDate} onChange={(e) => setVoidDate(e.target.value)} />
+            <Label htmlFor="bulk-void-reason">Reason</Label>
+            <Input id="bulk-void-reason" value={voidReason} onChange={(e) => setVoidReason(e.target.value)} />
+            <DialogFooter>
+              <Button variant="outline" disabled={!!busy} onClick={() => setVoidAction(null)}>Cancel</Button>
+              <Button variant="destructive" disabled={!!busy || !voidReason.trim() || !voidDate} onClick={async () => {
+                if (!bulk || !voidAction) return;
+                setBusy("void");
+                try {
+                  await voidBulk(bulk.id, voidAction, voidDate, voidReason);
+                  toast.success(voidAction === "reverse" ? "Bulk reversed; original history preserved." : "Unsigned bulk removed from pending signatures.");
+                  setVoidAction(null); onClose(); await onChanged();
+                } catch (e) { toast.error(e instanceof Error ? e.message : "Could not update this bulk."); }
+                finally { setBusy(null); }
+              }}>{busy === "void" ? <Loader2 className="h-4 w-4 animate-spin" /> : null} {voidAction === "reverse" ? "Confirm reversal" : "Confirm deletion"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );

@@ -80,7 +80,7 @@ function RefundQueuePage() {
   const rows = useMemo(() => {
     const all = buildPoloRows(events, s.transactions, sponsorNameFor);
     return all.filter((r) => {
-      const c = candidateFor(r.workerId, r.workerName);
+      const c = candidateFor(r.workerId, r.originalWorkerName ?? r.workerName);
       const cancelled = c?.pipelineStatus === "CANCELLED";
       return cancelled && r.status !== "Approved";
     });

@@ -1,9 +1,9 @@
 import { useBrokerLanguage } from "@/lib/broker-i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { Phone, MessageCircle, MapPin, Mail, Clock, Users } from "lucide-react";
-import { useAgency } from "@/lib/agency";
+import { agencyOfficeAddress, useAgency } from "@/lib/agency";
 import { BrokerSite } from "@/components/BrokerSite";
-import { AGENCY_ADDRESS, AGENCY_MAP_URL } from "@/lib/public-cvs";
+import { AGENCY_MAP_URL } from "@/lib/public-cvs";
 
 export const Route = createFileRoute("/broker/contact")({
   head: () => ({
@@ -66,7 +66,7 @@ export function ContactPage() {
           <MapPin className="h-5 w-5 text-agency-primary" />
           <div className="mt-2 font-semibold">{t("Office")}</div>
            <a href={AGENCY_MAP_URL} target="_blank" rel="noopener noreferrer" className="text-agency-secondary hover:text-agency-primary">
-             {t(AGENCY_ADDRESS)}
+             {t(agencyOfficeAddress(agency))}
            </a>
         </div>
         <div className="rounded-[16px] border border-agency-border bg-agency-surface p-6 text-sm">

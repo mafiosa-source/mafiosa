@@ -4,7 +4,7 @@
 // Purely additive: all money still lives in master transactions.
 // ============================================================
 import { supabase } from "@/integrations/supabase/client";
-import { addTransaction, currentUser, updateTransaction } from "@/lib/finance-store";
+import { addTransaction, currentUser, hydrateFromCloud } from "@/lib/finance-store";
 import { POLO_FEE_AMOUNT } from "@/lib/polo-fee";
 import type { Transaction, WalletKey } from "@/lib/finance-types";
 import { WALLET_BY_KEY } from "@/lib/finance-types";
@@ -52,6 +52,7 @@ export type PoloEvent = {
   batchId?: string;
   workerId?: string;
   workerName: string;
+  originalWorkerName?: string;
   referenceCode?: string;
   sponsorName?: string;
   eventType: PoloEventType;
@@ -70,6 +71,9 @@ export type BulkTransfer = {
   toAccount: WalletKey;
   total: number;
   status: "pending" | "completed";
+  voidedAt?: string;
+  voidKind?: "delete" | "reverse";
+  voidReason?: string;
   transferDate: string;
   note?: string;
   createdAt: string;
@@ -88,6 +92,7 @@ export type BulkItem = {
   signDate?: string;
   signedBy?: string;
   transferTransactionId?: string;
+  reversalTransactionId?: string;
   createdAt: string;
 };
 
@@ -106,7 +111,8 @@ const eventFromRow = (r: Row): PoloEvent => ({
   id: String(r.id),
   batchId: (r.batch_id as string) ?? undefined,
   workerId: (r.worker_id as string) ?? undefined,
-  workerName: String(r.worker_name ?? ""),
+  workerName: String(r.corrected_worker_name ?? r.worker_name ?? ""),
+  originalWorkerName: String(r.worker_name ?? ""),
   referenceCode: (r.reference_code as string) ?? undefined,
   sponsorName: (r.sponsor_name as string) ?? undefined,
   eventType: (r.event_type as PoloEventType) ?? "submitted",
@@ -125,6 +131,9 @@ const bulkFromRow = (r: Row): BulkTransfer => ({
   toAccount: (r.to_account as WalletKey) ?? HOLDING_WALLET,
   total: Number(r.total ?? 0),
   status: (r.status as BulkTransfer["status"]) ?? "pending",
+  voidedAt: (r.voided_at as string) ?? undefined,
+  voidKind: (r.void_kind as BulkTransfer["voidKind"]) ?? undefined,
+  voidReason: (r.void_reason as string) ?? undefined,
   transferDate: String(r.transfer_date ?? ""),
   note: (r.note as string) ?? undefined,
   createdAt: String(r.created_at ?? ""),
@@ -143,6 +152,7 @@ const itemFromRow = (r: Row): BulkItem => ({
   signDate: (r.sign_date as string) ?? undefined,
   signedBy: (r.signed_by as string) ?? undefined,
   transferTransactionId: (r.transfer_transaction_id as string) ?? undefined,
+  reversalTransactionId: (r.reversal_transaction_id as string) ?? undefined,
   createdAt: String(r.created_at ?? ""),
 });
 
@@ -225,6 +235,7 @@ export function attemptFor(events: PoloEvent[], nextType: PoloEventType): number
 export type PoloListRow = {
   workerId?: string;
   workerName: string;
+  originalWorkerName?: string;
   referenceCode?: string;
   sponsorName?: string;
   orgName?: string;
@@ -247,7 +258,7 @@ export function buildPoloRows(
 ): PoloListRow[] {
   const groups = new Map<string, PoloEvent[]>();
   for (const e of events) {
-    const key = e.workerId ? `id:${e.workerId}` : `name:${nameKey(e.workerName)}`;
+    const key = e.workerId ? `id:${e.workerId}` : `name:${nameKey(e.originalWorkerName ?? e.workerName)}`;
     groups.set(key, [...(groups.get(key) ?? []), e]);
   }
   return Array.from(groups.values()).map((list) => {
@@ -256,13 +267,14 @@ export function buildPoloRows(
     );
     const last = sorted[sorted.length - 1];
     const status = statusOf(last);
-    const location = feeLocation(transactions, last?.workerId, last?.workerName);
+    const location = feeLocation(transactions, last?.workerId, last?.originalWorkerName ?? last?.workerName);
     return {
       workerId: last?.workerId,
       workerName: last?.workerName ?? "—",
+      originalWorkerName: last?.originalWorkerName ?? last?.workerName,
       referenceCode: sorted.find((e) => e.referenceCode)?.referenceCode,
       sponsorName:
-        sponsorNameFor(last?.workerId, last?.workerName) ??
+        sponsorNameFor(last?.workerId, last?.originalWorkerName ?? last?.workerName) ??
         [...sorted].reverse().find((e) => e.sponsorName)?.sponsorName,
       orgName: [...sorted].reverse().find((e) => e.orgName)?.orgName,
       events: sorted,
@@ -391,7 +403,7 @@ export async function deleteSubmission(row: PoloListRow): Promise<void> {
   const batchIds = [...new Set(row.events.map((e) => e.batchId).filter((b): b is string => !!b))];
 
   let q = supabase.from("polo_events").delete();
-  q = row.workerId ? q.eq("worker_id", row.workerId) : q.eq("worker_name", row.workerName);
+  q = q.in("id", row.events.map((e) => e.id));
   const { error } = await q;
   if (error) throw error;
 
@@ -408,13 +420,22 @@ export async function deleteSubmission(row: PoloListRow): Promise<void> {
   }
 }
 
+/** Preserve the original OCR text and all recruitment/ledger names. */
+export async function correctPoloWorkerName(row: PoloListRow, name: string): Promise<void> {
+  const { error } = await supabase.rpc("correct_polo_worker_name", {
+    p_event_ids: row.events.map((e) => e.id), p_name: name.trim(),
+  });
+  if (error) throw error;
+}
+
 /** Records an approval (no money movement). */
 export async function markApproved(row: PoloListRow, date: string): Promise<void> {
   const { error } = await supabase
     .from("polo_events")
     .insert({
       worker_id: row.workerId ?? null,
-      worker_name: row.workerName,
+      worker_name: row.originalWorkerName ?? row.workerName,
+      corrected_worker_name: row.workerName,
       reference_code: row.referenceCode ?? null,
       event_type: "approved",
       event_date: date,
@@ -459,7 +480,8 @@ export function feeLocationLabel(row: PoloListRow, status: PoloSimpleStatus): st
 export async function markReturned(row: PoloListRow, returnedAt: string, note?: string): Promise<void> {
   const { error } = await supabase.from("polo_events").insert({
     worker_id: row.workerId ?? null,
-    worker_name: row.workerName,
+    worker_name: row.originalWorkerName ?? row.workerName,
+    corrected_worker_name: row.workerName,
     reference_code: row.referenceCode ?? null,
     event_type: "returned",
     event_date: returnedAt,
@@ -476,7 +498,7 @@ export async function markReturned(row: PoloListRow, returnedAt: string, note?: 
       date: returnedAt,
       type: "Transfer",
       classification: "Sponsor Expense",
-      candidate: row.workerName,
+      candidate: row.originalWorkerName ?? row.workerName,
       candidateId: row.workerId,
       sponsor: row.sponsorName,
       amount: POLO_FEE_AMOUNT,
@@ -562,52 +584,20 @@ export async function signBulkItem(input: {
   proof?: string;
   date: string;
 }): Promise<void> {
-  const { bulk, item, fee } = input;
-  let transferId: string | undefined;
-
-  if (fee) {
-    const txn = addTransaction({
-      date: input.date,
-      type: "Transfer",
-      classification: fee.classification ?? "Sponsor Expense",
-      candidate: fee.candidate,
-      candidateId: fee.candidateId,
-      sponsor: fee.sponsor,
-      passport: fee.passport,
-      amount: item.amount,
-      purpose: `POLO fee ${item.amount} moved to holding wallet (${bulk.ref})`,
-      purposeCategory: "POLO",
-      status: "Completed",
-      expenseKind: "POLO_TO_WALLET",
-      referenceNumber: bulk.ref,
-      description: `Bulk ${bulk.ref} — signed in by Mr Hassan`,
-      fromWallet: bulk.fromAccount,
-      toWallet: HOLDING_WALLET,
-    });
-    transferId = txn.id;
-    updateTransaction(fee.id, { currentLocation: HOLDING_WALLET });
-  }
-
-  const { error } = await supabase
-    .from("bulk_items")
-    .update({
-      sign_status: "signed",
-      proof: input.proof ?? item.proof ?? null,
-      sign_date: input.date,
-      signed_by: currentUser() || null,
-      transfer_transaction_id: transferId ?? null,
-    } as never)
-    .eq("id", item.id);
+  const { error } = await supabase.rpc("sign_polo_bulk_item", {
+    p_bulk_id: input.bulk.id, p_item_id: input.item.id,
+    p_date: input.date, p_proof: input.proof ?? input.item.proof ?? "",
+  });
   if (error) throw error;
+  await hydrateFromCloud();
+}
 
-  const remaining = (await listBulkItems(bulk.id)).filter((i) => i.signStatus !== "signed");
-  if (remaining.length === 0) {
-    const { error: bulkError } = await supabase
-      .from("bulk_transfers")
-      .update({ status: "completed", updated_at: new Date().toISOString() } as never)
-      .eq("id", bulk.id);
-    if (bulkError) throw bulkError;
-  }
+export async function voidBulk(bulkId: string, action: "delete" | "reverse", date: string, reason: string): Promise<void> {
+  const { error } = await supabase.rpc("void_polo_bulk", {
+    p_bulk_id: bulkId, p_action: action, p_date: date, p_reason: reason.trim(),
+  });
+  if (error) throw error;
+  await hydrateFromCloud();
 }
 
 /** The office advanced the fee from petty cash — pay petty cash back. */
@@ -616,7 +606,7 @@ export function refundToPetty(row: PoloListRow, date: string, amount = POLO_FEE_
     date,
     type: "Transfer",
     classification: "Sponsor Expense",
-    candidate: row.workerName,
+    candidate: row.originalWorkerName ?? row.workerName,
     candidateId: row.workerId,
     sponsor: row.sponsorName,
     amount,
@@ -636,7 +626,7 @@ export function markRefunded(row: PoloListRow, date: string, amount = POLO_FEE_A
     date,
     type: "Payment Voucher",
     classification: "Sponsor Expense",
-    candidate: row.workerName,
+    candidate: row.originalWorkerName ?? row.workerName,
     candidateId: row.workerId,
     sponsor: row.sponsorName,
     amount,
