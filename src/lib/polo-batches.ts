@@ -586,7 +586,7 @@ export async function signBulkItem(input: {
 }): Promise<void> {
   const { error } = await supabase.rpc("sign_polo_bulk_item", {
     p_bulk_id: input.bulk.id, p_item_id: input.item.id,
-    p_date: input.date, p_proof: input.proof ?? input.item.proof ?? null,
+    p_date: input.date, p_proof: input.proof ?? input.item.proof ?? "",
   });
   if (error) throw error;
   await hydrateFromCloud();
@@ -606,7 +606,7 @@ export function refundToPetty(row: PoloListRow, date: string, amount = POLO_FEE_
     date,
     type: "Transfer",
     classification: "Sponsor Expense",
-    candidate: row.workerName,
+    candidate: row.originalWorkerName ?? row.workerName,
     candidateId: row.workerId,
     sponsor: row.sponsorName,
     amount,
@@ -626,7 +626,7 @@ export function markRefunded(row: PoloListRow, date: string, amount = POLO_FEE_A
     date,
     type: "Payment Voucher",
     classification: "Sponsor Expense",
-    candidate: row.workerName,
+    candidate: row.originalWorkerName ?? row.workerName,
     candidateId: row.workerId,
     sponsor: row.sponsorName,
     amount,
