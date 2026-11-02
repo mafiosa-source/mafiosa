@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowUpDown, CheckCircle2, Loader2, FileText, ScanLine, Search, Trash2, Undo2 } from "lucide-react";
+import { ArrowUpDown, CheckCircle2, Loader2, FileText, Pencil, ScanLine, Search, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { useFinance } from "@/lib/finance-store";
 import { listCandidates, type Candidate } from "@/lib/cv-management";
@@ -24,6 +24,7 @@ import { POLO_FEE_AMOUNT } from "@/lib/polo-fee";
 import {
   buildPoloRows,
   createScanBatch,
+  correctPoloWorkerName,
   feeLocationLabel,
   feeRows,
   isReturned,
@@ -654,8 +655,10 @@ function RowDrawer({
   const s = useFinance();
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [editName, setEditName] = useState(false);
+  const [workerName, setWorkerName] = useState("");
   const fees = useMemo(
-    () => (row ? feeRows(s.transactions, row.workerId, row.workerName) : []),
+    () => (row ? feeRows(s.transactions, row.workerId, row.originalWorkerName ?? row.workerName) : []),
     [row, s.transactions],
   );
 
@@ -696,6 +699,9 @@ function RowDrawer({
               </div>
 
               <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" disabled={busy} onClick={() => { setWorkerName(row.workerName); setEditName(true); }}>
+                  <Pencil className="h-4 w-4" /> Edit worker name
+                </Button>
                 {row.status !== "Approved" ? (
                   <Button size="sm" variant="outline" disabled={busy} onClick={() => void approve()}>
                     <CheckCircle2 className="h-4 w-4" /> Mark approved
@@ -763,6 +769,26 @@ function RowDrawer({
             </div>
           </>
         ) : null}
+        <Dialog open={editName} onOpenChange={setEditName}>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle>Edit scanned worker name</DialogTitle></DialogHeader>
+            <Label htmlFor="polo-worker-name">Housemaid name</Label>
+            <Input id="polo-worker-name" value={workerName} onChange={(e) => setWorkerName(e.target.value)} />
+            <p className="text-sm text-muted-foreground">Only the POLO display name changes. The original scan, recruitment name, and finance records stay unchanged.</p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditName(false)} disabled={busy}>Cancel</Button>
+              <Button disabled={busy || !workerName.trim()} onClick={async () => {
+                if (!row) return;
+                setBusy(true);
+                try {
+                  await correctPoloWorkerName(row, workerName);
+                  toast.success("Worker name corrected."); setEditName(false); onClose(); await onChanged();
+                } catch (e) { toast.error(e instanceof Error ? e.message : "Could not correct the name."); }
+                finally { setBusy(false); }
+              }}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Save name</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
           <DialogContent className="max-w-md">
             <DialogHeader>
