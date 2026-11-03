@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { test, expect } from "bun:test";
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
