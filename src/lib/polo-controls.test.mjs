@@ -1,4 +1,3 @@
-/// <reference types="bun" />
 import { test, expect } from "bun:test";
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
@@ -18,19 +17,19 @@ async function fixture() {
     ALTER TABLE bulk_transfers ADD COLUMN updated_at timestamptz;
   `);
   await db.exec(readFileSync("drizzle/migrations/0026_polo_corrections_and_safe_bulk_controls.sql", "utf8"));
-  const { rows } = await db.query<{id:string}>(`INSERT INTO bulk_transfers(ref,status,from_account,to_account) VALUES('FAST-BULK-001','pending','fast-acct','housemaid-holding') RETURNING id`);
+  const { rows } = await db.query(`INSERT INTO bulk_transfers(ref,status,from_account,to_account) VALUES('FAST-BULK-001','pending','fast-acct','housemaid-holding') RETURNING id`);
   const bulk = rows[0]?.id;
   if (!bulk) throw new Error("Missing fixture");
-  const feeResult = await db.query<{id:string}>(`INSERT INTO transactions(user_id,date,type,candidate,amount,purpose_category,status,to_wallet,current_location) VALUES(auth.uid(),'2026-11-02','Receipt Voucher','Test Worker',160,'POLO','Completed','fast-acct','fast-acct') RETURNING id`);
+  const feeResult = await db.query(`INSERT INTO transactions(user_id,date,type,candidate,amount,purpose_category,status,to_wallet,current_location) VALUES(auth.uid(),'2026-11-02','Receipt Voucher','Test Worker',160,'POLO','Completed','fast-acct','fast-acct') RETURNING id`);
   const fee=feeResult.rows[0]?.id;
-  const itemResult=await db.query<{id:string}>(`INSERT INTO bulk_items(bulk_id,fee_transaction_id,worker_name,amount,sign_status) VALUES($1,$2,'Test Worker',160,'pending') RETURNING id`,[bulk,fee]);
+  const itemResult=await db.query(`INSERT INTO bulk_items(bulk_id,fee_transaction_id,worker_name,amount,sign_status) VALUES($1,$2,'Test Worker',160,'pending') RETURNING id`,[bulk,fee]);
   const item=itemResult.rows[0]?.id;
   return {db,bulk,fee,item};
 }
 
 test("name correction preserves original scanned name", async () => {
   const {db}=await fixture();
-  const {rows}=await db.query<{id:string}>("INSERT INTO polo_events(worker_name) VALUES('Mary An') RETURNING id");
+  const {rows}=await db.query("INSERT INTO polo_events(worker_name) VALUES('Mary An') RETURNING id");
   await db.query("SELECT correct_polo_worker_name(ARRAY[$1::uuid], 'Mary Ann')",[rows[0]?.id]);
   expect((await db.query("SELECT worker_name,corrected_worker_name FROM polo_events")).rows).toEqual([{worker_name:"Mary An",corrected_worker_name:"Mary Ann"}]);
   await db.close();
