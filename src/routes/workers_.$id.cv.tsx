@@ -9,6 +9,7 @@ import brokerLetterhead from "@/assets/letterheads/broker-letterhead.png.asset.j
 import skillLetterhead from "@/assets/letterheads/skill-letterhead.png.asset.json";
 import danetLetterhead from "@/assets/letterheads/danet-letterhead.png.asset.json";
 import fastLetterheadDoc from "@/assets/letterheads/fast-letterhead-doc.png";
+import { usesDomesticSkills } from "@/lib/cv-skills";
 import {
   candidateSerialCode,
   candidateSummary,
@@ -26,6 +27,10 @@ export const Route = createFileRoute("/workers_/$id/cv")({
     meta: [
       { title: "Candidate CV · Alhakeem Group ERP" },
       { name: "description", content: "Printable candidate CV." },
+      { property: "og:title", content: "Candidate CV · Alhakeem Group ERP" },
+      { property: "og:description", content: "Preview and print candidate qualifications and employment experience." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CandidateCVPage,
@@ -168,9 +173,9 @@ function CandidateCVPage() {
             <tr><td className="job-head">Period</td><td className="job-head">Position</td><td className="job-head">City, Country</td></tr>
             <tr><td className="value-cell">{experiencePeriod}</td><td className="value-cell">{(candidate.experiencePosition || candidate.position).toUpperCase()}</td><td className="value-cell">{(candidate.experienceCountry || candidate.nationality).toUpperCase()}</td></tr>
             <tr><td colSpan={6} className="section-title">Skills &amp; Experience <span dir="rtl">خبرة العمل</span></td></tr>
-            {CV_SKILLS.map(([left, leftArabic, right, rightArabic]) => (
+            {usesDomesticSkills(candidate.position) ? CV_SKILLS.map(([left, leftArabic, right, rightArabic]) => (
               <SkillRow key={left} label={left} value={hasSkill(candidate.skills, left) ? "YES" : "NO"} arabic={leftArabic} rightLabel={right} rightValue={hasSkill(candidate.skills, right) ? "YES" : "NO"} rightArabic={rightArabic} />
-            ))}
+            )) : <tr><td colSpan={6} className="professional-skills"><ul>{candidate.skills.map((skill, index) => <li key={index}>{skill}</li>)}</ul>{!candidate.skills.length ? "—" : null}</td></tr>}
             <tr><td colSpan={6} className="remarks"><strong>REMARKS: </strong>{remarks}</td></tr>
           </tbody>
         </table>
@@ -204,13 +209,15 @@ function CandidateCVPage() {
         .skills-row td { height: 7mm !important; }
         .skill-label { font-size: 7.5pt; }
         .skill-answer { font-size: 8.5pt; font-weight: 700; }
+        .professional-skills { text-align: left !important; line-height: 1.35; height: auto !important; }
+        .professional-skills ul { padding-left: 4mm; margin: 1mm 0; list-style: disc; }
         .remarks { min-height: 12mm; line-height: 1.25; text-align: left !important; color: #d00000; font-size: 8pt; text-transform: uppercase; }
         @media print {
           @page { size: A4 portrait; margin: 5mm; }
           html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: hidden !important; print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
           body * { visibility: hidden; }
           .okunade-page, .okunade-page * { visibility: visible; }
-          .okunade-page { position: fixed; inset: 0 auto auto 0; width: 200mm; max-width: none; min-height: 0; height: 287mm; overflow: hidden; break-after: avoid-page; break-inside: avoid-page; page-break-after: avoid; page-break-inside: avoid; }
+          .okunade-page { position: ${usesDomesticSkills(candidate.position) ? "fixed" : "absolute"}; inset: 0 auto auto 0; width: 200mm; max-width: none; min-height: 0; height: ${usesDomesticSkills(candidate.position) ? "287mm" : "auto"}; overflow: visible; break-after: avoid-page; }
           .okunade-letterhead img { visibility: visible !important; display: block !important; }
           .okunade-table { page-break-inside: avoid; break-inside: avoid-page; }
         }

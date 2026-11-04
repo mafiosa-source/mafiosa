@@ -1,5 +1,10 @@
 # Roadmap — Housemaid recruitment flow
 
+## Profession-specific CV skills
+- [ ] Read original CV skills and employment details for professions other than HOUSEMAID/DRIVER
+- [ ] Allow review/editing and show source-based summaries in CV previews and prints
+- [ ] Test profession rules and verify the upload flow without changing existing records
+
 ## POLO corrections and transfer controls
 - [x] Edit scanned worker names after saving, without changing recruitment or finance names
 - [x] Add confirmed unsigned bulk deletion and history-preserving signed bulk reversal (approved)

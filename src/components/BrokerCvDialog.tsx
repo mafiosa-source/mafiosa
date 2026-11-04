@@ -6,6 +6,7 @@ import { useAgency } from "@/lib/agency";
 import fastLetterhead from "@/assets/letterheads/fast-letterhead-doc.png";
 import { printPublicCv } from "@/lib/public-cv-print";
 import { COUNTRY_NAME, callLink, whatsappLink, type PublicCv } from "@/lib/public-cvs";
+import { usesDomesticSkills } from "@/lib/cv-skills";
 
 export function BrokerCvDialog({
   cv,
@@ -103,13 +104,13 @@ export function BrokerCvDialog({
         {cv.skills.length ? (
           <section className="mt-5">
             <h3 className="text-sm font-semibold text-agency-foreground">{t("Skills & experience")}</h3>
-            <div className="mt-2 flex flex-wrap gap-1">
+            {usesDomesticSkills(cv.position) ? <div className="mt-2 flex flex-wrap gap-1">
               {cv.skills.map((s) => (
                 <span key={s} className="rounded-2xl bg-agency-muted px-2 py-1 text-xs text-agency-secondary">
                   {t(s)}
                 </span>
               ))}
-            </div>
+            </div> : <ul className="mt-2 list-disc space-y-1 ps-5 text-sm text-agency-secondary">{cv.skills.map((skill, index) => <li key={index}>{skill}</li>)}</ul>}
           </section>
         ) : null}
 
