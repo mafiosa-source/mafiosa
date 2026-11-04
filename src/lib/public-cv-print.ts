@@ -8,6 +8,7 @@ export type PublicCvTemplate = "broker_letterhead" | "fast_letterhead";
 let activeTemplate: PublicCvTemplate = "broker_letterhead";
 import { countryArabicName, countryName, formatDate } from "@/lib/cv-management";
 import type { PublicCv } from "./public-cvs";
+import { usesDomesticSkills } from "./cv-skills";
 
 const esc = (v: unknown) =>
   String(v ?? "")
@@ -62,12 +63,16 @@ body { margin: 0; background: #fff; }
 .skills-row td { height: 7mm !important; }
 .skill-label { font-size: 7.5pt; }
 .skill-answer { font-size: 8.5pt; font-weight: 700; }
+.professional-skills { text-align: left !important; line-height: 1.35; height: auto !important; }
+.professional-skills ul { padding-left: 4mm; margin: 1mm 0; list-style: disc; }
 .remarks { min-height: 12mm; line-height: 1.25; text-align: left !important; color: #d00000; font-size: 8pt; text-transform: uppercase; }
 @media print {
   @page { size: A4 portrait; margin: 5mm; }
   html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: hidden !important; print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
   .okunade-page { width: 200mm; max-width: none; min-height: 0; height: 287mm; overflow: hidden; break-after: avoid-page; break-inside: avoid-page; page-break-after: avoid; page-break-inside: avoid; }
   .okunade-table { page-break-inside: avoid; break-inside: avoid-page; }
+  body.professional-cv, body.professional-cv .okunade-page { height: auto; overflow: visible; }
+  body.professional-cv .okunade-table { page-break-inside: auto; break-inside: auto; }
 }
 `;
 
@@ -91,14 +96,14 @@ function publicCvBody(cv: PublicCv): string {
   const arabic = cv.languages.some((l) => l.toLowerCase() === "arabic") ? "YES" : "NO";
   const experiencePeriod = cv.experienceYears ? `${cv.experienceYears} YEARS` : "—";
 
-  const skillRows = CV_SKILLS.map(
+  const skillRows = usesDomesticSkills(cv.position) ? CV_SKILLS.map(
     ([left, leftAr, right, rightAr]) =>
       `<tr class="skills-row"><td class="skill-label">${esc(left)}</td><td class="skill-answer">${
         hasSkill(cv.skills, left) ? "YES" : "NO"
       }</td><td class="arabic-cell" dir="rtl">${leftAr}</td><td class="skill-label">${esc(right)}</td><td class="skill-answer">${
         hasSkill(cv.skills, right) ? "YES" : "NO"
       }</td><td class="arabic-cell" dir="rtl">${rightAr}</td></tr>`,
-  ).join("");
+  ).join("") : `<tr><td colspan="6" class="professional-skills">${cv.skills.length ? `<ul>${cv.skills.map((skill) => `<li>${esc(skill)}</li>`).join("")}</ul>` : "—"}</td></tr>`;
 
   return `
 <div class="okunade-page">
@@ -154,7 +159,7 @@ export function printPublicCv(cv: PublicCv, template: PublicCvTemplate = "broker
   const win = window.open("", "_blank", "width=1000,height=1300");
   if (!win) return;
   win.document.write(
-    `<html><head><meta charset="utf-8" /><title>${esc(cv.name)} - ${esc(cv.code)}</title><style>${CV_STYLES}</style></head><body>${publicCvBody(cv)}</body></html>`,
+    `<html><head><meta charset="utf-8" /><title>${esc(cv.name)} - ${esc(cv.code)}</title><style>${CV_STYLES}</style></head><body class="${usesDomesticSkills(cv.position) ? "" : "professional-cv"}">${publicCvBody(cv)}</body></html>`,
   );
   win.document.close();
   win.focus();

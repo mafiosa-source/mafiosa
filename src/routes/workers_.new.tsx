@@ -42,12 +42,17 @@ import { scanPassport } from "@/lib/passport-ocr.functions";
 import { scanCv } from "@/lib/cv-ocr.functions";
 import { passportExists } from "@/lib/recruitment";
 import { NameConfirmDialog } from "@/components/NameConfirmDialog";
+import { scannedCvSkills, skillsFromText, usesDomesticSkills } from "@/lib/cv-skills";
 
 export const Route = createFileRoute("/workers_/new")({
   head: () => ({
     meta: [
       { title: "Add Candidate · Alhakeem Group ERP" },
-      { name: "description", content: "Create a new domestic worker CV." },
+      { name: "description", content: "Generate recruitment CVs from original candidate documents and profession-specific skills." },
+      { property: "og:title", content: "Add Candidate · Alhakeem Group ERP" },
+      { property: "og:description", content: "Generate recruitment CVs with skills and experience from candidate documents." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AddCandidatePage,
@@ -84,6 +89,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
   const [agentId, setAgentId] = useState("");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [professionalSkillsText, setProfessionalSkillsText] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
   const [passportNumber, setPassportNumber] = useState("");
@@ -145,6 +151,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
         setAgentId(c.agentId ?? "");
         setSelectedLanguages(c.languages);
         setSelectedSkills(c.skills);
+        setProfessionalSkillsText(c.skills.join("\n"));
         setPhotoUrl(c.photoUrl);
         setGalleryUrls(c.galleryUrls);
         setPassportNumber(c.passportNumber ?? "");
@@ -253,8 +260,9 @@ export function CandidateForm({ editId }: { editId?: string }) {
         const match = COUNTRIES.find((c) => c.name.toLowerCase() === r.nationality!.toLowerCase());
         if (match) { setNationality(match.name); filled.push("nationality"); }
       }
-      const pos = pick(POSITIONS, r.position);
-      if (pos) setPosition(pos);
+      const extracted = scannedCvSkills(r, position);
+      setPosition(extracted.position);
+      setProfessionalSkillsText(extracted.skills.join("\n"));
       if (r.experienceYears !== undefined) { setExperienceYears(String(r.experienceYears)); filled.push("experience"); }
       if (r.experienceCountry) setExperienceCountry(r.experienceCountry);
       if (r.experiencePosition) setExperiencePosition(r.experiencePosition);
@@ -273,7 +281,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
         setSelectedLanguages(langs);
         filled.push("languages");
       }
-      if (r.skills?.length) {
+      if (r.skills) {
         const skills = r.skills
           .map((s) => COMMON_SKILLS.find((c) => c.toLowerCase() === s.toLowerCase()) ?? s)
           .filter((s, i, a) => a.indexOf(s) === i);
@@ -393,7 +401,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
         weight: weight || undefined,
         religion: religion || undefined,
         education: education || undefined,
-        skills: selectedSkills,
+        skills: usesDomesticSkills(position) ? selectedSkills : skillsFromText(professionalSkillsText),
         agentId,
         passportNumber: passportNumber || undefined,
         passportIssueDate: passportIssueDate || undefined,
@@ -746,12 +754,15 @@ export function CandidateForm({ editId }: { editId?: string }) {
 
             {/* Skills */}
             <div className="space-y-2">
+              {usesDomesticSkills(position) ? <>
               <Label>Skills</Label>
               <div className="flex flex-wrap gap-2">
                 {COMMON_SKILLS.map((skill) => (
-                  <button
+                  <Button
                     key={skill}
                     type="button"
+                    variant={selectedSkills.includes(skill) ? "default" : "outline"}
+                    size="sm"
                     onClick={() => toggleSkill(skill)}
                     className={cn(
                       "rounded-full border px-3 py-1 text-xs transition-colors",
@@ -761,9 +772,13 @@ export function CandidateForm({ editId }: { editId?: string }) {
                     )}
                   >
                     {skill}
-                  </button>
+                  </Button>
                 ))}
               </div>
+              </> : <>
+                <Label htmlFor="professional-skills">Skills &amp; Experience</Label>
+                <Textarea id="professional-skills" value={professionalSkillsText} onChange={(e) => setProfessionalSkillsText(e.target.value)} rows={7} />
+              </>}
             </div>
           </CardContent>
         </Card>
