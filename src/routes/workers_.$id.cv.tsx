@@ -1,15 +1,17 @@
 import { createFileRoute, useParams, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Download, Loader2, Printer } from "lucide-react";
+import { ArrowLeft, Download, ImageDown, Loader2, Printer, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import brokerLetterhead from "@/assets/letterheads/broker-letterhead.png.asset.json";
 import skillLetterhead from "@/assets/letterheads/skill-letterhead.png.asset.json";
 import danetLetterhead from "@/assets/letterheads/danet-letterhead.png.asset.json";
 import fastLetterheadDoc from "@/assets/letterheads/fast-letterhead-doc.png";
 import { usesDomesticSkills } from "@/lib/cv-skills";
+import { createCvJpg, deliverCvJpg } from "@/lib/cv-image-export";
+import { summarizeCvRemarks } from "@/lib/cv-ocr.functions";
 import {
   candidateSerialCode,
   candidateSummary,
@@ -74,6 +76,29 @@ function CandidateCVPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [companyId, setCompanyId] = useState("broker");
   const [loading, setLoading] = useState(true);
+  const cvRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState(false);
+  const [jpg, setJpg] = useState<Blob | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [summarizing, setSummarizing] = useState(false);
+
+  useEffect(() => { setJpg(null); }, [companyId, summary]);
+
+  async function prepareJpg() {
+    if (!cvRef.current) return;
+    setExporting(true);
+    try { setJpg(await createCvJpg(cvRef.current)); }
+    catch (error) { toast.error(error instanceof Error ? error.message : "Could not export the CV."); }
+    finally { setExporting(false); }
+  }
+
+  async function summarizeRemarks() {
+    if (!candidate) return;
+    setSummarizing(true);
+    try { setSummary(await summarizeCvRemarks({ data: candidate })); }
+    catch (error) { toast.error(error instanceof Error ? error.message : "Could not summarize remarks."); }
+    finally { setSummarizing(false); }
+  }
 
   useEffect(() => {
     (async () => {
@@ -108,24 +133,26 @@ function CandidateCVPage() {
   const arabic = candidate.languages.some((language) => language.toLowerCase() === "arabic") ? "YES" : "NO";
   const experiencePeriod = candidate.experienceYears ? `${candidate.experienceYears} YEARS` : "—";
   const agentCode = agents.find((item) => item.id === candidate.agentId)?.agentCode ?? "";
-  const remarks = candidate.remarks?.trim() || candidateSummary(candidate);
+  const remarks = summary ?? (candidate.remarks?.trim() || candidateSummary(candidate));
 
   return (
     <AppLayout>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <Button size="sm" variant="outline" asChild><Link to="/workers"><ArrowLeft className="h-4 w-4" /> Back</Link></Button>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground">Letterhead</span>
           <Select value={companyId} onValueChange={setCompanyId}>
             <SelectTrigger className="h-9 w-44"><SelectValue /></SelectTrigger>
             <SelectContent>{LETTERHEADS.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent>
           </Select>
+          <Button size="sm" variant="outline" disabled={summarizing || exporting} onClick={summarizeRemarks}>{summarizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Summarize remarks</Button>
+          {jpg ? <Button size="sm" variant="outline" onClick={() => { void deliverCvJpg(jpg, `${serial}-${candidate.fullName.replace(/[^\p{L}\p{N} -]/gu, "").trim() || "CV"}.jpg`).catch(() => toast.error("Could not download the JPG.")); }}><Download className="h-4 w-4" /> Download JPG</Button> : <Button size="sm" variant="outline" disabled={exporting || summarizing} onClick={prepareJpg}>{exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageDown className="h-4 w-4" />} Export JPG</Button>}
           <Button size="sm" variant="outline" onClick={() => window.print()}><Download className="h-4 w-4" /> Save as PDF</Button>
           <Button size="sm" onClick={() => window.print()}><Printer className="h-4 w-4" /> Print</Button>
         </div>
       </div>
 
-      <div className="okunade-page mx-auto bg-white text-black">
+      <div ref={cvRef} data-cv-export className="okunade-page mx-auto bg-white text-black">
         <div className="okunade-letterhead">
           <img src={letterhead.imageUrl} alt={`${letterhead.name} letterhead`} />
         </div>

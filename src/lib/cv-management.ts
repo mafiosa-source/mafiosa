@@ -3,6 +3,7 @@
 // No finance tables, logic, or pages are touched.
 // ============================================================
 import { supabase } from "@/integrations/supabase/client";
+import { cvRemarksOverview } from "@/lib/cv-remarks";
 
 // ---------- Agents ----------
 export type Agent = {
@@ -494,30 +495,5 @@ export function agentName(agents: Agent[], id?: string): string {
 // ---------- CV remarks summary ----------
 /** Builds a readable narrative summary of the candidate for the CV REMARKS box. */
 export function candidateSummary(c: Candidate): string {
-  const parts: string[] = [];
-  const name = c.fullName.toUpperCase();
-  const age = c.age ?? ageFromDob(c.dateOfBirth);
-  const bits = [
-    age ? `${age}-year-old` : "",
-    c.maritalStatus ? c.maritalStatus.toLowerCase() : "",
-    c.nationality ? `${c.nationality} national` : "",
-  ].filter(Boolean).join(" ");
-  parts.push(`${name} is a ${bits || "candidate"} applying as ${c.position.toUpperCase()}.`);
-
-  if (c.experienceYears > 0) {
-    const where = c.experienceCountry ? ` in ${c.experienceCountry}` : "";
-    parts.push(`She has ${c.experienceYears} year(s) of working experience${where}.`);
-  } else {
-    parts.push("No previous overseas working experience recorded.");
-  }
-
-  if (c.skills.length) parts.push(`Skilled in ${c.skills.join(", ").toLowerCase()}.`);
-  if (c.languages.length) parts.push(`Speaks ${c.languages.join(" and ")}.`);
-  if (c.education) parts.push(`Education: ${c.education}.`);
-  parts.push(
-    c.childrenCount > 0 ? `Has ${c.childrenCount} child(ren).` : "No children.",
-  );
-  if (c.religion) parts.push(`Religion: ${c.religion}.`);
-  if (c.notes) parts.push(c.notes);
-  return parts.join(" ");
+  return cvRemarksOverview(c);
 }

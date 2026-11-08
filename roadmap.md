@@ -1,5 +1,10 @@
 # Roadmap — Housemaid recruitment flow
 
+## CV JPG export and remarks
+- [x] Export the complete selected-letterhead CV as a JPG
+- [x] Generate brief, source-grounded employer-focused remarks rather than repeating skills
+- [x] Verify JPG download and remarks behavior without changing existing records
+
 ## Profession-specific CV skills
 - [ ] Read original CV skills and employment details for professions other than HOUSEMAID/DRIVER
 - [ ] Allow review/editing and show source-based summaries in CV previews and prints

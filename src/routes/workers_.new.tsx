@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Upload, Loader2, X, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, X, Image as ImageIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useAppUser } from "@/lib/app-user";
 import {
@@ -39,7 +39,7 @@ import {
 } from "@/lib/cv-management";
 import { cn } from "@/lib/utils";
 import { scanPassport } from "@/lib/passport-ocr.functions";
-import { scanCv } from "@/lib/cv-ocr.functions";
+import { scanCv, summarizeCvRemarks } from "@/lib/cv-ocr.functions";
 import { passportExists } from "@/lib/recruitment";
 import { NameConfirmDialog } from "@/components/NameConfirmDialog";
 import { scannedCvSkills, skillsFromText, usesDomesticSkills } from "@/lib/cv-skills";
@@ -102,6 +102,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
   const [address, setAddress] = useState("");
   const [monthlySalary, setMonthlySalary] = useState("");
   const [remarks, setRemarks] = useState("");
+  const [summarizingRemarks, setSummarizingRemarks] = useState(false);
   const [notes, setNotes] = useState("");
   const [scanning, setScanning] = useState(false);
   const [status, setStatus] = useState("Available");
@@ -292,6 +293,7 @@ export function CandidateForm({ editId }: { editId?: string }) {
       if (r.address) setAddress(r.address);
       if (r.monthlySalary) setMonthlySalary(r.monthlySalary);
       if (r.notes) setNotes(r.notes);
+      if (r.remarks) { setRemarks(r.remarks); filled.push("remarks"); }
 
       toast[filled.length ? "success" : "info"](
         filled.length
@@ -303,6 +305,21 @@ export function CandidateForm({ editId }: { editId?: string }) {
     } finally {
       setScanningCv(false);
     }
+  }
+
+  async function generateRemarks() {
+    setSummarizingRemarks(true);
+    try {
+      const summary = await summarizeCvRemarks({ data: {
+        fullName, position,
+        skills: usesDomesticSkills(position) ? selectedSkills : skillsFromText(professionalSkillsText),
+        experienceYears: Number(experienceYears) || 0,
+        experienceCountry, languages: selectedLanguages, education,
+      } });
+      setRemarks(summary);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not summarize remarks.");
+    } finally { setSummarizingRemarks(false); }
   }
 
   /** Reads the passport photo page and fills name, passport number, date & place of birth. */
@@ -821,6 +838,9 @@ export function CandidateForm({ editId }: { editId?: string }) {
           <CardHeader><CardTitle className="text-base">Remarks &amp; Notes</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <Field label="CV Remarks">
+              <Button type="button" variant="outline" size="sm" disabled={summarizingRemarks || scanningCv} onClick={generateRemarks}>
+                {summarizingRemarks ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Summarize remarks
+              </Button>
               <Textarea value={remarks} onChange={(e) => setRemarks(e.target.value)} rows={4} placeholder="Summary shown in the printed CV remarks section..." />
             </Field>
             <Field label="Internal Notes">
