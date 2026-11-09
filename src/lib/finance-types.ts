@@ -4,12 +4,14 @@
 // Every screen is a filtered view over `transactions`.
 // ============================================================
 
+// ALSABH is retired: hidden from pickers (COMPANIES/VOUCHER_COMPANIES) but kept in the
+// type and COMPANY_LABEL so its existing ledger records still display correctly.
 export type Company =
   | "FAST" | "BROKER" | "SKILL" | "DANET" | "AHG" | "FACTORY" | "QUALITY" | "ALSABH"
-  | "ALASWAR" | "MATRASH" | "MEGAWORLD" | "ASWAQ_ALFURJAN";
+  | "ALASWAR" | "MEGAWORLD" | "ASWAQ_ALFURJAN";
 export const COMPANIES: Company[] = [
-  "AHG", "FAST", "BROKER", "DANET", "SKILL", "FACTORY", "QUALITY", "ALSABH",
-  "ALASWAR", "MATRASH", "MEGAWORLD", "ASWAQ_ALFURJAN",
+  "AHG", "FAST", "BROKER", "DANET", "SKILL", "FACTORY", "QUALITY",
+  "ALASWAR", "MEGAWORLD", "ASWAQ_ALFURJAN",
 ];
 // Human-facing labels (DANET is stored as-is to protect existing records).
 export const COMPANY_LABEL: Record<Company, string> = {
@@ -22,15 +24,14 @@ export const COMPANY_LABEL: Record<Company, string> = {
   QUALITY: "Quality",
   ALSABH: "Alsabh",
   ALASWAR: "Al Aswar",
-  MATRASH: "Matrash",
   MEGAWORLD: "Megaworld",
   ASWAQ_ALFURJAN: "Aswaq Al Furjan",
 };
 // AHG is used for office expenses, cards and petty cash only.
 // It does NOT use Receipt Vouchers or Payment Vouchers.
 export const VOUCHER_COMPANIES: Company[] = [
-  "FAST", "BROKER", "SKILL", "DANET", "FACTORY", "QUALITY", "ALSABH",
-  "ALASWAR", "MATRASH", "MEGAWORLD", "ASWAQ_ALFURJAN",
+  "FAST", "BROKER", "SKILL", "DANET", "FACTORY", "QUALITY",
+  "ALASWAR", "MEGAWORLD", "ASWAQ_ALFURJAN",
 ];
 
 // ---------- Vehicles & drivers (fuel tracking) ----------
