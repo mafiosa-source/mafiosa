@@ -296,8 +296,14 @@ export function TransactionsTable({
             <span className="font-semibold tabular text-rose-600">{qar(totals.moneyOut)}</span>
           </span>
           <span>
-            <span className="text-muted-foreground">Total </span>
-            <span className="font-semibold tabular">{qar(totals.amount)}</span>
+            <span className="text-muted-foreground">Net </span>
+            <span
+              className={`font-semibold tabular ${
+                totals.moneyIn - totals.moneyOut < 0 ? "text-rose-600" : "text-emerald-600"
+              }`}
+            >
+              {qar(totals.moneyIn - totals.moneyOut)}
+            </span>
           </span>
         </span>
       </div>
