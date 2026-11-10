@@ -17,5 +17,6 @@
 - POLO scanned-name corrections retain original OCR names separately, so display edits cannot break ledger matching or change recruitment records.
 - Bulk signing and reversal use atomic invoker database functions with row locks; unsigned deletion is an auditable cancellation and signed reversal posts compensating ledger entries, preserving proof and history.
 - CV profession rules are shared in a browser-safe skills helper; source-based skills and experience summaries use the existing cloud skills array so no schema change or existing-record rewrite is required.
+- Public worker cards and CV dialogs share the preview skill formatter; full ERP and printable CV skills remain untouched to preserve source detail.
 - CV JPG export renders the shared preview at paper width in the browser and prepares the file before downloading, preserving the selected letterhead and mobile download activation.
 - CV remarks generation uses reviewed profile facts through an authenticated server function; preview summaries are ephemeral and existing candidate records change only through explicit form saving.

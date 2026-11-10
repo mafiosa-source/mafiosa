@@ -17,21 +17,22 @@ describe("shortSkillsForPreview", () => {
     const chips = shortSkillsForPreview("Barista", skills);
     expect(chips).toContain("Barista");
     expect(chips).toContain("Espresso");
-    expect(chips).toContain("Latte art");
-    expect(chips).toContain("Customer service");
+    expect(chips).toContain("Latte");
+    expect(chips).toContain("Service");
     expect(chips).toContain("Cashier");
     expect(chips).toContain("Cleaning");
-    for (const chip of chips) expect(chip.split(" ").length).toBeLessThanOrEqual(2);
+    for (const chip of chips) expect(chip.split(/\s+/).length).toBe(1);
   });
 
-  test("falls back to first two words when no keyword matches", () => {
+  test("falls back to one word when no keyword matches", () => {
     const chips = shortSkillsForPreview("Chef", ["Managed xyzq team schedules efficiently"]);
-    expect(chips).toEqual(["Managed xyzq"]);
+    expect(chips).toEqual(["Managed"]);
   });
 
   test("domestic check is case-insensitive", () => {
     expect(usesDomesticSkills(" housemaid ")).toBe(true);
     expect(usesDomesticSkills("DRIVER")).toBe(true);
+    expect(usesDomesticSkills("HOUSE MAID")).toBe(true);
     expect(usesDomesticSkills("Barista")).toBe(false);
   });
 });

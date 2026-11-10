@@ -7,6 +7,7 @@ import { BrokerSite } from "@/components/BrokerSite";
 import { BrokerCvDialog } from "@/components/BrokerCvDialog";
 import { BrokerFacePhoto } from "@/components/BrokerFacePhoto";
 import { useAgency } from "@/lib/agency";
+import { shortSkillsForPreview } from "@/lib/cv-skills";
 import { listPublicCvs } from "@/lib/public-cvs.functions";
 import {
   whatsappLink,
@@ -153,7 +154,7 @@ export function CvsPage() {
               ) : null}
               {cv.skills.length ? (
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {cv.skills.slice(0, 5).map((s) => (
+                  {shortSkillsForPreview(cv.position, cv.skills).slice(0, 5).map((s) => (
                     <span key={s} className="rounded-2xl bg-agency-muted px-2 py-1 text-xs text-agency-secondary">
                       {t(s)}
                     </span>
